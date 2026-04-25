@@ -166,6 +166,73 @@ body{font-family:'DM Sans',sans-serif;background:var(--pitch);min-height:100vh;c
 .match-win-sub{font-size:14px;color:rgba(255,255,255,.8);text-align:center;margin:8px 0 20px;line-height:1.5;}
 .match-win-score{font-family:'Bebas Neue',cursive;font-size:56px;color:white;text-align:center;letter-spacing:4px;margin-bottom:20px;}
 .hidden{display:none!important;}
+
+/* ── MENU EXTRAS (Stats / Sticker Book) ──────────────────────────── */
+.menu-extras{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.menu-extra-btn{height:42px;border:1.5px solid rgba(0,0,0,.12);border-radius:10px;background:white;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--gray);transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.menu-extra-btn:hover{border-color:var(--green);color:var(--green);background:#f0faf4;}
+
+/* ── BIG MODAL SHELL (shared by Stats + Sticker Book) ───────────── */
+.big-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);display:flex;align-items:flex-start;justify-content:center;z-index:500;padding:20px;overflow-y:auto;}
+.big-modal{background:white;border-radius:20px;width:100%;max-width:540px;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,.4);overflow:hidden;}
+.big-modal-header{background:var(--gd);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;}
+.big-modal-title{font-family:'Bebas Neue',cursive;font-size:26px;color:var(--gold);letter-spacing:2px;}
+.big-modal-close{background:rgba(255,255,255,.15);border:none;color:white;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;line-height:1;font-weight:700;}
+.big-modal-close:hover{background:rgba(255,255,255,.3);}
+.big-modal-body{padding:18px 20px;max-height:75vh;overflow-y:auto;}
+
+/* ── LEADERBOARD ─────────────────────────────────────────────────── */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+.stat-card{background:#f9fafb;border-radius:12px;padding:12px 14px;text-align:center;}
+.stat-card-val{font-family:'Bebas Neue',cursive;font-size:36px;color:var(--gd);line-height:1;}
+.stat-card-label{font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+.stat-card.gold-card{background:linear-gradient(135deg,#fef9e7,#fff3cd);}
+.stat-card.gold-card .stat-card-val{color:var(--goldd);}
+.lb-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--gray);margin:16px 0 8px;}
+.recent-list{display:flex;flex-direction:column;gap:6px;}
+.recent-item{display:flex;align-items:center;justify-content:space-between;background:#f9fafb;border-radius:10px;padding:9px 12px;font-size:12px;}
+.recent-item .ri-result{font-weight:700;font-size:13px;}
+.recent-item .ri-result.win{color:var(--green);}
+.recent-item .ri-result.loss{color:var(--red);}
+.recent-item .ri-meta{color:var(--gray);}
+.no-stats{text-align:center;padding:30px;color:var(--gray);font-size:14px;}
+.lb-divider{border:none;border-top:1px solid rgba(0,0,0,.07);margin:14px 0;}
+
+/* ── STICKER BOOK ────────────────────────────────────────────────── */
+.sb-progress-wrap{margin-bottom:14px;}
+.sb-progress-label{display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:6px;}
+.sb-progress-label span:first-child{color:var(--gd);}
+.sb-progress-label span:last-child{color:var(--gray);}
+.sb-progress-bar{height:10px;background:#e5e7eb;border-radius:20px;overflow:hidden;border:1px solid rgba(240,180,41,.4);}
+.sb-progress-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--gl));border-radius:20px;transition:width .5s ease;}
+.sb-controls{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.sb-search{flex:1;min-width:120px;height:36px;border:1.5px solid rgba(0,0,0,.15);border-radius:8px;padding:0 10px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;}
+.sb-search:focus{border-color:var(--green);}
+.sb-filter{height:36px;border:1.5px solid rgba(0,0,0,.15);border-radius:8px;padding:0 8px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;background:white;cursor:pointer;}
+.sb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;}
+.sb-card{border-radius:10px;padding:10px 8px;text-align:center;border:1.5px solid rgba(0,0,0,.08);transition:all .2s;position:relative;background:white;}
+.sb-card.unlocked{border-color:rgba(26,107,60,.2);background:#f0faf4;}
+.sb-card.unlocked:hover{border-color:var(--green);transform:translateY(-1px);box-shadow:0 4px 12px rgba(26,107,60,.15);}
+.sb-card.locked{opacity:.45;filter:grayscale(.6);background:#f9fafb;}
+.sb-card-emoji{font-size:28px;margin-bottom:4px;display:block;}
+.sb-card-name{font-size:11px;font-weight:600;color:var(--dark);line-height:1.3;margin-bottom:3px;}
+.sb-card-meta{font-size:10px;color:var(--gray);}
+.sb-card-lock{position:absolute;top:6px;right:6px;font-size:13px;opacity:.5;}
+.sb-card-date{font-size:9px;color:var(--green);margin-top:2px;display:none;}
+.sb-card.unlocked:hover .sb-card-date{display:block;}
+.sb-empty{text-align:center;padding:30px;color:var(--gray);font-size:13px;grid-column:1/-1;}
+
+/* ── UNLOCK ANIMATION ────────────────────────────────────────────── */
+@keyframes unlockPop{0%{opacity:0;transform:scale(.5) rotate(-10deg);}60%{opacity:1;transform:scale(1.3) rotate(4deg);}100%{opacity:1;transform:scale(1) rotate(0);}}
+.unlock-toast{position:fixed;top:20px;right:20px;background:linear-gradient(135deg,var(--gd),var(--green));color:white;border-radius:14px;padding:12px 16px;font-size:13px;font-weight:600;z-index:800;box-shadow:0 8px 24px rgba(0,0,0,.3);animation:unlockPop .4s ease forwards;max-width:220px;line-height:1.4;}
+.unlock-toast-icon{font-size:22px;display:block;margin-bottom:3px;}
+@keyframes fadeSlideOut{0%{opacity:1;transform:translateY(0);}100%{opacity:0;transform:translateY(-16px);}}
+.unlock-toast.fade-out{animation:fadeSlideOut .4s ease forwards;}
+.leg-unlocks{background:#f0faf4;border:1px solid #c3e6cb;border-radius:10px;padding:10px 12px;margin-top:10px;font-size:12px;color:#1a5c2e;}
+.leg-unlocks b{color:var(--gd);}
+.leg-unlocks-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+.unlock-chip{background:var(--gd);color:white;border-radius:20px;padding:2px 8px;font-size:11px;}
+.unlock-chip.new{background:var(--gold);color:var(--gd);}
 </style>
 </head>
 <body>
@@ -203,6 +270,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--pitch);min-height:100vh;c
           <button class="gm-btn"          id="gm_bo11"   onclick="setGM('bo11')">Best of 11</button>
         </div>
       </div>
+    </div>
+
+    <div class="menu-extras">
+      <button class="menu-extra-btn" onclick="openStats()">📊 My Stats</button>
+      <button class="menu-extra-btn" onclick="openStickerBook()">📚 Sticker Book</button>
     </div>
 
     <div class="rules">
@@ -295,6 +367,57 @@ body{font-family:'DM Sans',sans-serif;background:var(--pitch);min-height:100vh;c
     <div class="modal-btn-col">
       <button class="btn btn-gold" style="height:46px;font-size:15px;border-radius:12px;width:100%;" onclick="startRematch()">Rematch</button>
       <button class="btn" style="height:40px;font-size:13px;border-radius:10px;width:100%;background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);" onclick="goToMenu()">Back to Menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ STATS MODAL ══════════════════════════════════════════════════ -->
+<div class="big-modal-overlay hidden" id="statsOverlay">
+  <div class="big-modal">
+    <div class="big-modal-header">
+      <div class="big-modal-title">📊 My Stats</div>
+      <button class="big-modal-close" onclick="closeStats()">✕</button>
+    </div>
+    <div class="big-modal-body" id="statsBody">
+      <div class="no-stats">Loading...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ STICKER BOOK MODAL ═══════════════════════════════════════════ -->
+<div class="big-modal-overlay hidden" id="sbOverlay">
+  <div class="big-modal">
+    <div class="big-modal-header">
+      <div class="big-modal-title">📚 Sticker Book</div>
+      <button class="big-modal-close" onclick="closeStickerBook()">✕</button>
+    </div>
+    <div class="big-modal-body">
+      <div class="sb-progress-wrap">
+        <div class="sb-progress-label">
+          <span id="sbProgressText">0 / 0 Players Unlocked</span>
+          <span id="sbProgressPct">0%</span>
+        </div>
+        <div class="sb-progress-bar"><div class="sb-progress-fill" id="sbProgressFill" style="width:0%"></div></div>
+      </div>
+      <div class="sb-controls">
+        <input type="text" class="sb-search" id="sbSearch" placeholder="Search players..." oninput="renderStickerGrid()">
+        <select class="sb-filter" id="sbNatFilter" onchange="renderStickerGrid()">
+          <option value="">All Nations</option>
+        </select>
+        <select class="sb-filter" id="sbPosFilter" onchange="renderStickerGrid()">
+          <option value="">All Positions</option>
+          <option value="FW">⚽ Forward</option>
+          <option value="MID">🔄 Midfielder</option>
+          <option value="DEF">🛡️ Defender</option>
+          <option value="GK">🧤 Goalkeeper</option>
+        </select>
+        <select class="sb-filter" id="sbStatusFilter" onchange="renderStickerGrid()">
+          <option value="">All</option>
+          <option value="unlocked">✅ Unlocked</option>
+          <option value="locked">🔒 Locked</option>
+        </select>
+      </div>
+      <div class="sb-grid" id="sbGrid"></div>
     </div>
   </div>
 </div>
@@ -1067,7 +1190,7 @@ function confirmThrow() {
       G.history.push({ pname:G.p[cur].name, player:name, stat, type:'checkout', remaining:0, scored:sc });
       renderHistory(); renderScoreboard();
       playCheckout(); showPop('🎯 CHECKOUT!','checkout');
-      setTimeout(() => finishLeg(cur), 700);
+      setTimeout(() => finishLegWithExtras(cur), 700);
       return;
     }
   }
@@ -1227,7 +1350,399 @@ document.addEventListener('click', e => {
   renderBadgePicker('badges1', 1);
   setMode(1);
   setGM('inf');
+  sbPopulateNatFilter();
 })();
+
+// ═══════════════════════════════════════════════════════════════════
+// LOCALSTORAGE HELPERS
+// ═══════════════════════════════════════════════════════════════════
+const LS_STATS   = 'football501_stats';
+const LS_STICKER = 'football501_stickers';
+
+function lsGet(key, fallback) {
+  try {
+    const v = localStorage.getItem(key);
+    return v ? JSON.parse(v) : fallback;
+  } catch(e) { return fallback; }
+}
+
+function lsSet(key, val) {
+  try {
+    localStorage.setItem(key, JSON.stringify(val));
+    return true;
+  } catch(e) {
+    if (e.name === 'QuotaExceededError') {
+      console.warn('Football 501: localStorage quota exceeded');
+    }
+    return false;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// LEADERBOARD / STATS
+// ═══════════════════════════════════════════════════════════════════
+/*  Schema: {
+      totalLegs: number,
+      totalWins: number,  // legs won as p0
+      bestLeg: number,    // fewest throws to win a leg
+      winStreak: number,  // current consecutive wins
+      bestStreak: number,
+      totalThrows: number,
+      history: [{date, mode, gameMode, p0Name, p1Name, winnerIdx, p0Legs, p1Legs, p0Throws, p1Throws}]  // max 50
+    }
+*/
+function getStats() {
+  return lsGet(LS_STATS, {
+    totalLegs: 0, totalWins: 0, bestLeg: null,
+    winStreak: 0, bestStreak: 0, totalThrows: 0, history: []
+  });
+}
+
+function saveStats() {
+  const st = getStats();
+  const winner = G._lastLegWinner;
+  const throws = G.p[winner].throws;
+
+  st.totalLegs++;
+  st.totalThrows += throws;
+
+  // "win" for P0 (single player counts as win always)
+  if (winner === 0) {
+    st.totalWins++;
+    st.winStreak++;
+    if (st.winStreak > st.bestStreak) st.bestStreak = st.winStreak;
+  } else {
+    st.winStreak = 0;
+  }
+
+  if (st.bestLeg === null || throws < st.bestLeg) st.bestLeg = throws;
+
+  const entry = {
+    date: new Date().toISOString(),
+    mode: G.mode,
+    gameMode: G.gameMode,
+    p0Name: G.p[0].name,
+    p1Name: G.p[1].name,
+    winnerIdx: winner,
+    p0Legs: G.p[0].legs + (winner===0 ? 1 : 0),  // +1 for winner (not yet incremented)
+    p1Legs: G.p[1].legs + (winner===1 ? 1 : 0),
+    throws: throws,
+  };
+  st.history.unshift(entry);
+  if (st.history.length > 50) st.history = st.history.slice(0, 50);
+
+  lsSet(LS_STATS, st);
+}
+
+function openStats() {
+  renderStatsModal();
+  document.getElementById('statsOverlay').classList.remove('hidden');
+}
+function closeStats() {
+  document.getElementById('statsOverlay').classList.add('hidden');
+}
+
+function renderStatsModal() {
+  const st = getStats();
+  const body = document.getElementById('statsBody');
+
+  if (st.totalLegs === 0) {
+    body.innerHTML = `<div class="no-stats">🎯 No games recorded yet.<br>Play your first leg to start tracking stats!</div>`;
+    return;
+  }
+
+  const winRate = st.totalLegs > 0 ? Math.round((st.totalWins / st.totalLegs) * 100) : 0;
+  const avgThrows = st.totalLegs > 0 ? (st.totalThrows / st.totalLegs).toFixed(1) : '—';
+
+  const recentHTML = st.history.slice(0, 8).map(h => {
+    const isWin = h.winnerIdx === 0;
+    const dateStr = new Date(h.date).toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+    const timeStr = new Date(h.date).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+    const opponent = h.mode === 1 ? 'Practice' : h.p1Name;
+    const resultLabel = h.mode === 1 ? '✓ Checked out' : (isWin ? `${h.p0Name} won` : `${h.p1Name} won`);
+    const legs = h.mode === 2 ? ` (${h.p0Legs}–${h.p1Legs})` : '';
+    return `<div class="recent-item">
+      <div>
+        <div class="ri-result ${isWin?'win':'loss'}">${resultLabel}${legs}</div>
+        <div class="ri-meta">${opponent} · ${h.throws} throws</div>
+      </div>
+      <div class="ri-meta" style="text-align:right">${dateStr}<br>${timeStr}</div>
+    </div>`;
+  }).join('');
+
+  body.innerHTML = `
+    <div class="stat-grid">
+      <div class="stat-card gold-card">
+        <div class="stat-card-val">${st.bestLeg !== null ? st.bestLeg : '—'}</div>
+        <div class="stat-card-label">🏆 Best Leg (throws)</div>
+      </div>
+      <div class="stat-card gold-card">
+        <div class="stat-card-val">${st.bestStreak}</div>
+        <div class="stat-card-label">🔥 Best Win Streak</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-val">${st.totalLegs}</div>
+        <div class="stat-card-label">Total Legs Played</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-val">${st.totalWins}</div>
+        <div class="stat-card-label">Legs Won</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-val">${winRate}%</div>
+        <div class="stat-card-label">Win Rate</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-val">${avgThrows}</div>
+        <div class="stat-card-label">Avg Throws / Leg</div>
+      </div>
+    </div>
+    <div class="lb-section-title">Current Streak</div>
+    <div style="font-size:28px;font-family:'Bebas Neue',cursive;color:${st.winStreak>0?'var(--green)':'var(--gray)'};margin-bottom:2px;">
+      ${st.winStreak > 0 ? '🔥 ' + st.winStreak + ' in a row!' : 'No active streak'}
+    </div>
+    <hr class="lb-divider">
+    <div class="lb-section-title">Recent Legs</div>
+    <div class="recent-list">${recentHTML}</div>
+    <hr class="lb-divider">
+    <button class="btn btn-outline" style="width:100%;height:36px;font-size:12px;border-radius:8px;margin-top:4px;"
+      onclick="if(confirm('Reset all stats? This cannot be undone.')){localStorage.removeItem('${LS_STATS}');renderStatsModal();}">
+      Reset Stats
+    </button>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// STICKER BOOK
+// ═══════════════════════════════════════════════════════════════════
+/*  Schema: { [playerName]: { unlockedAt: isoString, guessCount: number } }  */
+
+function getStickerBook() {
+  return lsGet(LS_STICKER, {});
+}
+
+function isUnlocked(name) {
+  const sb = getStickerBook();
+  return !!sb[name];
+}
+
+function unlockPlayer(name) {
+  const sb = getStickerBook();
+  const isNew = !sb[name];
+  if (isNew) {
+    sb[name] = { unlockedAt: new Date().toISOString(), guessCount: 1 };
+  } else {
+    sb[name].guessCount = (sb[name].guessCount || 0) + 1;
+  }
+  lsSet(LS_STICKER, sb);
+  return isNew;
+}
+
+function getUnlockedCount() {
+  return Object.keys(getStickerBook()).length;
+}
+
+// All unique players across DB (deduplicated by name)
+function getAllPlayers() {
+  const seen = new Set();
+  return DB.filter(p => {
+    if (seen.has(p.name)) return false;
+    seen.add(p.name);
+    return true;
+  });
+}
+
+// Position label
+function posLabel(posArr) {
+  if (posArr.includes('GK'))  return 'GK';
+  if (posArr.includes('DEF')) return 'DEF';
+  if (posArr.includes('MID')) return 'MID';
+  return 'FW';
+}
+
+// Badge emoji for position
+const POS_EMOJI = { FW:'⚽', MID:'🔄', DEF:'🛡️', GK:'🧤' };
+
+function sbPopulateNatFilter() {
+  const nats = [...new Set(getAllPlayers().map(p => p.nat))].sort();
+  const sel = document.getElementById('sbNatFilter');
+  nats.forEach(n => {
+    const opt = document.createElement('option');
+    opt.value = n; opt.textContent = n;
+    sel.appendChild(opt);
+  });
+}
+
+function openStickerBook() {
+  updateSbProgress();
+  renderStickerGrid();
+  document.getElementById('sbOverlay').classList.remove('hidden');
+}
+function closeStickerBook() {
+  document.getElementById('sbOverlay').classList.add('hidden');
+}
+
+function updateSbProgress() {
+  const all = getAllPlayers();
+  const total = all.length;
+  const unlocked = getUnlockedCount();
+  const pct = total > 0 ? Math.round((unlocked / total) * 100) : 0;
+  document.getElementById('sbProgressText').textContent = `${unlocked} / ${total} Players Unlocked`;
+  document.getElementById('sbProgressPct').textContent = `${pct}%`;
+  document.getElementById('sbProgressFill').style.width = pct + '%';
+}
+
+function renderStickerGrid() {
+  updateSbProgress();
+  const sb = getStickerBook();
+  const query  = (document.getElementById('sbSearch').value || '').toLowerCase();
+  const natF   = document.getElementById('sbNatFilter').value;
+  const posF   = document.getElementById('sbPosFilter').value;
+  const statF  = document.getElementById('sbStatusFilter').value;
+
+  let players = getAllPlayers().filter(p => {
+    if (query && !p.name.toLowerCase().includes(query)) return false;
+    if (natF && p.nat !== natF) return false;
+    if (posF && !p.pos.includes(posF)) return false;
+    if (statF === 'unlocked' && !sb[p.name]) return false;
+    if (statF === 'locked' && sb[p.name]) return false;
+    return true;
+  });
+
+  // Sort: unlocked first, then alphabetical
+  players.sort((a, b) => {
+    const au = !!sb[a.name], bu = !!sb[b.name];
+    if (au !== bu) return au ? -1 : 1;
+    return a.name.localeCompare(b.name);
+  });
+
+  const grid = document.getElementById('sbGrid');
+  if (!players.length) {
+    grid.innerHTML = '<div class="sb-empty">No players match your filter.</div>';
+    return;
+  }
+
+  const pos = players.map(p => {
+    const pl = posLabel(p.pos);
+    const emoji = POS_EMOJI[pl];
+    const unlocked = sb[p.name];
+    const dateStr = unlocked
+      ? new Date(unlocked.unlockedAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'2-digit' })
+      : '';
+    const countStr = unlocked && unlocked.guessCount > 1 ? ` · ${unlocked.guessCount}×` : '';
+    return `<div class="sb-card ${unlocked ? 'unlocked' : 'locked'}">
+      ${!unlocked ? '<span class="sb-card-lock">🔒</span>' : ''}
+      <span class="sb-card-emoji">${unlocked ? emoji : '❓'}</span>
+      <div class="sb-card-name">${unlocked ? p.name : '???'}</div>
+      <div class="sb-card-meta">${unlocked ? p.nat + ' · ' + pl : p.nat + ' · ' + pl}</div>
+      ${unlocked ? `<div class="sb-card-date">Unlocked ${dateStr}${countStr}</div>` : ''}
+    </div>`;
+  });
+
+  grid.innerHTML = pos.join('');
+}
+
+// ── Toast queue for unlock notifications ──────────────────────────
+let _toastQueue = [];
+let _toastActive = false;
+
+function showUnlockToast(name) {
+  _toastQueue.push(name);
+  if (!_toastActive) drainToastQueue();
+}
+
+function drainToastQueue() {
+  if (!_toastQueue.length) { _toastActive = false; return; }
+  _toastActive = true;
+  const name = _toastQueue.shift();
+  const t = document.createElement('div');
+  t.className = 'unlock-toast';
+  t.innerHTML = `<span class="unlock-toast-icon">⭐</span>NEW UNLOCK!<br><strong>${name}</strong>`;
+  document.body.appendChild(t);
+  setTimeout(() => {
+    t.classList.add('fade-out');
+    setTimeout(() => { t.remove(); drainToastQueue(); }, 400);
+  }, 2200);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PATCH: integrate with finishLeg to show unlocks + save stats
+// finishLegWithExtras wraps the original finishLeg
+// ═══════════════════════════════════════════════════════════════════
+function finishLegWithExtras(winner) {
+  G._lastLegWinner = winner;
+
+  // Save stats BEFORE incrementing legs (saveStats reads G.p[winner].throws)
+  saveStats();
+
+  // Collect new unlocks before finishLeg resets them
+  const newUnlocks = (G._newUnlocks || []);
+  G._newUnlocks = [];
+
+  // Call original finishLeg (handles legs++, modal display, match win check)
+  finishLeg(winner);
+
+  // Inject unlock chips into leg modal (after finishLeg opened it)
+  injectUnlockChips(newUnlocks);
+}
+
+function injectUnlockChips(newUnlocks) {
+  if (!newUnlocks.length) return;
+
+  // Try leg modal first
+  const legModal = document.getElementById('legModal');
+  if (!legModal.classList.contains('hidden')) {
+    const existing = legModal.querySelector('.leg-unlocks');
+    if (existing) existing.remove();
+    const chips = newUnlocks.map(n => `<span class="unlock-chip new">⭐ ${n}</span>`).join('');
+    const div = document.createElement('div');
+    div.className = 'leg-unlocks';
+    div.innerHTML = `<b>🎴 ${newUnlocks.length} New Unlock${newUnlocks.length>1?'s':''}!</b><div class="leg-unlocks-chips">${chips}</div>`;
+    const btnCol = legModal.querySelector('.modal-btn-col');
+    if (btnCol) btnCol.before(div);
+    return;
+  }
+
+  // Match modal
+  const matchModal = document.getElementById('matchModal');
+  if (!matchModal.classList.contains('hidden')) {
+    const matchInner = matchModal.querySelector('.match-win-modal');
+    const existing = matchInner.querySelector('.leg-unlocks');
+    if (existing) existing.remove();
+    const chips = newUnlocks.map(n => `<span class="unlock-chip new">⭐ ${n}</span>`).join('');
+    const div = document.createElement('div');
+    div.className = 'leg-unlocks';
+    div.style.margin = '0 0 14px';
+    div.innerHTML = `<b>🎴 ${newUnlocks.length} New Unlock${newUnlocks.length>1?'s':''}!</b><div class="leg-unlocks-chips">${chips}</div>`;
+    const btnCol = matchInner.querySelector('.modal-btn-col');
+    if (btnCol) btnCol.before(div);
+  }
+}
+
+// Override confirmThrow to track unlocks per guess
+const _origConfirmThrow = confirmThrow;
+window.confirmThrow = function() {
+  if (!G.selectedPlayer) return;
+  const name = G.selectedPlayer.name;
+
+  // Unlock on selection (regardless of bust/score)
+  const isNew = unlockPlayer(name);
+  if (isNew) {
+    if (!G._newUnlocks) G._newUnlocks = [];
+    G._newUnlocks.push(name);
+    showUnlockToast(name);
+  }
+
+  _origConfirmThrow();
+};
+
+// Close modals on overlay click
+document.getElementById('statsOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeStats();
+});
+document.getElementById('sbOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeStickerBook();
+});
 </script>
 </body>
 </html>

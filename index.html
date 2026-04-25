@@ -233,6 +233,36 @@ body{font-family:'DM Sans',sans-serif;background:var(--pitch);min-height:100vh;c
 .leg-unlocks-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
 .unlock-chip{background:var(--gd);color:white;border-radius:20px;padding:2px 8px;font-size:11px;}
 .unlock-chip.new{background:var(--gold);color:var(--gd);}
+/* ── CATEGORY INSIGHTS ───────────────────────────────────────────── */
+.cat-insights{background:#f0faf4;border:1px solid #c3e6cb;border-radius:8px;padding:7px 12px;margin-bottom:10px;font-size:11px;color:#2d6a4f;display:flex;flex-wrap:wrap;gap:8px;align-items:center;line-height:1.4;}
+.cat-insights:empty{display:none;}
+.ci-pill{background:white;border:1px solid #c3e6cb;border-radius:12px;padding:2px 8px;font-weight:600;color:var(--gd);white-space:nowrap;}
+.ci-pill.warn{background:#fff8e6;border-color:rgba(240,180,41,.5);color:#8a6200;}
+
+/* ── ACHIEVEMENTS ────────────────────────────────────────────────── */
+.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:14px;}
+.ach-card{border-radius:12px;padding:12px 10px;text-align:center;border:1.5px solid rgba(0,0,0,.08);background:#f9fafb;position:relative;}
+.ach-card.unlocked{background:linear-gradient(135deg,#f0faf4,#e8f5e9);border-color:rgba(26,107,60,.25);box-shadow:0 2px 8px rgba(26,107,60,.1);}
+.ach-card.locked{opacity:.55;filter:grayscale(.4);}
+.ach-icon{font-size:30px;margin-bottom:6px;display:block;}
+.ach-name{font-size:11px;font-weight:700;color:var(--dark);margin-bottom:3px;line-height:1.3;}
+.ach-desc{font-size:10px;color:var(--gray);line-height:1.4;}
+.ach-date{font-size:9px;color:var(--green);margin-top:4px;font-weight:600;}
+.ach-progress{margin-top:6px;}
+.ach-prog-bar{height:5px;background:#e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:2px;}
+.ach-prog-fill{height:100%;background:var(--green);border-radius:10px;transition:width .4s;}
+.ach-prog-label{font-size:9px;color:var(--gray);}
+.ach-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--gray);margin:14px 0 8px;}
+
+/* ── STREAK METER ────────────────────────────────────────────────── */
+.streak-meter{margin-top:5px;display:none;}
+.streak-bar{height:4px;border-radius:10px;background:linear-gradient(90deg,var(--green),var(--gold));position:relative;overflow:hidden;}
+.streak-bar::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);animation:sheen 1.5s infinite;}
+@keyframes sheen{to{left:100%;}}
+.streak-label{font-size:10px;color:var(--gold);font-weight:700;margin-top:2px;}
+
+/* ── KEYBOARD SHORTCUT HINT ──────────────────────────────────────── */
+.kb-hint{font-size:10px;color:rgba(255,255,255,.3);text-align:center;padding:6px 0 0;letter-spacing:.5px;}
 </style>
 </head>
 <body>
@@ -272,9 +302,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--pitch);min-height:100vh;c
       </div>
     </div>
 
-    <div class="menu-extras">
+    <div class="menu-extras" style="grid-template-columns:1fr 1fr 1fr;">
       <button class="menu-extra-btn" onclick="openStats()">📊 My Stats</button>
       <button class="menu-extra-btn" onclick="openStickerBook()">📚 Sticker Book</button>
+      <button class="menu-extra-btn" onclick="openAchievements()">🏆 Achievements</button>
     </div>
 
     <div class="rules">
@@ -314,6 +345,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--pitch);min-height:100vh;c
       <div class="cat-note" id="catNote"></div>
     </div>
     <div class="input-zone">
+      <div class="cat-insights" id="catInsights"></div>
       <div class="turn-line">
         <span class="turn-badge" id="turnBadge">🎯</span>
         <span id="turnLabel">—</span>
@@ -331,6 +363,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--pitch);min-height:100vh;c
       </div>
       <div class="btn-row">
         <button class="btn btn-green" style="flex:1;" id="throwBtn" onclick="confirmThrow()" disabled>Throw</button>
+        <button class="btn btn-outline" id="undoBtn" onclick="undoThrow()" style="display:none;">↶ Undo</button>
         <button class="btn btn-outline" onclick="skipCategory()">Skip Category</button>
       </div>
     </div>
@@ -422,6 +455,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--pitch);min-height:100vh;c
   </div>
 </div>
 
+<!-- ══ ACHIEVEMENTS MODAL ════════════════════════════════════════════ -->
+<div class="big-modal-overlay hidden" id="achOverlay">
+  <div class="big-modal">
+    <div class="big-modal-header">
+      <div class="big-modal-title">🏆 Achievements</div>
+      <button class="big-modal-close" onclick="closeAchievements()">✕</button>
+    </div>
+    <div class="big-modal-body" id="achBody"></div>
+  </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════════════════════════════
 // BADGES
@@ -455,339 +499,408 @@ function pickBadge(pi, bi) {
 // stat > 180 = always bust. Combined stats used for + categories.
 // ═══════════════════════════════════════════════════════════════════
 const DB = [
-  // ── ENGLISH FORWARDS ──────────────────────────────────────────
-  {name:"Alan Shearer",nat:"England",pos:["FW"],stats:{pl_goals:260,pl_apps:441,pl_assists:65,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:30,intl_apps:63,intl_assists:8}},
-  {name:"Andrew Cole",nat:"England",pos:["FW"],stats:{pl_goals:187,pl_apps:414,pl_assists:56,ucl_goals:7,ucl_apps:38,ucl_assists:10,intl_goals:1,intl_apps:15,intl_assists:2}},
-  {name:"Wayne Rooney",nat:"England",pos:["FW","MID"],stats:{pl_goals:175,pl_apps:491,pl_assists:103,ucl_goals:30,ucl_apps:83,ucl_assists:22,intl_goals:53,intl_apps:120,intl_assists:30}},
-  {name:"Harry Kane",nat:"England",pos:["FW"],stats:{pl_goals:213,pl_apps:320,pl_assists:62,ucl_goals:29,ucl_apps:75,ucl_assists:14,intl_goals:69,intl_apps:98,intl_assists:18}},
-  {name:"Jamie Vardy",nat:"England",pos:["FW"],stats:{pl_goals:168,pl_apps:360,pl_assists:47,ucl_goals:6,ucl_apps:12,ucl_assists:2,intl_goals:7,intl_apps:26,intl_assists:3}},
-  {name:"Michael Owen",nat:"England",pos:["FW"],stats:{pl_goals:150,pl_apps:326,pl_assists:42,ucl_goals:22,ucl_apps:61,ucl_assists:8,intl_goals:40,intl_apps:89,intl_assists:12}},
-  {name:"Robbie Fowler",nat:"England",pos:["FW"],stats:{pl_goals:163,pl_apps:379,pl_assists:56,ucl_goals:8,ucl_apps:26,ucl_assists:6,intl_goals:7,intl_apps:26,intl_assists:3}},
-  {name:"Jermain Defoe",nat:"England",pos:["FW"],stats:{pl_goals:162,pl_apps:496,pl_assists:52,ucl_goals:2,ucl_apps:8,ucl_assists:1,intl_goals:20,intl_apps:57,intl_assists:5}},
-  {name:"Les Ferdinand",nat:"England",pos:["FW"],stats:{pl_goals:149,pl_apps:351,pl_assists:55,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:5,intl_apps:17,intl_assists:2}},
-  {name:"Ian Wright",nat:"England",pos:["FW"],stats:{pl_goals:113,pl_apps:213,pl_assists:32,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:9,intl_apps:33,intl_assists:3}},
-  {name:"Emile Heskey",nat:"England",pos:["FW"],stats:{pl_goals:110,pl_apps:516,pl_assists:65,ucl_goals:4,ucl_apps:17,ucl_assists:5,intl_goals:7,intl_apps:62,intl_assists:12}},
-  {name:"Teddy Sheringham",nat:"England",pos:["FW","MID"],stats:{pl_goals:146,pl_apps:418,pl_assists:76,ucl_goals:5,ucl_apps:28,ucl_assists:8,intl_goals:11,intl_apps:51,intl_assists:10}},
-  {name:"Peter Crouch",nat:"England",pos:["FW"],stats:{pl_goals:108,pl_apps:468,pl_assists:58,ucl_goals:8,ucl_apps:22,ucl_assists:4,intl_goals:22,intl_apps:42,intl_assists:4}},
-  {name:"Darren Bent",nat:"England",pos:["FW"],stats:{pl_goals:106,pl_apps:312,pl_assists:22,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:4,intl_apps:13,intl_assists:1}},
-  {name:"Dion Dublin",nat:"England",pos:["FW"],stats:{pl_goals:111,pl_apps:326,pl_assists:41,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:6,intl_apps:4,intl_assists:0}},
-  {name:"Kevin Campbell",nat:"England",pos:["FW"],stats:{pl_goals:101,pl_apps:275,pl_assists:28,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
-  {name:"Chris Armstrong",nat:"England",pos:["FW"],stats:{pl_goals:80,pl_apps:264,pl_assists:22,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
-  {name:"Chris Sutton",nat:"England",pos:["FW"],stats:{pl_goals:83,pl_apps:282,pl_assists:40,ucl_goals:3,ucl_apps:10,ucl_assists:4,intl_goals:1,intl_apps:1,intl_assists:0}},
-  {name:"Stan Collymore",nat:"England",pos:["FW"],stats:{pl_goals:55,pl_apps:163,pl_assists:28,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:3,intl_apps:3,intl_assists:0}},
-  {name:"Dean Holdsworth",nat:"England",pos:["FW"],stats:{pl_goals:59,pl_apps:185,pl_assists:18,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
-  {name:"Uwe Rösler",nat:"Germany",pos:["FW"],stats:{pl_goals:64,pl_apps:175,pl_assists:20,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:6,intl_apps:5,intl_assists:0}},
-  {name:"James Beattie",nat:"England",pos:["FW"],stats:{pl_goals:64,pl_apps:215,pl_assists:16,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:5,intl_apps:5,intl_assists:0}},
-  {name:"Kevin Davies",nat:"England",pos:["FW"],stats:{pl_goals:76,pl_apps:364,pl_assists:30,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:1,intl_assists:0}},
-  {name:"Charlie Austin",nat:"England",pos:["FW"],stats:{pl_goals:58,pl_apps:158,pl_assists:12,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:1,intl_assists:0}},
-  {name:"Bobby Zamora",nat:"England",pos:["FW"],stats:{pl_goals:46,pl_apps:192,pl_assists:18,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
-  {name:"Marcus Bent",nat:"England",pos:["FW"],stats:{pl_goals:40,pl_apps:168,pl_assists:14,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
-  {name:"Dean Saunders",nat:"Wales",pos:["FW"],stats:{pl_goals:41,pl_apps:139,pl_assists:22,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:22,intl_apps:75,intl_assists:8}},
-  {name:"Robert Earnshaw",nat:"Wales",pos:["FW"],stats:{pl_goals:29,pl_apps:106,pl_assists:14,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:16,intl_apps:59,intl_assists:6}},
-  {name:"Nathan Blake",nat:"Wales",pos:["FW"],stats:{pl_goals:41,pl_apps:161,pl_assists:18,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:4,intl_apps:29,intl_assists:3}},
-  {name:"Kieffer Moore",nat:"Wales",pos:["FW"],stats:{pl_goals:16,pl_apps:104,pl_assists:8,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:18,intl_apps:56,intl_assists:4}},
-  {name:"Marcus Rashford",nat:"England",pos:["FW","MID"],stats:{pl_goals:138,pl_apps:338,pl_assists:62,ucl_goals:22,ucl_apps:78,ucl_assists:14,intl_goals:17,intl_apps:60,intl_assists:8}},
-  {name:"Raheem Sterling",nat:"England",pos:["FW","MID"],stats:{pl_goals:124,pl_apps:366,pl_assists:96,ucl_goals:26,ucl_apps:104,ucl_assists:32,intl_goals:20,intl_apps:82,intl_assists:18}},
-  {name:"Bukayo Saka",nat:"England",pos:["FW","MID"],stats:{pl_goals:68,pl_apps:220,pl_assists:62,ucl_goals:14,ucl_apps:52,ucl_assists:16,intl_goals:14,intl_apps:44,intl_assists:12}},
-  {name:"Callum Wilson",nat:"England",pos:["FW"],stats:{pl_goals:80,pl_apps:228,pl_assists:28,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:4,intl_apps:17,intl_assists:1}},
-  {name:"Ollie Watkins",nat:"England",pos:["FW"],stats:{pl_goals:72,pl_apps:194,pl_assists:28,ucl_goals:0,ucl_apps:4,ucl_assists:2,intl_goals:5,intl_apps:13,intl_assists:2}},
-  {name:"Dominic Calvert-Lewin",nat:"England",pos:["FW"],stats:{pl_goals:72,pl_apps:224,pl_assists:14,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:7,intl_apps:11,intl_assists:0}},
-  {name:"Ivan Toney",nat:"England",pos:["FW"],stats:{pl_goals:36,pl_apps:100,pl_assists:10,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:2,intl_apps:4,intl_assists:0}},
-  {name:"Jarrod Bowen",nat:"England",pos:["FW","MID"],stats:{pl_goals:56,pl_apps:204,pl_assists:40,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:4,intl_apps:12,intl_assists:2}},
-  {name:"Aiyegbeni Yakubu",nat:"Nigeria",pos:["FW"],stats:{pl_goals:95,pl_apps:253,pl_assists:18,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:21,intl_apps:57,intl_assists:6}},
-  {name:"Kevin Nolan",nat:"England",pos:["MID"],stats:{pl_goals:74,pl_apps:330,pl_assists:42,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
-  {name:"Glenn Murray",nat:"England",pos:["FW"],stats:{pl_goals:36,pl_apps:106,pl_assists:8,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
-  {name:"Marlon Harewood",nat:"England",pos:["FW"],stats:{pl_goals:29,pl_apps:104,pl_assists:8,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
-  {name:"Mark Viduka",nat:"Australia",pos:["FW"],stats:{pl_goals:72,pl_apps:211,pl_assists:24,ucl_goals:8,ucl_apps:20,ucl_assists:6,intl_goals:11,intl_apps:43,intl_assists:4}},
-  {name:"Paolo Wanchope",nat:"Costa Rica",pos:["FW"],stats:{pl_goals:40,pl_apps:121,pl_assists:16,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:45,intl_apps:73,intl_assists:10}},
-  {name:"Tore Andre Flo",nat:"Norway",pos:["FW"],stats:{pl_goals:37,pl_apps:124,pl_assists:20,ucl_goals:4,ucl_apps:14,ucl_assists:4,intl_goals:23,intl_apps:76,intl_assists:6}},
-  {name:"John Carew",nat:"Norway",pos:["FW"],stats:{pl_goals:40,pl_apps:133,pl_assists:16,ucl_goals:8,ucl_apps:16,ucl_assists:4,intl_goals:24,intl_apps:91,intl_assists:8}},
-  {name:"Eidur Gudjohnsen",nat:"Iceland",pos:["FW","MID"],stats:{pl_goals:78,pl_apps:277,pl_assists:50,ucl_goals:10,ucl_apps:38,ucl_assists:14,intl_goals:26,intl_apps:89,intl_assists:14}},
-  {name:"Ole Gunnar Solskjaer",nat:"Norway",pos:["FW"],stats:{pl_goals:91,pl_apps:235,pl_assists:38,ucl_goals:14,ucl_apps:40,ucl_assists:8,intl_goals:23,intl_apps:67,intl_assists:6}},
-  {name:"Dimitar Berbatov",nat:"Bulgaria",pos:["FW"],stats:{pl_goals:94,pl_apps:253,pl_assists:44,ucl_goals:8,ucl_apps:44,ucl_assists:10,intl_goals:48,intl_apps:78,intl_assists:12}},
-  {name:"Peter Odemwingie",nat:"Nigeria",pos:["FW","MID"],stats:{pl_goals:48,pl_apps:148,pl_assists:14,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:10,intl_apps:60,intl_assists:8}},
-  {name:"El-Hadji Diouf",nat:"Senegal",pos:["FW","MID"],stats:{pl_goals:35,pl_apps:164,pl_assists:20,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:22,intl_apps:69,intl_assists:8}},
-  {name:"Frédéric Kanouté",nat:"Mali",pos:["FW"],stats:{pl_goals:55,pl_apps:145,pl_assists:16,ucl_goals:4,ucl_apps:10,ucl_assists:4,intl_goals:23,intl_apps:37,intl_assists:6}},
-  {name:"Mido",nat:"Egypt",pos:["FW"],stats:{pl_goals:26,pl_apps:83,pl_assists:8,ucl_goals:2,ucl_apps:6,ucl_assists:2,intl_goals:18,intl_apps:51,intl_assists:4}},
-  {name:"Jason Roberts",nat:"Grenada",pos:["FW"],stats:{pl_goals:42,pl_apps:166,pl_assists:10,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
-  {name:"Efan Ekoku",nat:"Nigeria",pos:["FW"],stats:{pl_goals:35,pl_apps:106,pl_assists:10,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:6,intl_apps:8,intl_assists:0}},
-  {name:"Carlton Cole",nat:"England",pos:["FW"],stats:{pl_goals:38,pl_apps:168,pl_assists:14,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:7,intl_apps:13,intl_assists:2}},
-  {name:"Jay Rodriguez",nat:"England",pos:["FW"],stats:{pl_goals:46,pl_apps:176,pl_assists:16,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:1,intl_apps:2,intl_assists:0}},
-  {name:"Fraizer Campbell",nat:"England",pos:["FW"],stats:{pl_goals:31,pl_apps:108,pl_assists:10,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
-  {name:"Daniel Sturridge",nat:"England",pos:["FW"],stats:{pl_goals:68,pl_apps:160,pl_assists:22,ucl_goals:10,ucl_apps:24,ucl_assists:4,intl_goals:8,intl_apps:26,intl_assists:4}},
-  {name:"Milan Baroš",nat:"Czechia",pos:["FW"],stats:{pl_goals:27,pl_apps:84,pl_assists:14,ucl_goals:8,ucl_apps:22,ucl_assists:6,intl_goals:41,intl_apps:93,intl_assists:12}},
-  {name:"Nicolas Bendtner",nat:"Denmark",pos:["FW"],stats:{pl_goals:45,pl_apps:171,pl_assists:14,ucl_goals:4,ucl_apps:18,ucl_assists:4,intl_goals:30,intl_apps:81,intl_assists:8}},
-  {name:"Paul Gallagher",nat:"Scotland",pos:["MID","FW"],stats:{pl_goals:12,pl_apps:72,pl_assists:14,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
-  // ── ENGLISH MIDFIELDERS ───────────────────────────────────────
-  {name:"Frank Lampard",nat:"England",pos:["MID"],stats:{pl_goals:177,pl_apps:609,pl_assists:102,ucl_goals:23,ucl_apps:112,ucl_assists:18,intl_goals:29,intl_apps:106,intl_assists:22}},
-  {name:"Steven Gerrard",nat:"England",pos:["MID"],stats:{pl_goals:120,pl_apps:504,pl_assists:92,ucl_goals:24,ucl_apps:115,ucl_assists:20,intl_goals:21,intl_apps:114,intl_assists:16}},
-  {name:"Paul Scholes",nat:"England",pos:["MID"],stats:{pl_goals:107,pl_apps:499,pl_assists:55,ucl_goals:24,ucl_apps:113,ucl_assists:18,intl_goals:14,intl_apps:66,intl_assists:8}},
-  {name:"David Beckham",nat:"England",pos:["MID"],stats:{pl_goals:62,pl_apps:265,pl_assists:80,ucl_goals:15,ucl_apps:82,ucl_assists:30,intl_goals:17,intl_apps:115,intl_assists:42}},
-  {name:"James Milner",nat:"England",pos:["MID","DEF"],stats:{pl_goals:56,pl_apps:624,pl_assists:101,ucl_goals:8,ucl_apps:112,ucl_assists:22,intl_goals:1,intl_apps:61,intl_assists:8}},
-  {name:"Jordan Henderson",nat:"England",pos:["MID"],stats:{pl_goals:42,pl_apps:429,pl_assists:52,ucl_goals:4,ucl_apps:107,ucl_assists:20,intl_goals:3,intl_apps:81,intl_assists:12}},
-  {name:"Phil Foden",nat:"England",pos:["MID","FW"],stats:{pl_goals:74,pl_apps:238,pl_assists:50,ucl_goals:20,ucl_apps:62,ucl_assists:18,intl_goals:12,intl_apps:37,intl_assists:6}},
-  {name:"Dele Alli",nat:"England",pos:["MID"],stats:{pl_goals:67,pl_apps:269,pl_assists:41,ucl_goals:12,ucl_apps:26,ucl_assists:8,intl_goals:3,intl_apps:37,intl_assists:3}},
-  {name:"Jack Grealish",nat:"England",pos:["MID","FW"],stats:{pl_goals:42,pl_apps:248,pl_assists:48,ucl_goals:6,ucl_apps:40,ucl_assists:10,intl_goals:4,intl_apps:37,intl_assists:6}},
-  {name:"Michael Carrick",nat:"England",pos:["MID"],stats:{pl_goals:24,pl_apps:464,pl_assists:49,ucl_goals:3,ucl_apps:89,ucl_assists:15,intl_goals:2,intl_apps:34,intl_assists:5}},
-  {name:"Matt Le Tissier",nat:"England",pos:["MID","FW"],stats:{pl_goals:100,pl_apps:270,pl_assists:47,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:8,intl_assists:0}},
-  {name:"Gareth Barry",nat:"England",pos:["MID"],stats:{pl_goals:53,pl_apps:653,pl_assists:55,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:3,intl_apps:53,intl_assists:5}},
-  {name:"Jude Bellingham",nat:"England",pos:["MID"],stats:{pl_goals:32,pl_apps:104,pl_assists:24,ucl_goals:20,ucl_apps:42,ucl_assists:14,intl_goals:14,intl_apps:38,intl_assists:8}},
-  {name:"Declan Rice",nat:"England",pos:["MID"],stats:{pl_goals:14,pl_apps:238,pl_assists:14,ucl_goals:2,ucl_apps:22,ucl_assists:4,intl_goals:8,intl_apps:56,intl_assists:8}},
-  {name:"James Maddison",nat:"England",pos:["MID"],stats:{pl_goals:55,pl_apps:248,pl_assists:54,ucl_goals:2,ucl_apps:8,ucl_assists:4,intl_goals:3,intl_apps:8,intl_assists:2}},
-  {name:"Paul Merson",nat:"England",pos:["MID","FW"],stats:{pl_goals:55,pl_apps:230,pl_assists:48,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:3,intl_apps:21,intl_assists:4}},
-  {name:"Dennis Wise",nat:"England",pos:["MID"],stats:{pl_goals:53,pl_apps:322,pl_assists:56,ucl_goals:4,ucl_apps:28,ucl_assists:10,intl_goals:1,intl_apps:21,intl_assists:2}},
-  {name:"Nick Barmby",nat:"England",pos:["MID","FW"],stats:{pl_goals:57,pl_apps:258,pl_assists:38,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:4,intl_apps:23,intl_assists:4}},
-  {name:"Kevin Gallacher",nat:"Scotland",pos:["FW"],stats:{pl_goals:34,pl_apps:116,pl_assists:16,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:9,intl_apps:53,intl_assists:8}},
-  {name:"Scott Parker",nat:"England",pos:["MID"],stats:{pl_goals:21,pl_apps:344,pl_assists:28,ucl_goals:0,ucl_apps:6,ucl_assists:2,intl_goals:0,intl_apps:18,intl_assists:2}},
-  {name:"Lee Bowyer",nat:"England",pos:["MID"],stats:{pl_goals:35,pl_apps:289,pl_assists:40,ucl_goals:4,ucl_apps:22,ucl_assists:8,intl_goals:1,intl_apps:1,intl_assists:0}},
-  {name:"Martin Ødegaard",nat:"Norway",pos:["MID"],stats:{pl_goals:40,pl_apps:152,pl_assists:30,ucl_goals:6,ucl_apps:30,ucl_assists:8,intl_goals:14,intl_apps:70,intl_assists:12}},
-  {name:"Alexis Mac Allister",nat:"Argentina",pos:["MID"],stats:{pl_goals:14,pl_apps:104,pl_assists:18,ucl_goals:4,ucl_apps:20,ucl_assists:6,intl_goals:10,intl_apps:52,intl_assists:8}},
-  {name:"Bruno Guimarães",nat:"Brazil",pos:["MID"],stats:{pl_goals:18,pl_apps:118,pl_assists:18,ucl_goals:2,ucl_apps:14,ucl_assists:4,intl_goals:4,intl_apps:26,intl_assists:4}},
-  {name:"Christian Eriksen",nat:"Denmark",pos:["MID"],stats:{pl_goals:52,pl_apps:306,pl_assists:62,ucl_goals:4,ucl_apps:44,ucl_assists:14,intl_goals:42,intl_apps:125,intl_assists:48}},
-  {name:"Cesc Fàbregas",nat:"Spain",pos:["MID"],stats:{pl_goals:62,pl_apps:350,pl_assists:111,ucl_goals:9,ucl_apps:72,ucl_assists:22,intl_goals:15,intl_apps:110,intl_assists:28}},
-  {name:"David Silva",nat:"Spain",pos:["MID"],stats:{pl_goals:77,pl_apps:436,pl_assists:93,ucl_goals:7,ucl_apps:72,ucl_assists:18,intl_goals:35,intl_apps:125,intl_assists:38}},
-  {name:"Juan Mata",nat:"Spain",pos:["MID","FW"],stats:{pl_goals:60,pl_apps:285,pl_assists:60,ucl_goals:12,ucl_apps:62,ucl_assists:20,intl_goals:10,intl_apps:41,intl_assists:14}},
-  {name:"Santi Cazorla",nat:"Spain",pos:["MID"],stats:{pl_goals:52,pl_apps:180,pl_assists:45,ucl_goals:8,ucl_apps:34,ucl_assists:12,intl_goals:19,intl_apps:81,intl_assists:22}},
-  {name:"Mesut Özil",nat:"Germany",pos:["MID"],stats:{pl_goals:35,pl_apps:254,pl_assists:77,ucl_goals:15,ucl_apps:92,ucl_assists:30,intl_goals:23,intl_apps:92,intl_assists:40}},
-  {name:"Ilkay Gündogan",nat:"Germany",pos:["MID"],stats:{pl_goals:60,pl_apps:259,pl_assists:38,ucl_goals:12,ucl_apps:80,ucl_assists:18,intl_goals:19,intl_apps:72,intl_assists:12}},
-  {name:"Leroy Sané",nat:"Germany",pos:["FW","MID"],stats:{pl_goals:39,pl_apps:135,pl_assists:48,ucl_goals:16,ucl_apps:60,ucl_assists:20,intl_goals:16,intl_apps:57,intl_assists:14}},
-  {name:"N'Golo Kanté",nat:"France",pos:["MID"],stats:{pl_goals:20,pl_apps:293,pl_assists:28,ucl_goals:4,ucl_apps:72,ucl_assists:10,intl_goals:2,intl_apps:56,intl_assists:6}},
-  {name:"Paul Pogba",nat:"France",pos:["MID"],stats:{pl_goals:38,pl_apps:233,pl_assists:52,ucl_goals:10,ucl_apps:56,ucl_assists:18,intl_goals:11,intl_apps:91,intl_assists:18}},
-  {name:"Patrick Vieira",nat:"France",pos:["MID"],stats:{pl_goals:33,pl_apps:307,pl_assists:58,ucl_goals:11,ucl_apps:75,ucl_assists:16,intl_goals:6,intl_apps:107,intl_assists:14}},
-  {name:"Samir Nasri",nat:"France",pos:["MID"],stats:{pl_goals:50,pl_apps:244,pl_assists:58,ucl_goals:9,ucl_apps:62,ucl_assists:16,intl_goals:5,intl_apps:41,intl_assists:8}},
-  {name:"Park Ji-Sung",nat:"South Korea",pos:["MID","FW"],stats:{pl_goals:27,pl_apps:205,pl_assists:28,ucl_goals:6,ucl_apps:38,ucl_assists:8,intl_goals:13,intl_apps:100,intl_assists:14}},
-  {name:"Yohan Cabaye",nat:"France",pos:["MID"],stats:{pl_goals:22,pl_apps:150,pl_assists:28,ucl_goals:2,ucl_apps:8,ucl_assists:4,intl_goals:5,intl_apps:48,intl_assists:8}},
-  {name:"Moussa Sissoko",nat:"France",pos:["MID"],stats:{pl_goals:14,pl_apps:256,pl_assists:24,ucl_goals:5,ucl_apps:32,ucl_assists:8,intl_goals:3,intl_apps:69,intl_assists:6}},
-  {name:"Michael Essien",nat:"Ghana",pos:["MID"],stats:{pl_goals:19,pl_apps:196,pl_assists:22,ucl_goals:4,ucl_apps:62,ucl_assists:10,intl_goals:9,intl_apps:58,intl_assists:6}},
-  {name:"Yaya Touré",nat:"Ivory Coast",pos:["MID"],stats:{pl_goals:62,pl_apps:230,pl_assists:42,ucl_goals:14,ucl_apps:72,ucl_assists:18,intl_goals:19,intl_apps:101,intl_assists:8}},
-  {name:"Jay-Jay Okocha",nat:"Nigeria",pos:["MID"],stats:{pl_goals:14,pl_apps:101,pl_assists:22,ucl_goals:0,ucl_apps:2,ucl_assists:0,intl_goals:14,intl_apps:73,intl_assists:12}},
-  // ── FOREIGN PL GOALSCORERS ────────────────────────────────────
-  {name:"Thierry Henry",nat:"France",pos:["FW"],stats:{pl_goals:175,pl_apps:258,pl_assists:74,ucl_goals:50,ucl_apps:112,ucl_assists:28,intl_goals:51,intl_apps:123,intl_assists:30}},
-  {name:"Nicolas Anelka",nat:"France",pos:["FW"],stats:{pl_goals:125,pl_apps:298,pl_assists:40,ucl_goals:12,ucl_apps:52,ucl_assists:10,intl_goals:14,intl_apps:69,intl_assists:8}},
-  {name:"Olivier Giroud",nat:"France",pos:["FW"],stats:{pl_goals:105,pl_apps:253,pl_assists:42,ucl_goals:26,ucl_apps:97,ucl_assists:16,intl_goals:57,intl_apps:132,intl_assists:18}},
-  {name:"Robert Pires",nat:"France",pos:["MID","FW"],stats:{pl_goals:84,pl_apps:284,pl_assists:74,ucl_goals:10,ucl_apps:45,ucl_assists:14,intl_goals:14,intl_apps:79,intl_assists:20}},
-  {name:"Louis Saha",nat:"France",pos:["FW"],stats:{pl_goals:85,pl_apps:253,pl_assists:36,ucl_goals:8,ucl_apps:32,ucl_assists:6,intl_goals:4,intl_apps:20,intl_assists:2}},
-  {name:"Alexandre Lacazette",nat:"France",pos:["FW"],stats:{pl_goals:67,pl_apps:178,pl_assists:32,ucl_goals:6,ucl_apps:20,ucl_assists:6,intl_goals:4,intl_apps:16,intl_assists:2}},
-  {name:"Sylvain Wiltord",nat:"France",pos:["FW","MID"],stats:{pl_goals:48,pl_apps:189,pl_assists:30,ucl_goals:4,ucl_apps:22,ucl_assists:8,intl_goals:26,intl_apps:92,intl_assists:14}},
-  {name:"Djibril Cissé",nat:"France",pos:["FW"],stats:{pl_goals:41,pl_apps:106,pl_assists:18,ucl_goals:8,ucl_apps:22,ucl_assists:4,intl_goals:9,intl_apps:41,intl_assists:4}},
-  {name:"Loïc Rémy",nat:"France",pos:["FW"],stats:{pl_goals:34,pl_apps:104,pl_assists:12,ucl_goals:3,ucl_apps:8,ucl_assists:2,intl_goals:7,intl_apps:25,intl_assists:2}},
-  {name:"Bafétimbi Gomis",nat:"France",pos:["FW"],stats:{pl_goals:26,pl_apps:76,pl_assists:10,ucl_goals:2,ucl_apps:6,ucl_assists:2,intl_goals:8,intl_apps:12,intl_assists:2}},
-  {name:"Laurent Blanc",nat:"France",pos:["DEF"],stats:{pl_goals:4,pl_apps:48,pl_assists:4,ucl_goals:4,ucl_apps:30,ucl_assists:4,intl_goals:16,intl_apps:97,intl_assists:8}},
-  {name:"Emmanuel Petit",nat:"France",pos:["MID"],stats:{pl_goals:8,pl_apps:120,pl_assists:20,ucl_goals:4,ucl_apps:28,ucl_assists:8,intl_goals:6,intl_apps:63,intl_assists:10}},
-  {name:"Morgan Schneiderlin",nat:"France",pos:["MID"],stats:{pl_goals:10,pl_apps:209,pl_assists:20,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:16,intl_assists:2}},
-  {name:"Mathieu Flamini",nat:"France",pos:["MID"],stats:{pl_goals:8,pl_apps:229,pl_assists:14,ucl_goals:2,ucl_apps:40,ucl_assists:6,intl_goals:0,intl_apps:9,intl_assists:0}},
-  {name:"William Gallas",nat:"France",pos:["DEF"],stats:{pl_goals:17,pl_apps:324,pl_assists:8,ucl_goals:2,ucl_apps:62,ucl_assists:4,intl_goals:5,intl_apps:84,intl_assists:4}},
-  {name:"Patrice Evra",nat:"France",pos:["DEF"],stats:{pl_goals:8,pl_apps:379,pl_assists:38,ucl_goals:3,ucl_apps:106,ucl_assists:14,intl_goals:0,intl_apps:81,intl_assists:6}},
-  {name:"Bacary Sagna",nat:"France",pos:["DEF"],stats:{pl_goals:3,pl_apps:284,pl_assists:24,ucl_goals:1,ucl_apps:30,ucl_assists:6,intl_goals:0,intl_apps:65,intl_assists:4}},
-  {name:"Gael Clichy",nat:"France",pos:["DEF"],stats:{pl_goals:3,pl_apps:311,pl_assists:24,ucl_goals:0,ucl_apps:22,ucl_assists:4,intl_goals:0,intl_apps:25,intl_assists:2}},
-  {name:"Dennis Bergkamp",nat:"Netherlands",pos:["FW","MID"],stats:{pl_goals:87,pl_apps:315,pl_assists:94,ucl_goals:8,ucl_apps:48,ucl_assists:18,intl_goals:37,intl_apps:79,intl_assists:24}},
-  {name:"Robin van Persie",nat:"Netherlands",pos:["FW"],stats:{pl_goals:144,pl_apps:280,pl_assists:54,ucl_goals:16,ucl_apps:74,ucl_assists:12,intl_goals:50,intl_apps:102,intl_assists:18}},
-  {name:"Ruud van Nistelrooy",nat:"Netherlands",pos:["FW"],stats:{pl_goals:95,pl_apps:150,pl_assists:22,ucl_goals:60,ucl_apps:73,ucl_assists:20,intl_goals:35,intl_apps:70,intl_assists:8}},
-  {name:"Jimmy Floyd Hasselbaink",nat:"Netherlands",pos:["FW"],stats:{pl_goals:87,pl_apps:177,pl_assists:28,ucl_goals:6,ucl_apps:24,ucl_assists:4,intl_goals:9,intl_apps:23,intl_assists:2}},
-  {name:"Arjen Robben",nat:"Netherlands",pos:["FW","MID"],stats:{pl_goals:28,pl_apps:106,pl_assists:20,ucl_goals:24,ucl_apps:104,ucl_assists:36,intl_goals:37,intl_apps:96,intl_assists:20}},
-  {name:"Dirk Kuyt",nat:"Netherlands",pos:["FW","MID"],stats:{pl_goals:71,pl_apps:285,pl_assists:50,ucl_goals:20,ucl_apps:60,ucl_assists:14,intl_goals:24,intl_apps:104,intl_assists:14}},
-  {name:"Marc Overmars",nat:"Netherlands",pos:["MID","FW"],stats:{pl_goals:41,pl_apps:142,pl_assists:34,ucl_goals:5,ucl_apps:30,ucl_assists:10,intl_goals:17,intl_apps:86,intl_assists:14}},
-  {name:"Pierre van Hooijdonk",nat:"Netherlands",pos:["FW"],stats:{pl_goals:31,pl_apps:65,pl_assists:10,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:11,intl_apps:46,intl_assists:4}},
-  {name:"Boudewijn Zenden",nat:"Netherlands",pos:["MID","FW"],stats:{pl_goals:27,pl_apps:162,pl_assists:34,ucl_goals:4,ucl_apps:28,ucl_assists:8,intl_goals:7,intl_apps:54,intl_assists:8}},
-  {name:"Georginio Wijnaldum",nat:"Netherlands",pos:["MID"],stats:{pl_goals:22,pl_apps:237,pl_assists:28,ucl_goals:8,ucl_apps:80,ucl_assists:14,intl_goals:26,intl_apps:87,intl_assists:16}},
-  {name:"Memphis Depay",nat:"Netherlands",pos:["FW","MID"],stats:{pl_goals:6,pl_apps:53,pl_assists:8,ucl_goals:6,ucl_apps:26,ucl_assists:4,intl_goals:44,intl_apps:88,intl_assists:18}},
-  {name:"Ryan Babel",nat:"Netherlands",pos:["FW","MID"],stats:{pl_goals:15,pl_apps:91,pl_assists:16,ucl_goals:4,ucl_apps:14,ucl_assists:4,intl_goals:10,intl_apps:70,intl_assists:8}},
-  {name:"Rafael van der Vaart",nat:"Netherlands",pos:["MID"],stats:{pl_goals:24,pl_apps:90,pl_assists:24,ucl_goals:6,ucl_apps:28,ucl_assists:10,intl_goals:25,intl_apps:109,intl_assists:22}},
-  {name:"George Boateng",nat:"Netherlands",pos:["MID"],stats:{pl_goals:18,pl_apps:222,pl_assists:18,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:10,intl_assists:0}},
-  {name:"Nigel de Jong",nat:"Netherlands",pos:["MID"],stats:{pl_goals:4,pl_apps:150,pl_assists:10,ucl_goals:2,ucl_apps:18,ucl_assists:4,intl_goals:2,intl_apps:74,intl_assists:4}},
-  {name:"Cody Gakpo",nat:"Netherlands",pos:["FW","MID"],stats:{pl_goals:38,pl_apps:104,pl_assists:18,ucl_goals:8,ucl_apps:28,ucl_assists:8,intl_goals:16,intl_apps:50,intl_assists:10}},
-  {name:"Virgil van Dijk",nat:"Netherlands",pos:["DEF"],stats:{pl_goals:12,pl_apps:198,pl_assists:8,ucl_goals:3,ucl_apps:68,ucl_assists:4,intl_goals:7,intl_apps:69,intl_assists:4}},
-  {name:"Daley Blind",nat:"Netherlands",pos:["DEF","MID"],stats:{pl_goals:3,pl_apps:96,pl_assists:14,ucl_goals:2,ucl_apps:44,ucl_assists:8,intl_goals:4,intl_apps:98,intl_assists:10}},
-  {name:"Fernando Torres",nat:"Spain",pos:["FW"],stats:{pl_goals:85,pl_apps:213,pl_assists:32,ucl_goals:28,ucl_apps:82,ucl_assists:14,intl_goals:38,intl_apps:110,intl_assists:18}},
-  {name:"Álvaro Morata",nat:"Spain",pos:["FW"],stats:{pl_goals:30,pl_apps:82,pl_assists:10,ucl_goals:30,ucl_apps:74,ucl_assists:14,intl_goals:33,intl_apps:76,intl_assists:10}},
-  {name:"Pedro",nat:"Spain",pos:["FW","MID"],stats:{pl_goals:32,pl_apps:165,pl_assists:22,ucl_goals:15,ucl_apps:62,ucl_assists:12,intl_goals:17,intl_apps:79,intl_assists:16}},
-  {name:"Xabi Alonso",nat:"Spain",pos:["MID"],stats:{pl_goals:18,pl_apps:210,pl_assists:36,ucl_goals:16,ucl_apps:122,ucl_assists:24,intl_goals:16,intl_apps:114,intl_assists:18}},
-  {name:"Cesar Azpilicueta",nat:"Spain",pos:["DEF"],stats:{pl_goals:8,pl_apps:490,pl_assists:35,ucl_goals:3,ucl_apps:90,ucl_assists:10,intl_goals:0,intl_apps:36,intl_assists:2}},
-  {name:"Timo Werner",nat:"Germany",pos:["FW"],stats:{pl_goals:12,pl_apps:74,pl_assists:16,ucl_goals:14,ucl_apps:44,ucl_assists:12,intl_goals:24,intl_apps:57,intl_assists:10}},
-  {name:"Kai Havertz",nat:"Germany",pos:["MID","FW"],stats:{pl_goals:36,pl_apps:139,pl_assists:18,ucl_goals:15,ucl_apps:40,ucl_assists:10,intl_goals:20,intl_apps:56,intl_assists:8}},
-  {name:"Per Mertesacker",nat:"Germany",pos:["DEF"],stats:{pl_goals:5,pl_apps:228,pl_assists:4,ucl_goals:2,ucl_apps:24,ucl_assists:2,intl_goals:4,intl_apps:104,intl_assists:4}},
-  {name:"Robert Huth",nat:"Germany",pos:["DEF"],stats:{pl_goals:12,pl_apps:248,pl_assists:6,ucl_goals:0,ucl_apps:6,ucl_assists:0,intl_goals:0,intl_apps:19,intl_assists:0}},
-  {name:"Cristiano Ronaldo",nat:"Portugal",pos:["FW"],stats:{pl_goals:145,pl_apps:236,pl_assists:62,ucl_goals:140,ucl_apps:183,ucl_assists:44,intl_goals:130,intl_apps:220,intl_assists:44}},
-  {name:"Bruno Fernandes",nat:"Portugal",pos:["MID"],stats:{pl_goals:77,pl_apps:230,pl_assists:80,ucl_goals:12,ucl_apps:44,ucl_assists:18,intl_goals:22,intl_apps:78,intl_assists:20}},
-  {name:"Bernardo Silva",nat:"Portugal",pos:["MID","FW"],stats:{pl_goals:46,pl_apps:296,pl_assists:58,ucl_goals:20,ucl_apps:90,ucl_assists:24,intl_goals:14,intl_apps:90,intl_assists:18}},
-  {name:"Diogo Jota",nat:"Portugal",pos:["FW"],stats:{pl_goals:65,pl_apps:174,pl_assists:20,ucl_goals:10,ucl_apps:42,ucl_assists:8,intl_goals:14,intl_apps:58,intl_assists:6}},
-  {name:"Nani",nat:"Portugal",pos:["MID","FW"],stats:{pl_goals:41,pl_apps:230,pl_assists:52,ucl_goals:10,ucl_apps:60,ucl_assists:14,intl_goals:9,intl_apps:112,intl_assists:16}},
-  {name:"Luís Boa Morte",nat:"Portugal",pos:["FW","MID"],stats:{pl_goals:60,pl_apps:296,pl_assists:44,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:7,intl_apps:31,intl_assists:4}},
-  {name:"Simão Sabrosa",nat:"Portugal",pos:["MID","FW"],stats:{pl_goals:18,pl_apps:86,pl_assists:20,ucl_goals:5,ucl_apps:24,ucl_assists:8,intl_goals:22,intl_apps:94,intl_assists:12}},
-  {name:"Rúben Neves",nat:"Portugal",pos:["MID"],stats:{pl_goals:27,pl_apps:197,pl_assists:18,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:4,intl_apps:48,intl_assists:4}},
-  {name:"Gianfranco Zola",nat:"Italy",pos:["FW","MID"],stats:{pl_goals:80,pl_apps:312,pl_assists:62,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:10,intl_apps:35,intl_assists:8}},
-  {name:"Paolo Di Canio",nat:"Italy",pos:["FW","MID"],stats:{pl_goals:66,pl_apps:264,pl_assists:40,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
-  {name:"Jorginho",nat:"Italy",pos:["MID"],stats:{pl_goals:9,pl_apps:173,pl_assists:8,ucl_goals:4,ucl_apps:56,ucl_assists:8,intl_goals:2,intl_apps:55,intl_assists:4}},
-  {name:"Fabrizio Ravanelli",nat:"Italy",pos:["FW"],stats:{pl_goals:31,pl_apps:48,pl_assists:8,ucl_goals:14,ucl_apps:28,ucl_assists:6,intl_goals:7,intl_apps:22,intl_assists:2}},
-  {name:"Benito Carbone",nat:"Italy",pos:["MID","FW"],stats:{pl_goals:24,pl_apps:152,pl_assists:28,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
-  {name:"Gianluca Vialli",nat:"Italy",pos:["FW"],stats:{pl_goals:40,pl_apps:78,pl_assists:16,ucl_goals:18,ucl_apps:32,ucl_assists:8,intl_goals:16,intl_apps:59,intl_assists:8}},
-  {name:"Roberto Di Matteo",nat:"Italy",pos:["MID"],stats:{pl_goals:15,pl_apps:175,pl_assists:18,ucl_goals:2,ucl_apps:20,ucl_assists:4,intl_goals:2,intl_apps:34,intl_assists:2}},
-  {name:"Ryan Giggs",nat:"Wales",pos:["MID","FW"],stats:{pl_goals:109,pl_apps:672,pl_assists:162,ucl_goals:28,ucl_apps:142,ucl_assists:48,intl_goals:12,intl_apps:64,intl_assists:14}},
-  {name:"Gareth Bale",nat:"Wales",pos:["FW","MID"],stats:{pl_goals:67,pl_apps:203,pl_assists:42,ucl_goals:27,ucl_apps:86,ucl_assists:18,intl_goals:41,intl_apps:111,intl_assists:14}},
-  {name:"Craig Bellamy",nat:"Wales",pos:["FW"],stats:{pl_goals:60,pl_apps:292,pl_assists:52,ucl_goals:6,ucl_apps:30,ucl_assists:6,intl_goals:19,intl_apps:78,intl_assists:8}},
-  {name:"Aaron Ramsey",nat:"Wales",pos:["MID"],stats:{pl_goals:40,pl_apps:267,pl_assists:48,ucl_goals:16,ucl_apps:65,ucl_assists:18,intl_goals:20,intl_apps:76,intl_assists:14}},
-  {name:"John Hartson",nat:"Wales",pos:["FW"],stats:{pl_goals:82,pl_apps:228,pl_assists:30,ucl_goals:5,ucl_apps:20,ucl_assists:4,intl_goals:14,intl_apps:51,intl_assists:4}},
-  {name:"Mark Hughes",nat:"Wales",pos:["FW"],stats:{pl_goals:39,pl_apps:269,pl_assists:28,ucl_goals:0,ucl_apps:10,ucl_assists:4,intl_goals:16,intl_apps:72,intl_assists:8}},
-  {name:"Daniel James",nat:"Wales",pos:["FW","MID"],stats:{pl_goals:24,pl_apps:186,pl_assists:18,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:8,intl_apps:62,intl_assists:6}},
-  {name:"Roy Keane",nat:"Ireland",pos:["MID"],stats:{pl_goals:51,pl_apps:366,pl_assists:40,ucl_goals:0,ucl_apps:54,ucl_assists:10,intl_goals:9,intl_apps:67,intl_assists:8}},
-  {name:"Robbie Keane",nat:"Ireland",pos:["FW"],stats:{pl_goals:126,pl_apps:461,pl_assists:72,ucl_goals:6,ucl_apps:28,ucl_assists:8,intl_goals:68,intl_apps:146,intl_assists:24}},
-  {name:"Niall Quinn",nat:"Ireland",pos:["FW"],stats:{pl_goals:60,pl_apps:215,pl_assists:38,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:21,intl_apps:92,intl_assists:10}},
-  {name:"Damien Duff",nat:"Ireland",pos:["MID","FW"],stats:{pl_goals:46,pl_apps:285,pl_assists:62,ucl_goals:4,ucl_apps:28,ucl_assists:10,intl_goals:8,intl_apps:100,intl_assists:14}},
-  {name:"Shane Long",nat:"Ireland",pos:["FW"],stats:{pl_goals:56,pl_apps:293,pl_assists:28,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:17,intl_apps:88,intl_assists:6}},
-  {name:"Denis Irwin",nat:"Ireland",pos:["DEF"],stats:{pl_goals:22,pl_apps:296,pl_assists:28,ucl_goals:4,ucl_apps:54,ucl_assists:8,intl_goals:4,intl_apps:56,intl_assists:4}},
-  {name:"Séamus Coleman",nat:"Ireland",pos:["DEF"],stats:{pl_goals:20,pl_apps:364,pl_assists:36,ucl_goals:1,ucl_apps:8,ucl_assists:2,intl_goals:5,intl_apps:72,intl_assists:8}},
-  {name:"Shay Given",nat:"Ireland",pos:["GK"],stats:{pl_goals:0,pl_apps:398,pl_assists:0,ucl_goals:0,ucl_apps:4,ucl_assists:0,intl_goals:0,intl_apps:134,intl_assists:0}},
-  {name:"Jon Walters",nat:"Ireland",pos:["FW"],stats:{pl_goals:37,pl_apps:178,pl_assists:28,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:14,intl_apps:54,intl_assists:4}},
-  {name:"Kevin Doyle",nat:"Ireland",pos:["FW"],stats:{pl_goals:37,pl_apps:181,pl_assists:22,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:14,intl_apps:98,intl_assists:6}},
-  {name:"Matt Doherty",nat:"Ireland",pos:["DEF"],stats:{pl_goals:10,pl_apps:178,pl_assists:34,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:3,intl_apps:42,intl_assists:4}},
-  {name:"Ian Harte",nat:"Ireland",pos:["DEF"],stats:{pl_goals:18,pl_apps:196,pl_assists:36,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:11,intl_apps:64,intl_assists:8}},
-  {name:"Steve Staunton",nat:"Ireland",pos:["DEF"],stats:{pl_goals:6,pl_apps:168,pl_assists:10,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:8,intl_apps:102,intl_assists:6}},
-  {name:"Tony Cascarino",nat:"Ireland",pos:["FW"],stats:{pl_goals:36,pl_apps:104,pl_assists:12,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:19,intl_apps:88,intl_assists:6}},
-  {name:"Wes Hoolahan",nat:"Ireland",pos:["MID"],stats:{pl_goals:30,pl_apps:163,pl_assists:38,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:3,intl_apps:43,intl_assists:4}},
-  {name:"Robbie Brady",nat:"Ireland",pos:["MID","DEF"],stats:{pl_goals:16,pl_apps:122,pl_assists:22,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:5,intl_apps:68,intl_assists:8}},
-  {name:"Duncan Ferguson",nat:"Scotland",pos:["FW"],stats:{pl_goals:72,pl_apps:239,pl_assists:20,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:7,intl_apps:7,intl_assists:0}},
-  {name:"Darren Fletcher",nat:"Scotland",pos:["MID"],stats:{pl_goals:24,pl_apps:342,pl_assists:36,ucl_goals:3,ucl_apps:58,ucl_assists:8,intl_goals:5,intl_apps:80,intl_assists:4}},
-  {name:"Andy Robertson",nat:"Scotland",pos:["DEF"],stats:{pl_goals:9,pl_apps:275,pl_assists:60,ucl_goals:3,ucl_apps:90,ucl_assists:18,intl_goals:3,intl_apps:74,intl_assists:8}},
-  {name:"John McGinn",nat:"Scotland",pos:["MID"],stats:{pl_goals:32,pl_apps:175,pl_assists:28,ucl_goals:4,ucl_apps:16,ucl_assists:6,intl_goals:17,intl_apps:68,intl_assists:8}},
-  {name:"Robert Snodgrass",nat:"Scotland",pos:["MID"],stats:{pl_goals:37,pl_apps:180,pl_assists:36,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:7,intl_apps:28,intl_assists:4}},
-  {name:"Gary McAllister",nat:"Scotland",pos:["MID"],stats:{pl_goals:28,pl_apps:202,pl_assists:40,ucl_goals:2,ucl_apps:8,ucl_assists:4,intl_goals:5,intl_apps:57,intl_assists:8}},
-  {name:"Don Hutchison",nat:"Scotland",pos:["MID"],stats:{pl_goals:22,pl_apps:206,pl_assists:18,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:6,intl_apps:26,intl_assists:2}},
-  {name:"Dwight Yorke",nat:"Trinidad",pos:["FW"],stats:{pl_goals:123,pl_apps:375,pl_assists:60,ucl_goals:8,ucl_apps:14,ucl_assists:6,intl_goals:19,intl_apps:72,intl_assists:8}},
-  {name:"Riyad Mahrez",nat:"Algeria",pos:["FW","MID"],stats:{pl_goals:77,pl_apps:291,pl_assists:62,ucl_goals:19,ucl_apps:74,ucl_assists:16,intl_goals:30,intl_apps:92,intl_assists:18}},
-  {name:"Mohamed Salah",nat:"Egypt",pos:["FW"],stats:{pl_goals:210,pl_apps:338,pl_assists:93,ucl_goals:46,ucl_apps:102,ucl_assists:28,intl_goals:58,intl_apps:101,intl_assists:20}},
-  {name:"Sadio Mané",nat:"Senegal",pos:["FW","MID"],stats:{pl_goals:120,pl_apps:269,pl_assists:46,ucl_goals:26,ucl_apps:76,ucl_assists:14,intl_goals:34,intl_apps:100,intl_assists:12}},
-  {name:"Son Heung-min",nat:"South Korea",pos:["FW","MID"],stats:{pl_goals:163,pl_apps:364,pl_assists:80,ucl_goals:16,ucl_apps:80,ucl_assists:14,intl_goals:35,intl_apps:126,intl_assists:20}},
-  {name:"Roberto Firmino",nat:"Brazil",pos:["FW","MID"],stats:{pl_goals:111,pl_apps:362,pl_assists:82,ucl_goals:28,ucl_apps:102,ucl_assists:32,intl_goals:18,intl_apps:62,intl_assists:10}},
-  {name:"Sergio Agüero",nat:"Argentina",pos:["FW"],stats:{pl_goals:184,pl_apps:275,pl_assists:76,ucl_goals:31,ucl_apps:78,ucl_assists:18,intl_goals:41,intl_apps:101,intl_assists:14}},
-  {name:"Carlos Tevez",nat:"Argentina",pos:["FW"],stats:{pl_goals:84,pl_apps:187,pl_assists:36,ucl_goals:12,ucl_apps:44,ucl_assists:8,intl_goals:13,intl_apps:76,intl_assists:6}},
-  {name:"Hernán Crespo",nat:"Argentina",pos:["FW"],stats:{pl_goals:12,pl_apps:49,pl_assists:4,ucl_goals:18,ucl_apps:52,ucl_assists:10,intl_goals:35,intl_apps:64,intl_assists:10}},
-  {name:"Juan Sebastián Verón",nat:"Argentina",pos:["MID"],stats:{pl_goals:8,pl_apps:92,pl_assists:16,ucl_goals:6,ucl_apps:38,ucl_assists:10,intl_goals:9,intl_apps:73,intl_assists:8}},
-  {name:"Didier Drogba",nat:"Ivory Coast",pos:["FW"],stats:{pl_goals:104,pl_apps:284,pl_assists:56,ucl_goals:24,ucl_apps:80,ucl_assists:12,intl_goals:65,intl_apps:105,intl_assists:14}},
-  {name:"Emmanuel Adebayor",nat:"Togo",pos:["FW"],stats:{pl_goals:97,pl_apps:242,pl_assists:30,ucl_goals:8,ucl_apps:22,ucl_assists:4,intl_goals:30,intl_apps:87,intl_assists:8}},
-  {name:"Pierre-Emerick Aubameyang",nat:"Gabon",pos:["FW"],stats:{pl_goals:92,pl_apps:163,pl_assists:24,ucl_goals:14,ucl_apps:48,ucl_assists:10,intl_goals:30,intl_apps:72,intl_assists:8}},
-  {name:"Nwankwo Kanu",nat:"Nigeria",pos:["FW","MID"],stats:{pl_goals:44,pl_apps:197,pl_assists:28,ucl_goals:8,ucl_apps:28,ucl_assists:6,intl_goals:13,intl_apps:87,intl_assists:10}},
-  // ── FULL-BACKS / DEFENDERS ─────────────────────────────────────
-  {name:"Trent Alexander-Arnold",nat:"England",pos:["DEF","MID"],stats:{pl_goals:20,pl_apps:272,pl_assists:67,ucl_goals:6,ucl_apps:72,ucl_assists:22,intl_goals:3,intl_apps:29,intl_assists:6}},
-  {name:"Leighton Baines",nat:"England",pos:["DEF"],stats:{pl_goals:11,pl_apps:420,pl_assists:54,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:1,intl_apps:30,intl_assists:4}},
-  {name:"Ashley Cole",nat:"England",pos:["DEF"],stats:{pl_goals:7,pl_apps:385,pl_assists:32,ucl_goals:5,ucl_apps:98,ucl_assists:12,intl_goals:0,intl_apps:107,intl_assists:6}},
-  {name:"Gary Neville",nat:"England",pos:["DEF"],stats:{pl_goals:5,pl_apps:400,pl_assists:37,ucl_goals:0,ucl_apps:75,ucl_assists:12,intl_goals:0,intl_apps:85,intl_assists:8}},
-  {name:"Phil Neville",nat:"England",pos:["DEF","MID"],stats:{pl_goals:6,pl_apps:386,pl_assists:20,ucl_goals:1,ucl_apps:42,ucl_assists:4,intl_goals:0,intl_apps:59,intl_assists:4}},
-  {name:"Graeme Le Saux",nat:"England",pos:["DEF"],stats:{pl_goals:8,pl_apps:336,pl_assists:44,ucl_goals:1,ucl_apps:18,ucl_assists:4,intl_goals:1,intl_apps:36,intl_assists:4}},
-  {name:"Luke Shaw",nat:"England",pos:["DEF"],stats:{pl_goals:8,pl_apps:254,pl_assists:42,ucl_goals:2,ucl_apps:52,ucl_assists:10,intl_goals:1,intl_apps:28,intl_assists:4}},
-  {name:"Kyle Walker",nat:"England",pos:["DEF"],stats:{pl_goals:4,pl_apps:376,pl_assists:44,ucl_goals:2,ucl_apps:90,ucl_assists:10,intl_goals:1,intl_apps:78,intl_assists:6}},
-  {name:"Kieran Trippier",nat:"England",pos:["DEF"],stats:{pl_goals:12,pl_apps:237,pl_assists:50,ucl_goals:2,ucl_apps:44,ucl_assists:8,intl_goals:2,intl_apps:52,intl_assists:10}},
-  {name:"Reece James",nat:"England",pos:["DEF"],stats:{pl_goals:8,pl_apps:156,pl_assists:26,ucl_goals:2,ucl_apps:38,ucl_assists:8,intl_goals:0,intl_apps:22,intl_assists:2}},
-  {name:"Ben Chilwell",nat:"England",pos:["DEF"],stats:{pl_goals:10,pl_apps:176,pl_assists:22,ucl_goals:2,ucl_apps:28,ucl_assists:6,intl_goals:1,intl_apps:22,intl_assists:4}},
-  {name:"Andy Hinchcliffe",nat:"England",pos:["DEF"],stats:{pl_goals:4,pl_apps:210,pl_assists:36,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:7,intl_assists:0}},
-  {name:"David Unsworth",nat:"England",pos:["DEF"],stats:{pl_goals:32,pl_apps:352,pl_assists:14,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:1,intl_apps:1,intl_assists:0}},
-  {name:"Gary Pallister",nat:"England",pos:["DEF"],stats:{pl_goals:8,pl_apps:314,pl_assists:6,ucl_goals:0,ucl_apps:54,ucl_assists:4,intl_goals:2,intl_apps:22,intl_assists:0}},
-  // ── GOALKEEPERS ─────────────────────────────────────────────────
-  {name:"David James",nat:"England",pos:["GK"],stats:{pl_goals:0,pl_apps:572,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:53,intl_assists:0}},
-  {name:"Brad Friedel",nat:"USA",pos:["GK"],stats:{pl_goals:0,pl_apps:450,pl_assists:0,ucl_goals:0,ucl_apps:6,ucl_assists:0,intl_goals:0,intl_apps:82,intl_assists:0}},
-  {name:"Mark Schwarzer",nat:"Australia",pos:["GK"],stats:{pl_goals:0,pl_apps:514,pl_assists:0,ucl_goals:0,ucl_apps:12,ucl_assists:0,intl_goals:0,intl_apps:109,intl_assists:0}},
-  {name:"Nigel Martyn",nat:"England",pos:["GK"],stats:{pl_goals:0,pl_apps:372,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:23,intl_assists:0}},
-  {name:"Rob Green",nat:"England",pos:["GK"],stats:{pl_goals:0,pl_apps:356,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:12,intl_assists:0}},
-  {name:"Paul Robinson",nat:"England",pos:["GK"],stats:{pl_goals:1,pl_apps:338,pl_assists:0,ucl_goals:0,ucl_apps:12,ucl_assists:0,intl_goals:0,intl_apps:41,intl_assists:0}},
-  {name:"David Seaman",nat:"England",pos:["GK"],stats:{pl_goals:0,pl_apps:405,pl_assists:0,ucl_goals:0,ucl_apps:38,ucl_assists:0,intl_goals:0,intl_apps:75,intl_assists:0}},
-  {name:"Peter Schmeichel",nat:"Denmark",pos:["GK"],stats:{pl_goals:0,pl_apps:310,pl_assists:0,ucl_goals:0,ucl_apps:62,ucl_assists:0,intl_goals:0,intl_apps:129,intl_assists:0}},
-  {name:"Petr Čech",nat:"Czechia",pos:["GK"],stats:{pl_goals:0,pl_apps:443,pl_assists:0,ucl_goals:0,ucl_apps:112,ucl_assists:0,intl_goals:0,intl_apps:124,intl_assists:0}},
-  {name:"Joe Hart",nat:"England",pos:["GK"],stats:{pl_goals:0,pl_apps:348,pl_assists:0,ucl_goals:0,ucl_apps:38,ucl_assists:0,intl_goals:0,intl_apps:75,intl_assists:0}},
-  {name:"Ben Foster",nat:"England",pos:["GK"],stats:{pl_goals:0,pl_apps:253,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:8,intl_assists:0}},
-  {name:"Carlo Cudicini",nat:"Italy",pos:["GK"],stats:{pl_goals:0,pl_apps:98,pl_assists:0,ucl_goals:0,ucl_apps:12,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
-  {name:"Heurelho Gomes",nat:"Brazil",pos:["GK"],stats:{pl_goals:0,pl_apps:140,pl_assists:0,ucl_goals:0,ucl_apps:4,ucl_assists:0,intl_goals:0,intl_apps:4,intl_assists:0}},
-  {name:"Hugo Lloris",nat:"France",pos:["GK"],stats:{pl_goals:0,pl_apps:400,pl_assists:0,ucl_goals:0,ucl_apps:68,ucl_assists:0,intl_goals:0,intl_apps:145,intl_assists:0}},
-  {name:"Jussi Jääskeläinen",nat:"Finland",pos:["GK"],stats:{pl_goals:0,pl_apps:325,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:56,intl_assists:0}},
-  {name:"Thomas Sørensen",nat:"Denmark",pos:["GK"],stats:{pl_goals:0,pl_apps:308,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:101,intl_assists:0}},
-  {name:"Dean Kiely",nat:"Ireland",pos:["GK"],stats:{pl_goals:0,pl_apps:115,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:11,intl_assists:0}},
-  // ── UCL / EUROPEAN LEGENDS ──────────────────────────────────────
-  {name:"Lionel Messi",nat:"Argentina",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:129,ucl_apps:163,ucl_assists:40,intl_goals:109,intl_apps:191,intl_assists:52}},
-  {name:"Karim Benzema",nat:"France",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:90,ucl_apps:162,ucl_assists:36,intl_goals:37,intl_apps:97,intl_assists:18}},
-  {name:"Kylian Mbappé",nat:"France",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:49,ucl_apps:92,ucl_assists:28,intl_goals:52,intl_apps:97,intl_assists:30}},
-  {name:"Antoine Griezmann",nat:"France",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:20,ucl_apps:75,ucl_assists:18,intl_goals:57,intl_apps:134,intl_assists:30}},
-  {name:"Zinedine Zidane",nat:"France",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:77,ucl_assists:30,intl_goals:31,intl_apps:108,intl_assists:32}},
-  {name:"Raúl",nat:"Spain",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:71,ucl_apps:142,ucl_assists:38,intl_goals:44,intl_apps:102,intl_assists:18}},
-  {name:"Filippo Inzaghi",nat:"Italy",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:46,ucl_apps:81,ucl_assists:10,intl_goals:25,intl_apps:57,intl_assists:6}},
-  {name:"Andriy Shevchenko",nat:"Ukraine",pos:["FW"],stats:{pl_goals:9,pl_apps:27,pl_assists:2,ucl_goals:59,ucl_apps:100,ucl_assists:22,intl_goals:48,intl_apps:111,intl_assists:16}},
-  {name:"Alessandro Del Piero",nat:"Italy",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:42,ucl_apps:89,ucl_assists:22,intl_goals:27,intl_apps:91,intl_assists:18}},
-  {name:"Robert Lewandowski",nat:"Poland",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:91,ucl_apps:116,ucl_assists:28,intl_goals:82,intl_apps:148,intl_assists:22}},
-  {name:"Erling Haaland",nat:"Norway",pos:["FW"],stats:{pl_goals:91,pl_apps:95,pl_assists:18,ucl_goals:40,ucl_apps:50,ucl_assists:10,intl_goals:31,intl_apps:44,intl_assists:8}},
-  {name:"Zlatan Ibrahimović",nat:"Sweden",pos:["FW"],stats:{pl_goals:29,pl_apps:57,pl_assists:12,ucl_goals:48,ucl_apps:120,ucl_assists:26,intl_goals:62,intl_apps:116,intl_assists:24}},
-  {name:"Neymar",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:43,ucl_apps:97,ucl_assists:34,intl_goals:79,intl_apps:130,intl_assists:52}},
-  {name:"Ronaldinho",nat:"Brazil",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:15,ucl_apps:44,ucl_assists:18,intl_goals:33,intl_apps:97,intl_assists:28}},
-  {name:"Ronaldo (R9)",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:17,ucl_apps:38,ucl_assists:10,intl_goals:62,intl_apps:98,intl_assists:18}},
-  {name:"Kaká",nat:"Brazil",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:30,ucl_apps:82,ucl_assists:24,intl_goals:29,intl_apps:92,intl_assists:22}},
-  {name:"Rivaldo",nat:"Brazil",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:24,ucl_apps:44,ucl_assists:14,intl_goals:35,intl_apps:74,intl_assists:18}},
-  {name:"Romário",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:3,ucl_apps:8,ucl_assists:4,intl_goals:55,intl_apps:70,intl_assists:10}},
-  {name:"Roberto Carlos",nat:"Brazil",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:12,ucl_apps:125,ucl_assists:22,intl_goals:11,intl_apps:125,intl_assists:18}},
-  {name:"Marcelo",nat:"Brazil",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:12,ucl_apps:145,ucl_assists:28,intl_goals:6,intl_apps:58,intl_assists:8}},
-  {name:"Dani Alves",nat:"Brazil",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:150,ucl_assists:38,intl_goals:8,intl_apps:126,intl_assists:20}},
-  {name:"Thiago Silva",nat:"Brazil",pos:["DEF"],stats:{pl_goals:4,pl_apps:60,pl_assists:2,ucl_goals:8,ucl_apps:138,ucl_assists:14,intl_goals:7,intl_apps:113,intl_assists:8}},
-  {name:"Casemiro",nat:"Brazil",pos:["MID"],stats:{pl_goals:18,pl_apps:92,pl_assists:8,ucl_goals:14,ucl_apps:90,ucl_assists:10,intl_goals:7,intl_apps:74,intl_assists:6}},
-  {name:"Giovane Élber",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:44,ucl_assists:8,intl_goals:10,intl_apps:26,intl_assists:4}},
-  {name:"Adriano",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:13,ucl_apps:26,ucl_assists:6,intl_goals:27,intl_apps:48,intl_assists:8}},
-  {name:"Robinho",nat:"Brazil",pos:["FW","MID"],stats:{pl_goals:14,pl_apps:53,pl_assists:14,ucl_goals:10,ucl_apps:30,ucl_assists:8,intl_goals:28,intl_apps:100,intl_assists:16}},
-  {name:"Raphinha",nat:"Brazil",pos:["FW","MID"],stats:{pl_goals:34,pl_apps:100,pl_assists:28,ucl_goals:11,ucl_apps:36,ucl_assists:10,intl_goals:14,intl_apps:44,intl_assists:8}},
-  {name:"Pelé",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:77,intl_apps:92,intl_assists:22}},
-  {name:"Bebeto",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:10,ucl_assists:4,intl_goals:39,intl_apps:75,intl_assists:12}},
-  {name:"Xavi",nat:"Spain",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:15,ucl_apps:157,ucl_assists:46,intl_goals:13,intl_apps:133,intl_assists:40}},
-  {name:"Andrés Iniesta",nat:"Spain",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:13,ucl_apps:122,ucl_assists:30,intl_goals:13,intl_apps:131,intl_assists:28}},
-  {name:"Sergio Ramos",nat:"Spain",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:23,ucl_apps:142,ucl_assists:10,intl_goals:23,intl_apps:180,intl_assists:12}},
-  {name:"Carles Puyol",nat:"Spain",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:105,ucl_assists:6,intl_goals:3,intl_apps:100,intl_assists:4}},
-  {name:"Luka Modrić",nat:"Croatia",pos:["MID"],stats:{pl_goals:17,pl_apps:160,pl_assists:28,ucl_goals:20,ucl_apps:138,ucl_assists:32,intl_goals:23,intl_apps:180,intl_assists:28}},
-  {name:"Ivan Rakitić",nat:"Croatia",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:18,ucl_apps:78,ucl_assists:20,intl_goals:15,intl_apps:106,intl_assists:18}},
-  {name:"Mario Mandžukić",nat:"Croatia",pos:["FW"],stats:{pl_goals:3,pl_apps:20,pl_assists:2,ucl_goals:12,ucl_apps:48,ucl_assists:6,intl_goals:33,intl_apps:89,intl_assists:8}},
-  {name:"Edin Džeko",nat:"Bosnia",pos:["FW"],stats:{pl_goals:50,pl_apps:130,pl_assists:26,ucl_goals:24,ucl_apps:72,ucl_assists:12,intl_goals:65,intl_apps:110,intl_assists:14}},
-  {name:"Zdeněk Nedvěd",nat:"Czechia",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:80,ucl_assists:20,intl_goals:18,intl_apps:91,intl_assists:14}},
-  {name:"Clarence Seedorf",nat:"Netherlands",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:16,ucl_apps:125,ucl_assists:24,intl_goals:11,intl_apps:87,intl_assists:14}},
-  {name:"Patrick Kluivert",nat:"Netherlands",pos:["FW"],stats:{pl_goals:8,pl_apps:47,pl_assists:8,ucl_goals:33,ucl_apps:68,ucl_assists:16,intl_goals:40,intl_apps:79,intl_assists:14}},
-  {name:"Andrea Pirlo",nat:"Italy",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:84,ucl_assists:28,intl_goals:13,intl_apps:116,intl_assists:28}},
-  {name:"Paolo Maldini",nat:"Italy",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:6,ucl_apps:174,ucl_assists:10,intl_goals:7,intl_apps:126,intl_assists:8}},
-  {name:"Fabio Cannavaro",nat:"Italy",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:2,ucl_apps:88,ucl_assists:4,intl_goals:2,intl_apps:136,intl_assists:4}},
-  {name:"Alessandro Nesta",nat:"Italy",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:2,ucl_apps:99,ucl_assists:4,intl_goals:1,intl_apps:78,intl_assists:2}},
-  {name:"Giorgio Chiellini",nat:"Italy",pos:["DEF"],stats:{pl_goals:2,pl_apps:18,pl_assists:0,ucl_goals:2,ucl_apps:115,ucl_assists:4,intl_goals:8,intl_apps:117,intl_assists:4}},
-  {name:"Leonardo Bonucci",nat:"Italy",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:118,ucl_assists:6,intl_goals:7,intl_apps:121,intl_assists:4}},
-  {name:"Philip Lahm",nat:"Germany",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:2,ucl_apps:113,ucl_assists:20,intl_goals:5,intl_apps:113,intl_assists:14}},
-  {name:"Thomas Müller",nat:"Germany",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:55,ucl_apps:152,ucl_assists:56,intl_goals:45,intl_apps:131,intl_assists:48}},
-  {name:"Miroslav Klose",nat:"Germany",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:20,ucl_apps:52,ucl_assists:8,intl_goals:71,intl_apps:137,intl_assists:24}},
-  {name:"Gerd Müller",nat:"Germany",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:35,ucl_apps:35,ucl_assists:10,intl_goals:68,intl_apps:62,intl_assists:8}},
-  {name:"Karl-Heinz Rummenigge",nat:"Germany",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:28,ucl_apps:39,ucl_assists:10,intl_goals:45,intl_apps:95,intl_assists:12}},
-  {name:"Jürgen Klinsmann",nat:"Germany",pos:["FW"],stats:{pl_goals:29,pl_apps:64,pl_assists:8,ucl_goals:22,ucl_apps:38,ucl_assists:8,intl_goals:47,intl_apps:108,intl_assists:14}},
-  {name:"Lothar Matthäus",nat:"Germany",pos:["MID","DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:23,ucl_apps:74,ucl_assists:14,intl_goals:23,intl_apps:150,intl_assists:12}},
-  {name:"Stefan Effenberg",nat:"Germany",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:48,ucl_assists:16,intl_goals:5,intl_apps:35,intl_assists:6}},
-  {name:"Manuel Neuer",nat:"Germany",pos:["GK"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:102,ucl_assists:0,intl_goals:0,intl_apps:124,intl_assists:0}},
-  {name:"Gianluigi Buffon",nat:"Italy",pos:["GK"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:112,ucl_assists:0,intl_goals:0,intl_apps:176,intl_assists:0}},
-  {name:"Iker Casillas",nat:"Spain",pos:["GK"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:168,ucl_assists:0,intl_goals:0,intl_apps:167,intl_assists:0}},
-  {name:"Luís Figo",nat:"Portugal",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:16,ucl_apps:72,ucl_assists:28,intl_goals:32,intl_apps:127,intl_assists:24}},
-  {name:"Ruud Gullit",nat:"Netherlands",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:12,ucl_apps:20,ucl_assists:10,intl_goals:17,intl_apps:66,intl_assists:16}},
-  {name:"Marco van Basten",nat:"Netherlands",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:22,ucl_apps:28,ucl_assists:10,intl_goals:24,intl_apps:58,intl_assists:8}},
-  {name:"Samuel Eto'o",nat:"Cameroon",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:30,ucl_apps:68,ucl_assists:14,intl_goals:56,intl_apps:118,intl_assists:14}},
-  {name:"Roberto Baggio",nat:"Italy",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:12,ucl_apps:36,ucl_assists:10,intl_goals:27,intl_apps:56,intl_assists:16}},
-  {name:"Francesco Totti",nat:"Italy",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:16,ucl_apps:62,ucl_assists:14,intl_goals:9,intl_apps:58,intl_assists:8}},
-  {name:"Javier Zanetti",nat:"Argentina",pos:["DEF","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:5,ucl_apps:88,ucl_assists:14,intl_goals:5,intl_apps:145,intl_assists:12}},
-  {name:"Hernán Crespo",nat:"Argentina",pos:["FW"],stats:{pl_goals:12,pl_apps:49,pl_assists:4,ucl_goals:18,ucl_apps:52,ucl_assists:10,intl_goals:35,intl_apps:64,intl_assists:10}},
-  {name:"Gabriel Batistuta",nat:"Argentina",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:12,ucl_apps:28,ucl_assists:8,intl_goals:56,intl_apps:78,intl_assists:12}},
-  {name:"Paulo Dybala",nat:"Argentina",pos:["FW","MID"],stats:{pl_goals:6,pl_apps:22,pl_assists:2,ucl_goals:26,ucl_apps:80,ucl_assists:16,intl_goals:29,intl_apps:50,intl_assists:10}},
-  {name:"Lautaro Martínez",nat:"Argentina",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:24,ucl_apps:62,ucl_assists:10,intl_goals:30,intl_apps:70,intl_assists:8}},
-  {name:"Luis Suárez",nat:"Uruguay",pos:["FW"],stats:{pl_goals:82,pl_apps:133,pl_assists:46,ucl_goals:26,ucl_apps:68,ucl_assists:20,intl_goals:68,intl_apps:134,intl_assists:28}},
-  {name:"Edinson Cavani",nat:"Uruguay",pos:["FW"],stats:{pl_goals:19,pl_apps:58,pl_assists:6,ucl_goals:36,ucl_apps:72,ucl_assists:14,intl_goals:58,intl_apps:136,intl_assists:20}},
-  {name:"Diego Forlán",nat:"Uruguay",pos:["FW"],stats:{pl_goals:17,pl_apps:98,pl_assists:10,ucl_goals:12,ucl_apps:42,ucl_assists:8,intl_goals:36,intl_apps:112,intl_assists:12}},
-  {name:"Radamel Falcao",nat:"Colombia",pos:["FW"],stats:{pl_goals:4,pl_apps:29,pl_assists:2,ucl_goals:15,ucl_apps:44,ucl_assists:8,intl_goals:36,intl_apps:109,intl_assists:12}},
-  {name:"James Rodríguez",nat:"Colombia",pos:["MID","FW"],stats:{pl_goals:6,pl_apps:68,pl_assists:12,ucl_goals:7,ucl_apps:36,ucl_assists:14,intl_goals:36,intl_apps:101,intl_assists:22}},
-  {name:"Henrik Larsson",nat:"Sweden",pos:["FW"],stats:{pl_goals:18,pl_apps:48,pl_assists:8,ucl_goals:10,ucl_apps:26,ucl_assists:6,intl_goals:37,intl_apps:106,intl_assists:14}},
-  {name:"Davor Šuker",nat:"Croatia",pos:["FW"],stats:{pl_goals:8,pl_apps:26,pl_assists:4,ucl_goals:10,ucl_apps:24,ucl_assists:4,intl_goals:45,intl_apps:69,intl_assists:10}},
-  {name:"Hristo Stoichkov",nat:"Bulgaria",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:12,ucl_apps:28,ucl_assists:10,intl_goals:37,intl_apps:83,intl_assists:14}},
-  {name:"Gheorghe Hagi",nat:"Romania",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:10,ucl_apps:22,ucl_assists:10,intl_goals:35,intl_apps:125,intl_assists:22}},
-  {name:"Michael Laudrup",nat:"Denmark",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:8,ucl_apps:24,ucl_assists:16,intl_goals:37,intl_apps:104,intl_assists:36}},
-  {name:"Gary Lineker",nat:"England",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:48,intl_apps:80,intl_assists:14}},
-  {name:"Eusébio",nat:"Portugal",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:6,ucl_apps:12,ucl_assists:4,intl_goals:41,intl_apps:64,intl_assists:10}},
-  {name:"Just Fontaine",nat:"France",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:30,intl_apps:21,intl_assists:4}},
-  {name:"Sándor Kocsis",nat:"Hungary",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:75,intl_apps:68,intl_assists:8}},
-  {name:"Ali Daei",nat:"Iran",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:109,intl_apps:149,intl_assists:20}},
-  {name:"Pelé",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:77,intl_apps:92,intl_assists:22}},
-  {name:"Hossam Hassan",nat:"Egypt",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:69,intl_apps:169,intl_assists:14}},
-  {name:"Asamoah Gyan",nat:"Ghana",pos:["FW"],stats:{pl_goals:6,pl_apps:26,pl_assists:2,ucl_goals:2,ucl_apps:4,ucl_assists:0,intl_goals:51,intl_apps:109,intl_assists:10}},
-  {name:"Roger Milla",nat:"Cameroon",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:28,intl_apps:102,intl_assists:6}},
+{name:"Alan Shearer",nat:"England",pos:["FW"],stats:{pl_goals:260,pl_apps:441,pl_assists:65,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:30,intl_apps:63,intl_assists:8}},
+{name:"Andrew Cole",nat:"England",pos:["FW"],stats:{pl_goals:187,pl_apps:414,pl_assists:56,ucl_goals:7,ucl_apps:38,ucl_assists:10,intl_goals:1,intl_apps:15,intl_assists:2}},
+{name:"Wayne Rooney",nat:"England",pos:["FW","MID"],stats:{pl_goals:175,pl_apps:491,pl_assists:103,ucl_goals:30,ucl_apps:83,ucl_assists:22,intl_goals:53,intl_apps:120,intl_assists:30}},
+{name:"Harry Kane",nat:"England",pos:["FW"],stats:{pl_goals:213,pl_apps:320,pl_assists:62,ucl_goals:29,ucl_apps:75,ucl_assists:14,intl_goals:69,intl_apps:98,intl_assists:18}},
+{name:"Jamie Vardy",nat:"England",pos:["FW"],stats:{pl_goals:168,pl_apps:360,pl_assists:47,ucl_goals:6,ucl_apps:12,ucl_assists:2,intl_goals:7,intl_apps:26,intl_assists:3}},
+{name:"Robbie Fowler",nat:"England",pos:["FW"],stats:{pl_goals:163,pl_apps:379,pl_assists:56,ucl_goals:8,ucl_apps:26,ucl_assists:6,intl_goals:7,intl_apps:26,intl_assists:3}},
+{name:"Jermain Defoe",nat:"England",pos:["FW"],stats:{pl_goals:162,pl_apps:496,pl_assists:52,ucl_goals:2,ucl_apps:8,ucl_assists:1,intl_goals:20,intl_apps:57,intl_assists:5}},
+{name:"Michael Owen",nat:"England",pos:["FW"],stats:{pl_goals:150,pl_apps:326,pl_assists:42,ucl_goals:22,ucl_apps:61,ucl_assists:8,intl_goals:40,intl_apps:89,intl_assists:12}},
+{name:"Les Ferdinand",nat:"England",pos:["FW"],stats:{pl_goals:149,pl_apps:351,pl_assists:55,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:5,intl_apps:17,intl_assists:2}},
+{name:"Teddy Sheringham",nat:"England",pos:["FW","MID"],stats:{pl_goals:146,pl_apps:418,pl_assists:76,ucl_goals:5,ucl_apps:28,ucl_assists:8,intl_goals:11,intl_apps:51,intl_assists:10}},
+{name:"Marcus Rashford",nat:"England",pos:["FW","MID"],stats:{pl_goals:102,pl_apps:297,pl_assists:50,ucl_goals:22,ucl_apps:78,ucl_assists:14,intl_goals:17,intl_apps:60,intl_assists:8}},
+{name:"Raheem Sterling",nat:"England",pos:["FW","MID"],stats:{pl_goals:118,pl_apps:339,pl_assists:92,ucl_goals:26,ucl_apps:104,ucl_assists:32,intl_goals:20,intl_apps:82,intl_assists:18}},
+{name:"Ian Wright",nat:"England",pos:["FW"],stats:{pl_goals:113,pl_apps:213,pl_assists:32,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:9,intl_apps:33,intl_assists:3}},
+{name:"Emile Heskey",nat:"England",pos:["FW"],stats:{pl_goals:110,pl_apps:516,pl_assists:65,ucl_goals:4,ucl_apps:17,ucl_assists:5,intl_goals:7,intl_apps:62,intl_assists:12}},
+{name:"Dion Dublin",nat:"England",pos:["FW"],stats:{pl_goals:111,pl_apps:326,pl_assists:41,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:6,intl_apps:4,intl_assists:0}},
+{name:"Peter Crouch",nat:"England",pos:["FW"],stats:{pl_goals:108,pl_apps:468,pl_assists:58,ucl_goals:8,ucl_apps:22,ucl_assists:4,intl_goals:22,intl_apps:42,intl_assists:4}},
+{name:"Darren Bent",nat:"England",pos:["FW"],stats:{pl_goals:106,pl_apps:312,pl_assists:22,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:4,intl_apps:13,intl_assists:1}},
+{name:"Kevin Campbell",nat:"England",pos:["FW"],stats:{pl_goals:101,pl_apps:275,pl_assists:28,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+{name:"Chris Sutton",nat:"England",pos:["FW"],stats:{pl_goals:83,pl_apps:282,pl_assists:40,ucl_goals:3,ucl_apps:10,ucl_assists:4,intl_goals:1,intl_apps:1,intl_assists:0}},
+{name:"Chris Armstrong",nat:"England",pos:["FW"],stats:{pl_goals:80,pl_apps:264,pl_assists:22,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+{name:"Callum Wilson",nat:"England",pos:["FW"],stats:{pl_goals:80,pl_apps:228,pl_assists:28,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:4,intl_apps:17,intl_assists:1}},
+{name:"Ollie Watkins",nat:"England",pos:["FW"],stats:{pl_goals:72,pl_apps:194,pl_assists:28,ucl_goals:0,ucl_apps:4,ucl_assists:2,intl_goals:5,intl_apps:13,intl_assists:2}},
+{name:"Dominic Calvert-Lewin",nat:"England",pos:["FW"],stats:{pl_goals:72,pl_apps:224,pl_assists:14,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:7,intl_apps:11,intl_assists:0}},
+{name:"Bukayo Saka",nat:"England",pos:["FW","MID"],stats:{pl_goals:68,pl_apps:220,pl_assists:62,ucl_goals:14,ucl_apps:52,ucl_assists:16,intl_goals:14,intl_apps:44,intl_assists:12}},
+{name:"Daniel Sturridge",nat:"England",pos:["FW"],stats:{pl_goals:68,pl_apps:160,pl_assists:22,ucl_goals:10,ucl_apps:24,ucl_assists:4,intl_goals:8,intl_apps:26,intl_assists:4}},
+{name:"James Beattie",nat:"England",pos:["FW"],stats:{pl_goals:64,pl_apps:215,pl_assists:16,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:5,intl_apps:5,intl_assists:0}},
+{name:"Stan Collymore",nat:"England",pos:["FW"],stats:{pl_goals:55,pl_apps:163,pl_assists:28,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:3,intl_apps:3,intl_assists:0}},
+{name:"Dean Holdsworth",nat:"England",pos:["FW"],stats:{pl_goals:59,pl_apps:185,pl_assists:18,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+{name:"Charlie Austin",nat:"England",pos:["FW"],stats:{pl_goals:58,pl_apps:158,pl_assists:12,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:1,intl_assists:0}},
+{name:"Jarrod Bowen",nat:"England",pos:["FW","MID"],stats:{pl_goals:56,pl_apps:204,pl_assists:40,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:4,intl_apps:12,intl_assists:2}},
+{name:"Kevin Davies",nat:"England",pos:["FW"],stats:{pl_goals:76,pl_apps:364,pl_assists:30,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:1,intl_assists:0}},
+{name:"Kevin Nolan",nat:"England",pos:["MID"],stats:{pl_goals:74,pl_apps:330,pl_assists:42,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+{name:"Jay Rodriguez",nat:"England",pos:["FW"],stats:{pl_goals:46,pl_apps:176,pl_assists:16,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:1,intl_apps:2,intl_assists:0}},
+{name:"Bobby Zamora",nat:"England",pos:["FW"],stats:{pl_goals:46,pl_apps:192,pl_assists:18,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+{name:"Carlton Cole",nat:"England",pos:["FW"],stats:{pl_goals:38,pl_apps:168,pl_assists:14,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:7,intl_apps:13,intl_assists:2}},
+{name:"Ivan Toney",nat:"England",pos:["FW"],stats:{pl_goals:36,pl_apps:100,pl_assists:10,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:2,intl_apps:4,intl_assists:0}},
+{name:"Marcus Bent",nat:"England",pos:["FW"],stats:{pl_goals:40,pl_apps:168,pl_assists:14,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+{name:"Fraizer Campbell",nat:"England",pos:["FW"],stats:{pl_goals:31,pl_apps:108,pl_assists:10,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+{name:"Glenn Murray",nat:"England",pos:["FW"],stats:{pl_goals:36,pl_apps:106,pl_assists:8,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+{name:"Frank Lampard",nat:"England",pos:["MID"],stats:{pl_goals:177,pl_apps:609,pl_assists:102,ucl_goals:23,ucl_apps:112,ucl_assists:18,intl_goals:29,intl_apps:106,intl_assists:22}},
+{name:"Steven Gerrard",nat:"England",pos:["MID"],stats:{pl_goals:120,pl_apps:504,pl_assists:92,ucl_goals:24,ucl_apps:115,ucl_assists:20,intl_goals:21,intl_apps:114,intl_assists:16}},
+{name:"Paul Scholes",nat:"England",pos:["MID"],stats:{pl_goals:107,pl_apps:499,pl_assists:55,ucl_goals:24,ucl_apps:113,ucl_assists:18,intl_goals:14,intl_apps:66,intl_assists:8}},
+{name:"David Beckham",nat:"England",pos:["MID"],stats:{pl_goals:62,pl_apps:265,pl_assists:80,ucl_goals:15,ucl_apps:82,ucl_assists:30,intl_goals:17,intl_apps:115,intl_assists:42}},
+{name:"James Milner",nat:"England",pos:["MID","DEF"],stats:{pl_goals:56,pl_apps:624,pl_assists:101,ucl_goals:8,ucl_apps:112,ucl_assists:22,intl_goals:1,intl_apps:61,intl_assists:8}},
+{name:"Matt Le Tissier",nat:"England",pos:["MID","FW"],stats:{pl_goals:100,pl_apps:270,pl_assists:47,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:8,intl_assists:0}},
+{name:"Gareth Barry",nat:"England",pos:["MID"],stats:{pl_goals:53,pl_apps:653,pl_assists:55,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:3,intl_apps:53,intl_assists:5}},
+{name:"Phil Foden",nat:"England",pos:["MID","FW"],stats:{pl_goals:74,pl_apps:238,pl_assists:50,ucl_goals:20,ucl_apps:62,ucl_assists:18,intl_goals:12,intl_apps:37,intl_assists:6}},
+{name:"Dele Alli",nat:"England",pos:["MID"],stats:{pl_goals:67,pl_apps:269,pl_assists:41,ucl_goals:12,ucl_apps:26,ucl_assists:8,intl_goals:3,intl_apps:37,intl_assists:3}},
+{name:"Jack Grealish",nat:"England",pos:["MID","FW"],stats:{pl_goals:42,pl_apps:248,pl_assists:48,ucl_goals:6,ucl_apps:40,ucl_assists:10,intl_goals:4,intl_apps:37,intl_assists:6}},
+{name:"Jordan Henderson",nat:"England",pos:["MID"],stats:{pl_goals:42,pl_apps:429,pl_assists:52,ucl_goals:4,ucl_apps:107,ucl_assists:20,intl_goals:3,intl_apps:81,intl_assists:12}},
+{name:"Michael Carrick",nat:"England",pos:["MID"],stats:{pl_goals:24,pl_apps:464,pl_assists:49,ucl_goals:3,ucl_apps:89,ucl_assists:15,intl_goals:2,intl_apps:34,intl_assists:5}},
+{name:"James Maddison",nat:"England",pos:["MID"],stats:{pl_goals:55,pl_apps:248,pl_assists:54,ucl_goals:2,ucl_apps:8,ucl_assists:4,intl_goals:3,intl_apps:8,intl_assists:2}},
+{name:"Declan Rice",nat:"England",pos:["MID"],stats:{pl_goals:14,pl_apps:238,pl_assists:14,ucl_goals:2,ucl_apps:22,ucl_assists:4,intl_goals:8,intl_apps:56,intl_assists:8}},
+{name:"Jude Bellingham",nat:"England",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:20,ucl_apps:42,ucl_assists:14,intl_goals:14,intl_apps:38,intl_assists:8}},
+{name:"Paul Merson",nat:"England",pos:["MID","FW"],stats:{pl_goals:55,pl_apps:230,pl_assists:48,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:3,intl_apps:21,intl_assists:4}},
+{name:"Dennis Wise",nat:"England",pos:["MID"],stats:{pl_goals:53,pl_apps:322,pl_assists:56,ucl_goals:4,ucl_apps:28,ucl_assists:10,intl_goals:1,intl_apps:21,intl_assists:2}},
+{name:"Nick Barmby",nat:"England",pos:["MID","FW"],stats:{pl_goals:57,pl_apps:258,pl_assists:38,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:4,intl_apps:23,intl_assists:4}},
+{name:"Scott Parker",nat:"England",pos:["MID"],stats:{pl_goals:21,pl_apps:344,pl_assists:28,ucl_goals:0,ucl_apps:6,ucl_assists:2,intl_goals:0,intl_apps:18,intl_assists:2}},
+{name:"Darren Anderton",nat:"England",pos:["MID"],stats:{pl_goals:34,pl_apps:299,pl_assists:48,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:7,intl_apps:30,intl_assists:6}},
+{name:"Nicky Butt",nat:"England",pos:["MID"],stats:{pl_goals:27,pl_apps:270,pl_assists:22,ucl_goals:2,ucl_apps:60,ucl_assists:6,intl_goals:0,intl_apps:39,intl_assists:4}},
+{name:"Trent Alexander-Arnold",nat:"England",pos:["DEF","MID"],stats:{pl_goals:20,pl_apps:272,pl_assists:67,ucl_goals:6,ucl_apps:72,ucl_assists:22,intl_goals:3,intl_apps:29,intl_assists:6}},
+{name:"Leighton Baines",nat:"England",pos:["DEF"],stats:{pl_goals:11,pl_apps:420,pl_assists:54,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:1,intl_apps:30,intl_assists:4}},
+{name:"Ashley Cole",nat:"England",pos:["DEF"],stats:{pl_goals:7,pl_apps:385,pl_assists:32,ucl_goals:5,ucl_apps:98,ucl_assists:12,intl_goals:0,intl_apps:107,intl_assists:6}},
+{name:"Gary Neville",nat:"England",pos:["DEF"],stats:{pl_goals:5,pl_apps:400,pl_assists:37,ucl_goals:0,ucl_apps:75,ucl_assists:12,intl_goals:0,intl_apps:85,intl_assists:8}},
+{name:"Phil Neville",nat:"England",pos:["DEF","MID"],stats:{pl_goals:6,pl_apps:386,pl_assists:20,ucl_goals:1,ucl_apps:42,ucl_assists:4,intl_goals:0,intl_apps:59,intl_assists:4}},
+{name:"Graeme Le Saux",nat:"England",pos:["DEF"],stats:{pl_goals:8,pl_apps:336,pl_assists:44,ucl_goals:1,ucl_apps:18,ucl_assists:4,intl_goals:1,intl_apps:36,intl_assists:4}},
+{name:"Luke Shaw",nat:"England",pos:["DEF"],stats:{pl_goals:8,pl_apps:254,pl_assists:42,ucl_goals:2,ucl_apps:52,ucl_assists:10,intl_goals:1,intl_apps:28,intl_assists:4}},
+{name:"Kyle Walker",nat:"England",pos:["DEF"],stats:{pl_goals:4,pl_apps:376,pl_assists:44,ucl_goals:2,ucl_apps:90,ucl_assists:10,intl_goals:1,intl_apps:78,intl_assists:6}},
+{name:"Kieran Trippier",nat:"England",pos:["DEF"],stats:{pl_goals:12,pl_apps:237,pl_assists:50,ucl_goals:2,ucl_apps:44,ucl_assists:8,intl_goals:2,intl_apps:52,intl_assists:10}},
+{name:"Reece James",nat:"England",pos:["DEF"],stats:{pl_goals:8,pl_apps:156,pl_assists:26,ucl_goals:2,ucl_apps:38,ucl_assists:8,intl_goals:0,intl_apps:22,intl_assists:2}},
+{name:"Ben Chilwell",nat:"England",pos:["DEF"],stats:{pl_goals:10,pl_apps:176,pl_assists:22,ucl_goals:2,ucl_apps:28,ucl_assists:6,intl_goals:1,intl_apps:22,intl_assists:4}},
+{name:"Gary Pallister",nat:"England",pos:["DEF"],stats:{pl_goals:8,pl_apps:314,pl_assists:6,ucl_goals:0,ucl_apps:54,ucl_assists:4,intl_goals:2,intl_apps:22,intl_assists:0}},
+{name:"David Unsworth",nat:"England",pos:["DEF"],stats:{pl_goals:32,pl_apps:352,pl_assists:14,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:1,intl_apps:1,intl_assists:0}},
+{name:"Nemanja Vidić",nat:"Serbia",pos:["DEF"],stats:{pl_goals:21,pl_apps:300,pl_assists:6,ucl_goals:2,ucl_apps:72,ucl_assists:2,intl_goals:3,intl_apps:56,intl_assists:2}},
+{name:"John O'Shea",nat:"Ireland",pos:["DEF"],stats:{pl_goals:8,pl_apps:393,pl_assists:16,ucl_goals:2,ucl_apps:64,ucl_assists:4,intl_goals:3,intl_apps:118,intl_assists:6}},
+{name:"Richard Dunne",nat:"Ireland",pos:["DEF"],stats:{pl_goals:8,pl_apps:364,pl_assists:10,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:8,intl_apps:80,intl_assists:2}},
+{name:"Gabriel Heinze",nat:"Argentina",pos:["DEF"],stats:{pl_goals:4,pl_apps:96,pl_assists:4,ucl_goals:2,ucl_apps:22,ucl_assists:2,intl_goals:4,intl_apps:73,intl_assists:4}},
+{name:"David Seaman",nat:"England",pos:["GK"],stats:{pl_goals:0,pl_apps:405,pl_assists:0,ucl_goals:0,ucl_apps:38,ucl_assists:0,intl_goals:0,intl_apps:75,intl_assists:0}},
+{name:"David James",nat:"England",pos:["GK"],stats:{pl_goals:0,pl_apps:572,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:53,intl_assists:0}},
+{name:"Nigel Martyn",nat:"England",pos:["GK"],stats:{pl_goals:0,pl_apps:372,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:23,intl_assists:0}},
+{name:"Paul Robinson",nat:"England",pos:["GK"],stats:{pl_goals:1,pl_apps:338,pl_assists:0,ucl_goals:0,ucl_apps:12,ucl_assists:0,intl_goals:0,intl_apps:41,intl_assists:0}},
+{name:"Rob Green",nat:"England",pos:["GK"],stats:{pl_goals:0,pl_apps:356,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:12,intl_assists:0}},
+{name:"Joe Hart",nat:"England",pos:["GK"],stats:{pl_goals:0,pl_apps:348,pl_assists:0,ucl_goals:0,ucl_apps:38,ucl_assists:0,intl_goals:0,intl_apps:75,intl_assists:0}},
+{name:"Ben Foster",nat:"England",pos:["GK"],stats:{pl_goals:0,pl_apps:253,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:8,intl_assists:0}},
+{name:"Brad Friedel",nat:"USA",pos:["GK"],stats:{pl_goals:0,pl_apps:450,pl_assists:0,ucl_goals:0,ucl_apps:6,ucl_assists:0,intl_goals:0,intl_apps:82,intl_assists:0}},
+{name:"Mark Schwarzer",nat:"Australia",pos:["GK"],stats:{pl_goals:0,pl_apps:514,pl_assists:0,ucl_goals:0,ucl_apps:12,ucl_assists:0,intl_goals:0,intl_apps:109,intl_assists:0}},
+{name:"Tim Howard",nat:"USA",pos:["GK"],stats:{pl_goals:0,pl_apps:351,pl_assists:0,ucl_goals:0,ucl_apps:28,ucl_assists:0,intl_goals:0,intl_apps:121,intl_assists:0}},
+{name:"Jussi Jääskeläinen",nat:"Finland",pos:["GK"],stats:{pl_goals:0,pl_apps:325,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:56,intl_assists:0}},
+{name:"Thomas Sørensen",nat:"Denmark",pos:["GK"],stats:{pl_goals:0,pl_apps:308,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:101,intl_assists:0}},
+{name:"Shay Given",nat:"Ireland",pos:["GK"],stats:{pl_goals:0,pl_apps:398,pl_assists:0,ucl_goals:0,ucl_apps:4,ucl_assists:0,intl_goals:0,intl_apps:134,intl_assists:0}},
+{name:"Dean Kiely",nat:"Ireland",pos:["GK"],stats:{pl_goals:0,pl_apps:115,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:11,intl_assists:0}},
+{name:"Carlo Cudicini",nat:"Italy",pos:["GK"],stats:{pl_goals:0,pl_apps:98,pl_assists:0,ucl_goals:0,ucl_apps:12,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+{name:"Heurelho Gomes",nat:"Brazil",pos:["GK"],stats:{pl_goals:0,pl_apps:140,pl_assists:0,ucl_goals:0,ucl_apps:4,ucl_assists:0,intl_goals:0,intl_apps:4,intl_assists:0}},
+{name:"Peter Schmeichel",nat:"Denmark",pos:["GK"],stats:{pl_goals:0,pl_apps:310,pl_assists:0,ucl_goals:0,ucl_apps:62,ucl_assists:0,intl_goals:0,intl_apps:129,intl_assists:0}},
+{name:"Petr Čech",nat:"Czechia",pos:["GK"],stats:{pl_goals:0,pl_apps:443,pl_assists:0,ucl_goals:0,ucl_apps:112,ucl_assists:0,intl_goals:0,intl_apps:124,intl_assists:0}},
+{name:"Hugo Lloris",nat:"France",pos:["GK"],stats:{pl_goals:0,pl_apps:400,pl_assists:0,ucl_goals:0,ucl_apps:68,ucl_assists:0,intl_goals:0,intl_apps:145,intl_assists:0}},
+{name:"Edwin van der Sar",nat:"Netherlands",pos:["GK"],stats:{pl_goals:0,pl_apps:266,pl_assists:0,ucl_goals:0,ucl_apps:86,ucl_assists:0,intl_goals:0,intl_apps:130,intl_assists:0}},
+{name:"Iker Casillas",nat:"Spain",pos:["GK"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:168,ucl_assists:0,intl_goals:0,intl_apps:167,intl_assists:0}},
+{name:"Gianluigi Buffon",nat:"Italy",pos:["GK"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:112,ucl_assists:0,intl_goals:0,intl_apps:176,intl_assists:0}},
+{name:"Manuel Neuer",nat:"Germany",pos:["GK"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:102,ucl_assists:0,intl_goals:0,intl_apps:124,intl_assists:0}},
+{name:"Sepp Maier",nat:"Germany",pos:["GK"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:28,ucl_assists:0,intl_goals:0,intl_apps:95,intl_assists:0}},
+{name:"Dino Zoff",nat:"Italy",pos:["GK"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:14,ucl_assists:0,intl_goals:0,intl_apps:112,intl_assists:0}},
+{name:"Oliver Kahn",nat:"Germany",pos:["GK"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:102,ucl_assists:0,intl_goals:0,intl_apps:86,intl_assists:0}},
+{name:"Victor Valdés",nat:"Spain",pos:["GK"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:68,ucl_assists:0,intl_goals:0,intl_apps:20,intl_assists:0}},
+{name:"Jens Lehmann",nat:"Germany",pos:["GK"],stats:{pl_goals:0,pl_apps:142,pl_assists:0,ucl_goals:0,ucl_apps:36,ucl_assists:0,intl_goals:0,intl_apps:61,intl_assists:0}},
+{name:"Vítor Baía",nat:"Portugal",pos:["GK"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:72,ucl_assists:0,intl_goals:0,intl_apps:80,intl_assists:0}},
+{name:"Ryan Giggs",nat:"Wales",pos:["MID","FW"],stats:{pl_goals:109,pl_apps:672,pl_assists:162,ucl_goals:28,ucl_apps:142,ucl_assists:48,intl_goals:12,intl_apps:64,intl_assists:14}},
+{name:"Gareth Bale",nat:"Wales",pos:["FW","MID"],stats:{pl_goals:67,pl_apps:203,pl_assists:42,ucl_goals:27,ucl_apps:86,ucl_assists:18,intl_goals:41,intl_apps:111,intl_assists:14}},
+{name:"Craig Bellamy",nat:"Wales",pos:["FW"],stats:{pl_goals:60,pl_apps:292,pl_assists:52,ucl_goals:6,ucl_apps:30,ucl_assists:6,intl_goals:19,intl_apps:78,intl_assists:8}},
+{name:"John Hartson",nat:"Wales",pos:["FW"],stats:{pl_goals:82,pl_apps:228,pl_assists:30,ucl_goals:5,ucl_apps:20,ucl_assists:4,intl_goals:14,intl_apps:51,intl_assists:4}},
+{name:"Aaron Ramsey",nat:"Wales",pos:["MID"],stats:{pl_goals:40,pl_apps:267,pl_assists:48,ucl_goals:16,ucl_apps:65,ucl_assists:18,intl_goals:20,intl_apps:76,intl_assists:14}},
+{name:"Mark Hughes",nat:"Wales",pos:["FW"],stats:{pl_goals:39,pl_apps:269,pl_assists:28,ucl_goals:0,ucl_apps:10,ucl_assists:4,intl_goals:16,intl_apps:72,intl_assists:8}},
+{name:"Dean Saunders",nat:"Wales",pos:["FW"],stats:{pl_goals:41,pl_apps:139,pl_assists:22,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:22,intl_apps:75,intl_assists:8}},
+{name:"Nathan Blake",nat:"Wales",pos:["FW"],stats:{pl_goals:41,pl_apps:161,pl_assists:18,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:4,intl_apps:29,intl_assists:3}},
+{name:"Robert Earnshaw",nat:"Wales",pos:["FW"],stats:{pl_goals:29,pl_apps:106,pl_assists:14,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:16,intl_apps:59,intl_assists:6}},
+{name:"Daniel James",nat:"Wales",pos:["FW","MID"],stats:{pl_goals:24,pl_apps:186,pl_assists:18,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:8,intl_apps:62,intl_assists:6}},
+{name:"Kieffer Moore",nat:"Wales",pos:["FW"],stats:{pl_goals:16,pl_apps:104,pl_assists:8,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:18,intl_apps:56,intl_assists:4}},
+{name:"Ben Davies",nat:"Wales",pos:["DEF"],stats:{pl_goals:5,pl_apps:296,pl_assists:22,ucl_goals:0,ucl_apps:20,ucl_assists:4,intl_goals:1,intl_apps:80,intl_assists:6}},
+{name:"Joe Allen",nat:"Wales",pos:["MID"],stats:{pl_goals:18,pl_apps:168,pl_assists:22,ucl_goals:2,ucl_apps:14,ucl_assists:4,intl_goals:4,intl_apps:74,intl_assists:8}},
+{name:"Duncan Ferguson",nat:"Scotland",pos:["FW"],stats:{pl_goals:72,pl_apps:239,pl_assists:20,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:7,intl_apps:7,intl_assists:0}},
+{name:"Kevin Gallacher",nat:"Scotland",pos:["FW"],stats:{pl_goals:34,pl_apps:116,pl_assists:16,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:9,intl_apps:53,intl_assists:8}},
+{name:"Andy Robertson",nat:"Scotland",pos:["DEF"],stats:{pl_goals:9,pl_apps:275,pl_assists:60,ucl_goals:3,ucl_apps:90,ucl_assists:18,intl_goals:3,intl_apps:74,intl_assists:8}},
+{name:"John McGinn",nat:"Scotland",pos:["MID"],stats:{pl_goals:32,pl_apps:175,pl_assists:28,ucl_goals:4,ucl_apps:16,ucl_assists:6,intl_goals:17,intl_apps:68,intl_assists:8}},
+{name:"Darren Fletcher",nat:"Scotland",pos:["MID"],stats:{pl_goals:24,pl_apps:342,pl_assists:36,ucl_goals:3,ucl_apps:58,ucl_assists:8,intl_goals:5,intl_apps:80,intl_assists:4}},
+{name:"Robert Snodgrass",nat:"Scotland",pos:["MID"],stats:{pl_goals:37,pl_apps:180,pl_assists:36,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:7,intl_apps:28,intl_assists:4}},
+{name:"Gary McAllister",nat:"Scotland",pos:["MID"],stats:{pl_goals:28,pl_apps:202,pl_assists:40,ucl_goals:2,ucl_apps:8,ucl_assists:4,intl_goals:5,intl_apps:57,intl_assists:8}},
+{name:"Don Hutchison",nat:"Scotland",pos:["MID"],stats:{pl_goals:22,pl_apps:206,pl_assists:18,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:6,intl_apps:26,intl_assists:2}},
+{name:"James McFadden",nat:"Scotland",pos:["FW","MID"],stats:{pl_goals:24,pl_apps:84,pl_assists:10,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:15,intl_apps:48,intl_assists:6}},
+{name:"Roy Keane",nat:"Ireland",pos:["MID"],stats:{pl_goals:51,pl_apps:366,pl_assists:40,ucl_goals:0,ucl_apps:54,ucl_assists:10,intl_goals:9,intl_apps:67,intl_assists:8}},
+{name:"Robbie Keane",nat:"Ireland",pos:["FW"],stats:{pl_goals:126,pl_apps:461,pl_assists:72,ucl_goals:6,ucl_apps:28,ucl_assists:8,intl_goals:68,intl_apps:146,intl_assists:24}},
+{name:"Niall Quinn",nat:"Ireland",pos:["FW"],stats:{pl_goals:60,pl_apps:215,pl_assists:38,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:21,intl_apps:92,intl_assists:10}},
+{name:"Tony Cascarino",nat:"Ireland",pos:["FW"],stats:{pl_goals:36,pl_apps:104,pl_assists:12,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:19,intl_apps:88,intl_assists:6}},
+{name:"Damien Duff",nat:"Ireland",pos:["MID","FW"],stats:{pl_goals:46,pl_apps:285,pl_assists:62,ucl_goals:4,ucl_apps:28,ucl_assists:10,intl_goals:8,intl_apps:100,intl_assists:14}},
+{name:"Shane Long",nat:"Ireland",pos:["FW"],stats:{pl_goals:56,pl_apps:293,pl_assists:28,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:17,intl_apps:88,intl_assists:6}},
+{name:"Denis Irwin",nat:"Ireland",pos:["DEF"],stats:{pl_goals:22,pl_apps:296,pl_assists:28,ucl_goals:4,ucl_apps:54,ucl_assists:8,intl_goals:4,intl_apps:56,intl_assists:4}},
+{name:"Séamus Coleman",nat:"Ireland",pos:["DEF"],stats:{pl_goals:20,pl_apps:364,pl_assists:36,ucl_goals:1,ucl_apps:8,ucl_assists:2,intl_goals:5,intl_apps:72,intl_assists:8}},
+{name:"Jon Walters",nat:"Ireland",pos:["FW"],stats:{pl_goals:37,pl_apps:178,pl_assists:28,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:14,intl_apps:54,intl_assists:4}},
+{name:"Kevin Doyle",nat:"Ireland",pos:["FW"],stats:{pl_goals:37,pl_apps:181,pl_assists:22,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:14,intl_apps:98,intl_assists:6}},
+{name:"Matt Doherty",nat:"Ireland",pos:["DEF"],stats:{pl_goals:10,pl_apps:178,pl_assists:34,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:3,intl_apps:42,intl_assists:4}},
+{name:"Ian Harte",nat:"Ireland",pos:["DEF"],stats:{pl_goals:18,pl_apps:196,pl_assists:36,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:11,intl_apps:64,intl_assists:8}},
+{name:"Steve Staunton",nat:"Ireland",pos:["DEF"],stats:{pl_goals:6,pl_apps:168,pl_assists:10,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:8,intl_apps:102,intl_assists:6}},
+{name:"Wes Hoolahan",nat:"Ireland",pos:["MID"],stats:{pl_goals:30,pl_apps:163,pl_assists:38,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:3,intl_apps:43,intl_assists:4}},
+{name:"Robbie Brady",nat:"Ireland",pos:["MID","DEF"],stats:{pl_goals:16,pl_apps:122,pl_assists:22,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:5,intl_apps:68,intl_assists:8}},
+{name:"Callum Robinson",nat:"Ireland",pos:["FW","MID"],stats:{pl_goals:16,pl_apps:96,pl_assists:10,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:11,intl_apps:40,intl_assists:6}},
+{name:"Keith Andrews",nat:"Ireland",pos:["MID"],stats:{pl_goals:8,pl_apps:88,pl_assists:12,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:3,intl_apps:35,intl_assists:4}},
+{name:"Thierry Henry",nat:"France",pos:["FW"],stats:{pl_goals:175,pl_apps:258,pl_assists:74,ucl_goals:50,ucl_apps:112,ucl_assists:28,intl_goals:51,intl_apps:123,intl_assists:30}},
+{name:"Nicolas Anelka",nat:"France",pos:["FW"],stats:{pl_goals:125,pl_apps:298,pl_assists:40,ucl_goals:12,ucl_apps:52,ucl_assists:10,intl_goals:14,intl_apps:69,intl_assists:8}},
+{name:"Olivier Giroud",nat:"France",pos:["FW"],stats:{pl_goals:105,pl_apps:253,pl_assists:42,ucl_goals:26,ucl_apps:97,ucl_assists:16,intl_goals:57,intl_apps:132,intl_assists:18}},
+{name:"Robert Pires",nat:"France",pos:["MID","FW"],stats:{pl_goals:84,pl_apps:284,pl_assists:74,ucl_goals:10,ucl_apps:45,ucl_assists:14,intl_goals:14,intl_apps:79,intl_assists:20}},
+{name:"Louis Saha",nat:"France",pos:["FW"],stats:{pl_goals:85,pl_apps:253,pl_assists:36,ucl_goals:8,ucl_apps:32,ucl_assists:6,intl_goals:4,intl_apps:20,intl_assists:2}},
+{name:"Sylvain Wiltord",nat:"France",pos:["FW","MID"],stats:{pl_goals:48,pl_apps:189,pl_assists:30,ucl_goals:4,ucl_apps:22,ucl_assists:8,intl_goals:26,intl_apps:92,intl_assists:14}},
+{name:"Samir Nasri",nat:"France",pos:["MID"],stats:{pl_goals:50,pl_apps:244,pl_assists:58,ucl_goals:9,ucl_apps:62,ucl_assists:16,intl_goals:5,intl_apps:41,intl_assists:8}},
+{name:"Alexandre Lacazette",nat:"France",pos:["FW"],stats:{pl_goals:67,pl_apps:178,pl_assists:32,ucl_goals:6,ucl_apps:20,ucl_assists:6,intl_goals:4,intl_apps:16,intl_assists:2}},
+{name:"Djibril Cissé",nat:"France",pos:["FW"],stats:{pl_goals:41,pl_apps:106,pl_assists:18,ucl_goals:8,ucl_apps:22,ucl_assists:4,intl_goals:9,intl_apps:41,intl_assists:4}},
+{name:"Loïc Rémy",nat:"France",pos:["FW"],stats:{pl_goals:34,pl_apps:104,pl_assists:12,ucl_goals:3,ucl_apps:8,ucl_assists:2,intl_goals:7,intl_apps:25,intl_assists:2}},
+{name:"Bafétimbi Gomis",nat:"France",pos:["FW"],stats:{pl_goals:26,pl_apps:76,pl_assists:10,ucl_goals:2,ucl_apps:6,ucl_assists:2,intl_goals:8,intl_apps:12,intl_assists:2}},
+{name:"Laurent Blanc",nat:"France",pos:["DEF"],stats:{pl_goals:4,pl_apps:48,pl_assists:4,ucl_goals:4,ucl_apps:30,ucl_assists:4,intl_goals:16,intl_apps:97,intl_assists:8}},
+{name:"Emmanuel Petit",nat:"France",pos:["MID"],stats:{pl_goals:8,pl_apps:120,pl_assists:20,ucl_goals:4,ucl_apps:28,ucl_assists:8,intl_goals:6,intl_apps:63,intl_assists:10}},
+{name:"Yohan Cabaye",nat:"France",pos:["MID"],stats:{pl_goals:22,pl_apps:150,pl_assists:28,ucl_goals:2,ucl_apps:8,ucl_assists:4,intl_goals:5,intl_apps:48,intl_assists:8}},
+{name:"Moussa Sissoko",nat:"France",pos:["MID"],stats:{pl_goals:14,pl_apps:256,pl_assists:24,ucl_goals:5,ucl_apps:32,ucl_assists:8,intl_goals:3,intl_apps:69,intl_assists:6}},
+{name:"William Gallas",nat:"France",pos:["DEF"],stats:{pl_goals:17,pl_apps:324,pl_assists:8,ucl_goals:2,ucl_apps:62,ucl_assists:4,intl_goals:5,intl_apps:84,intl_assists:4}},
+{name:"Patrice Evra",nat:"France",pos:["DEF"],stats:{pl_goals:8,pl_apps:379,pl_assists:38,ucl_goals:3,ucl_apps:106,ucl_assists:14,intl_goals:0,intl_apps:81,intl_assists:6}},
+{name:"Bacary Sagna",nat:"France",pos:["DEF"],stats:{pl_goals:3,pl_apps:284,pl_assists:24,ucl_goals:1,ucl_apps:30,ucl_assists:6,intl_goals:0,intl_apps:65,intl_assists:4}},
+{name:"Gael Clichy",nat:"France",pos:["DEF"],stats:{pl_goals:3,pl_apps:311,pl_assists:24,ucl_goals:0,ucl_apps:22,ucl_assists:4,intl_goals:0,intl_apps:25,intl_assists:2}},
+{name:"Morgan Schneiderlin",nat:"France",pos:["MID"],stats:{pl_goals:10,pl_apps:209,pl_assists:20,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:16,intl_assists:2}},
+{name:"Mathieu Flamini",nat:"France",pos:["MID"],stats:{pl_goals:8,pl_apps:229,pl_assists:14,ucl_goals:2,ucl_apps:40,ucl_assists:6,intl_goals:0,intl_apps:9,intl_assists:0}},
+{name:"N'Golo Kanté",nat:"France",pos:["MID"],stats:{pl_goals:20,pl_apps:293,pl_assists:28,ucl_goals:4,ucl_apps:72,ucl_assists:10,intl_goals:2,intl_apps:56,intl_assists:6}},
+{name:"Paul Pogba",nat:"France",pos:["MID"],stats:{pl_goals:38,pl_apps:233,pl_assists:52,ucl_goals:10,ucl_apps:56,ucl_assists:18,intl_goals:11,intl_apps:91,intl_assists:18}},
+{name:"Patrick Vieira",nat:"France",pos:["MID"],stats:{pl_goals:33,pl_apps:307,pl_assists:58,ucl_goals:11,ucl_apps:75,ucl_assists:16,intl_goals:6,intl_apps:107,intl_assists:14}},
+{name:"Raphael Varane",nat:"France",pos:["DEF"],stats:{pl_goals:4,pl_apps:104,pl_assists:4,ucl_goals:8,ucl_apps:120,ucl_assists:6,intl_goals:12,intl_apps:93,intl_assists:4}},
+{name:"Zinedine Zidane",nat:"France",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:77,ucl_assists:30,intl_goals:31,intl_apps:108,intl_assists:32}},
+{name:"Karim Benzema",nat:"France",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:90,ucl_apps:162,ucl_assists:36,intl_goals:37,intl_apps:97,intl_assists:18}},
+{name:"Kylian Mbappé",nat:"France",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:49,ucl_apps:92,ucl_assists:28,intl_goals:52,intl_apps:97,intl_assists:30}},
+{name:"Antoine Griezmann",nat:"France",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:20,ucl_apps:75,ucl_assists:18,intl_goals:57,intl_apps:134,intl_assists:30}},
+{name:"Lilian Thuram",nat:"France",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:58,ucl_assists:4,intl_goals:2,intl_apps:142,intl_assists:6}},
+{name:"Franck Ribéry",nat:"France",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:20,ucl_apps:88,ucl_assists:30,intl_goals:16,intl_apps:81,intl_assists:24}},
+{name:"Just Fontaine",nat:"France",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:30,intl_apps:21,intl_assists:4}},
+{name:"Youri Djorkaeff",nat:"France",pos:["MID","FW"],stats:{pl_goals:10,pl_apps:50,pl_assists:8,ucl_goals:8,ucl_apps:22,ucl_assists:8,intl_goals:28,intl_apps:82,intl_assists:14}},
+{name:"Marcel Desailly",nat:"France",pos:["DEF","MID"],stats:{pl_goals:4,pl_apps:158,pl_assists:6,ucl_goals:4,ucl_apps:58,ucl_assists:4,intl_goals:3,intl_apps:116,intl_assists:4}},
+{name:"Didier Deschamps",nat:"France",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:2,ucl_apps:38,ucl_assists:6,intl_goals:4,intl_apps:103,intl_assists:8}},
+{name:"Dennis Bergkamp",nat:"Netherlands",pos:["FW","MID"],stats:{pl_goals:87,pl_apps:315,pl_assists:94,ucl_goals:8,ucl_apps:48,ucl_assists:18,intl_goals:37,intl_apps:79,intl_assists:24}},
+{name:"Robin van Persie",nat:"Netherlands",pos:["FW"],stats:{pl_goals:144,pl_apps:280,pl_assists:54,ucl_goals:16,ucl_apps:74,ucl_assists:12,intl_goals:50,intl_apps:102,intl_assists:18}},
+{name:"Ruud van Nistelrooy",nat:"Netherlands",pos:["FW"],stats:{pl_goals:95,pl_apps:150,pl_assists:22,ucl_goals:60,ucl_apps:73,ucl_assists:20,intl_goals:35,intl_apps:70,intl_assists:8}},
+{name:"Jimmy Floyd Hasselbaink",nat:"Netherlands",pos:["FW"],stats:{pl_goals:87,pl_apps:177,pl_assists:28,ucl_goals:6,ucl_apps:24,ucl_assists:4,intl_goals:9,intl_apps:23,intl_assists:2}},
+{name:"Arjen Robben",nat:"Netherlands",pos:["FW","MID"],stats:{pl_goals:28,pl_apps:106,pl_assists:20,ucl_goals:24,ucl_apps:104,ucl_assists:36,intl_goals:37,intl_apps:96,intl_assists:20}},
+{name:"Dirk Kuyt",nat:"Netherlands",pos:["FW","MID"],stats:{pl_goals:71,pl_apps:285,pl_assists:50,ucl_goals:20,ucl_apps:60,ucl_assists:14,intl_goals:24,intl_apps:104,intl_assists:14}},
+{name:"Marc Overmars",nat:"Netherlands",pos:["MID","FW"],stats:{pl_goals:41,pl_apps:142,pl_assists:34,ucl_goals:5,ucl_apps:30,ucl_assists:10,intl_goals:17,intl_apps:86,intl_assists:14}},
+{name:"Pierre van Hooijdonk",nat:"Netherlands",pos:["FW"],stats:{pl_goals:31,pl_apps:65,pl_assists:10,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:11,intl_apps:46,intl_assists:4}},
+{name:"Boudewijn Zenden",nat:"Netherlands",pos:["MID","FW"],stats:{pl_goals:27,pl_apps:162,pl_assists:34,ucl_goals:4,ucl_apps:28,ucl_assists:8,intl_goals:7,intl_apps:54,intl_assists:8}},
+{name:"Virgil van Dijk",nat:"Netherlands",pos:["DEF"],stats:{pl_goals:12,pl_apps:198,pl_assists:8,ucl_goals:3,ucl_apps:68,ucl_assists:4,intl_goals:7,intl_apps:69,intl_assists:4}},
+{name:"Georginio Wijnaldum",nat:"Netherlands",pos:["MID"],stats:{pl_goals:22,pl_apps:237,pl_assists:28,ucl_goals:8,ucl_apps:80,ucl_assists:14,intl_goals:26,intl_apps:87,intl_assists:16}},
+{name:"Memphis Depay",nat:"Netherlands",pos:["FW","MID"],stats:{pl_goals:6,pl_apps:53,pl_assists:8,ucl_goals:6,ucl_apps:26,ucl_assists:4,intl_goals:44,intl_apps:88,intl_assists:18}},
+{name:"Rafael van der Vaart",nat:"Netherlands",pos:["MID"],stats:{pl_goals:24,pl_apps:90,pl_assists:24,ucl_goals:6,ucl_apps:28,ucl_assists:10,intl_goals:25,intl_apps:109,intl_assists:22}},
+{name:"Ryan Babel",nat:"Netherlands",pos:["FW","MID"],stats:{pl_goals:15,pl_apps:91,pl_assists:16,ucl_goals:4,ucl_apps:14,ucl_assists:4,intl_goals:10,intl_apps:70,intl_assists:8}},
+{name:"Nigel de Jong",nat:"Netherlands",pos:["MID"],stats:{pl_goals:4,pl_apps:150,pl_assists:10,ucl_goals:2,ucl_apps:18,ucl_assists:4,intl_goals:2,intl_apps:74,intl_assists:4}},
+{name:"Daley Blind",nat:"Netherlands",pos:["DEF","MID"],stats:{pl_goals:3,pl_apps:96,pl_assists:14,ucl_goals:2,ucl_apps:44,ucl_assists:8,intl_goals:4,intl_apps:98,intl_assists:10}},
+{name:"George Boateng",nat:"Netherlands",pos:["MID"],stats:{pl_goals:18,pl_apps:222,pl_assists:18,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:10,intl_assists:0}},
+{name:"Patrick Kluivert",nat:"Netherlands",pos:["FW"],stats:{pl_goals:8,pl_apps:47,pl_assists:8,ucl_goals:33,ucl_apps:68,ucl_assists:16,intl_goals:40,intl_apps:79,intl_assists:14}},
+{name:"Clarence Seedorf",nat:"Netherlands",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:16,ucl_apps:125,ucl_assists:24,intl_goals:11,intl_apps:87,intl_assists:14}},
+{name:"Ruud Gullit",nat:"Netherlands",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:12,ucl_apps:20,ucl_assists:10,intl_goals:17,intl_apps:66,intl_assists:16}},
+{name:"Marco van Basten",nat:"Netherlands",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:22,ucl_apps:28,ucl_assists:10,intl_goals:24,intl_apps:58,intl_assists:8}},
+{name:"Cody Gakpo",nat:"Netherlands",pos:["FW","MID"],stats:{pl_goals:38,pl_apps:104,pl_assists:18,ucl_goals:8,ucl_apps:28,ucl_assists:8,intl_goals:16,intl_apps:50,intl_assists:10}},
+{name:"Klaas-Jan Huntelaar",nat:"Netherlands",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:28,ucl_apps:58,ucl_assists:8,intl_goals:42,intl_apps:76,intl_assists:10}},
+{name:"Gerd Müller",nat:"Germany",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:35,ucl_apps:35,ucl_assists:10,intl_goals:68,intl_apps:62,intl_assists:8}},
+{name:"Miroslav Klose",nat:"Germany",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:20,ucl_apps:52,ucl_assists:8,intl_goals:71,intl_apps:137,intl_assists:24}},
+{name:"Thomas Müller",nat:"Germany",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:55,ucl_apps:152,ucl_assists:56,intl_goals:45,intl_apps:131,intl_assists:48}},
+{name:"Jürgen Klinsmann",nat:"Germany",pos:["FW"],stats:{pl_goals:29,pl_apps:64,pl_assists:8,ucl_goals:22,ucl_apps:38,ucl_assists:8,intl_goals:47,intl_apps:108,intl_assists:14}},
+{name:"Karl-Heinz Rummenigge",nat:"Germany",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:28,ucl_apps:39,ucl_assists:10,intl_goals:45,intl_apps:95,intl_assists:12}},
+{name:"Lothar Matthäus",nat:"Germany",pos:["MID","DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:23,ucl_apps:74,ucl_assists:14,intl_goals:23,intl_apps:150,intl_assists:12}},
+{name:"Franz Beckenbauer",nat:"Germany",pos:["DEF","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:6,ucl_apps:38,ucl_assists:8,intl_goals:14,intl_apps:103,intl_assists:10}},
+{name:"Stefan Effenberg",nat:"Germany",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:48,ucl_assists:16,intl_goals:5,intl_apps:35,intl_assists:6}},
+{name:"Mesut Özil",nat:"Germany",pos:["MID"],stats:{pl_goals:35,pl_apps:254,pl_assists:77,ucl_goals:15,ucl_apps:92,ucl_assists:30,intl_goals:23,intl_apps:92,intl_assists:40}},
+{name:"Leroy Sané",nat:"Germany",pos:["FW","MID"],stats:{pl_goals:39,pl_apps:135,pl_assists:48,ucl_goals:16,ucl_apps:60,ucl_assists:20,intl_goals:16,intl_apps:57,intl_assists:14}},
+{name:"Ilkay Gündogan",nat:"Germany",pos:["MID"],stats:{pl_goals:60,pl_apps:259,pl_assists:38,ucl_goals:12,ucl_apps:80,ucl_assists:18,intl_goals:19,intl_apps:72,intl_assists:12}},
+{name:"Timo Werner",nat:"Germany",pos:["FW"],stats:{pl_goals:12,pl_apps:74,pl_assists:16,ucl_goals:14,ucl_apps:44,ucl_assists:12,intl_goals:24,intl_apps:57,intl_assists:10}},
+{name:"Kai Havertz",nat:"Germany",pos:["MID","FW"],stats:{pl_goals:36,pl_apps:139,pl_assists:18,ucl_goals:15,ucl_apps:40,ucl_assists:10,intl_goals:20,intl_apps:56,intl_assists:8}},
+{name:"Philip Lahm",nat:"Germany",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:2,ucl_apps:113,ucl_assists:20,intl_goals:5,intl_apps:113,intl_assists:14}},
+{name:"Per Mertesacker",nat:"Germany",pos:["DEF"],stats:{pl_goals:5,pl_apps:228,pl_assists:4,ucl_goals:2,ucl_apps:24,ucl_assists:2,intl_goals:4,intl_apps:104,intl_assists:4}},
+{name:"Robert Huth",nat:"Germany",pos:["DEF"],stats:{pl_goals:12,pl_apps:248,pl_assists:6,ucl_goals:0,ucl_apps:6,ucl_assists:0,intl_goals:0,intl_apps:19,intl_assists:0}},
+{name:"Lukas Podolski",nat:"Germany",pos:["FW","MID"],stats:{pl_goals:16,pl_apps:59,pl_assists:12,ucl_goals:18,ucl_apps:60,ucl_assists:14,intl_goals:49,intl_apps:130,intl_assists:24}},
+{name:"Mario Götze",nat:"Germany",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:12,ucl_apps:56,ucl_assists:14,intl_goals:19,intl_apps:63,intl_assists:18}},
+{name:"Joshua Kimmich",nat:"Germany",pos:["DEF","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:16,ucl_apps:108,ucl_assists:28,intl_goals:6,intl_apps:82,intl_assists:18}},
+{name:"Serge Gnabry",nat:"Germany",pos:["FW","MID"],stats:{pl_goals:11,pl_apps:56,pl_assists:8,ucl_goals:22,ucl_apps:64,ucl_assists:14,intl_goals:21,intl_apps:44,intl_assists:10}},
+{name:"Uwe Rösler",nat:"Germany",pos:["FW"],stats:{pl_goals:64,pl_apps:175,pl_assists:20,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:6,intl_apps:5,intl_assists:0}},
+{name:"Cristiano Ronaldo",nat:"Portugal",pos:["FW"],stats:{pl_goals:145,pl_apps:236,pl_assists:62,ucl_goals:140,ucl_apps:183,ucl_assists:44,intl_goals:130,intl_apps:220,intl_assists:44}},
+{name:"Luís Figo",nat:"Portugal",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:16,ucl_apps:72,ucl_assists:28,intl_goals:32,intl_apps:127,intl_assists:24}},
+{name:"Bruno Fernandes",nat:"Portugal",pos:["MID"],stats:{pl_goals:77,pl_apps:230,pl_assists:80,ucl_goals:12,ucl_apps:44,ucl_assists:18,intl_goals:22,intl_apps:78,intl_assists:20}},
+{name:"Bernardo Silva",nat:"Portugal",pos:["MID","FW"],stats:{pl_goals:46,pl_apps:296,pl_assists:58,ucl_goals:20,ucl_apps:90,ucl_assists:24,intl_goals:14,intl_apps:90,intl_assists:18}},
+{name:"Diogo Jota",nat:"Portugal",pos:["FW"],stats:{pl_goals:65,pl_apps:174,pl_assists:20,ucl_goals:10,ucl_apps:42,ucl_assists:8,intl_goals:14,intl_apps:58,intl_assists:6}},
+{name:"Nani",nat:"Portugal",pos:["MID","FW"],stats:{pl_goals:41,pl_apps:230,pl_assists:52,ucl_goals:10,ucl_apps:60,ucl_assists:14,intl_goals:9,intl_apps:112,intl_assists:16}},
+{name:"Luís Boa Morte",nat:"Portugal",pos:["FW","MID"],stats:{pl_goals:60,pl_apps:296,pl_assists:44,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:7,intl_apps:31,intl_assists:4}},
+{name:"Simão Sabrosa",nat:"Portugal",pos:["MID","FW"],stats:{pl_goals:18,pl_apps:86,pl_assists:20,ucl_goals:5,ucl_apps:24,ucl_assists:8,intl_goals:22,intl_apps:94,intl_assists:12}},
+{name:"Rúben Neves",nat:"Portugal",pos:["MID"],stats:{pl_goals:27,pl_apps:197,pl_assists:18,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:4,intl_apps:48,intl_assists:4}},
+{name:"Eusébio",nat:"Portugal",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:6,ucl_apps:12,ucl_assists:4,intl_goals:41,intl_apps:64,intl_assists:10}},
+{name:"Pepe",nat:"Portugal",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:6,ucl_apps:128,ucl_assists:4,intl_goals:7,intl_apps:141,intl_assists:4}},
+{name:"Rui Costa",nat:"Portugal",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:10,ucl_apps:68,ucl_assists:20,intl_goals:26,intl_apps:94,intl_assists:18}},
+{name:"João Cancelo",nat:"Portugal",pos:["DEF"],stats:{pl_goals:6,pl_apps:134,pl_assists:22,ucl_goals:4,ucl_apps:48,ucl_assists:10,intl_goals:2,intl_apps:58,intl_assists:8}},
+{name:"Fernando Torres",nat:"Spain",pos:["FW"],stats:{pl_goals:85,pl_apps:213,pl_assists:32,ucl_goals:28,ucl_apps:82,ucl_assists:14,intl_goals:38,intl_apps:110,intl_assists:18}},
+{name:"Cesc Fàbregas",nat:"Spain",pos:["MID"],stats:{pl_goals:62,pl_apps:350,pl_assists:111,ucl_goals:9,ucl_apps:72,ucl_assists:22,intl_goals:15,intl_apps:110,intl_assists:28}},
+{name:"David Silva",nat:"Spain",pos:["MID"],stats:{pl_goals:77,pl_apps:436,pl_assists:93,ucl_goals:7,ucl_apps:72,ucl_assists:18,intl_goals:35,intl_apps:125,intl_assists:38}},
+{name:"Juan Mata",nat:"Spain",pos:["MID","FW"],stats:{pl_goals:60,pl_apps:285,pl_assists:60,ucl_goals:12,ucl_apps:62,ucl_assists:20,intl_goals:10,intl_apps:41,intl_assists:14}},
+{name:"Santi Cazorla",nat:"Spain",pos:["MID"],stats:{pl_goals:52,pl_apps:180,pl_assists:45,ucl_goals:8,ucl_apps:34,ucl_assists:12,intl_goals:19,intl_apps:81,intl_assists:22}},
+{name:"Xabi Alonso",nat:"Spain",pos:["MID"],stats:{pl_goals:18,pl_apps:210,pl_assists:36,ucl_goals:16,ucl_apps:122,ucl_assists:24,intl_goals:16,intl_apps:114,intl_assists:18}},
+{name:"Álvaro Morata",nat:"Spain",pos:["FW"],stats:{pl_goals:30,pl_apps:82,pl_assists:10,ucl_goals:30,ucl_apps:74,ucl_assists:14,intl_goals:33,intl_apps:76,intl_assists:10}},
+{name:"Pedro",nat:"Spain",pos:["FW","MID"],stats:{pl_goals:32,pl_apps:165,pl_assists:22,ucl_goals:15,ucl_apps:62,ucl_assists:12,intl_goals:17,intl_apps:79,intl_assists:16}},
+{name:"Cesar Azpilicueta",nat:"Spain",pos:["DEF"],stats:{pl_goals:8,pl_apps:490,pl_assists:35,ucl_goals:3,ucl_apps:90,ucl_assists:10,intl_goals:0,intl_apps:36,intl_assists:2}},
+{name:"Raúl",nat:"Spain",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:71,ucl_apps:142,ucl_assists:38,intl_goals:44,intl_apps:102,intl_assists:18}},
+{name:"Xavi",nat:"Spain",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:15,ucl_apps:157,ucl_assists:46,intl_goals:13,intl_apps:133,intl_assists:40}},
+{name:"Andrés Iniesta",nat:"Spain",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:13,ucl_apps:122,ucl_assists:30,intl_goals:13,intl_apps:131,intl_assists:28}},
+{name:"Sergio Ramos",nat:"Spain",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:23,ucl_apps:142,ucl_assists:10,intl_goals:23,intl_apps:180,intl_assists:12}},
+{name:"Carles Puyol",nat:"Spain",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:105,ucl_assists:6,intl_goals:3,intl_apps:100,intl_assists:4}},
+{name:"David Villa",nat:"Spain",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:27,ucl_apps:56,ucl_assists:12,intl_goals:59,intl_apps:98,intl_assists:18}},
+{name:"Fernando Morientes",nat:"Spain",pos:["FW"],stats:{pl_goals:9,pl_apps:41,pl_assists:6,ucl_goals:33,ucl_apps:62,ucl_assists:14,intl_goals:27,intl_apps:47,intl_assists:8}},
+{name:"Gaizka Mendieta",nat:"Spain",pos:["MID"],stats:{pl_goals:8,pl_apps:70,pl_assists:12,ucl_goals:11,ucl_apps:44,ucl_assists:14,intl_goals:12,intl_apps:40,intl_assists:8}},
+{name:"Isco",nat:"Spain",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:10,ucl_apps:68,ucl_assists:18,intl_goals:13,intl_apps:42,intl_assists:10}},
+{name:"Marco Asensio",nat:"Spain",pos:["FW","MID"],stats:{pl_goals:10,pl_apps:48,pl_assists:4,ucl_goals:12,ucl_apps:68,ucl_assists:8,intl_goals:8,intl_apps:40,intl_assists:6}},
+{name:"Jordi Alba",nat:"Spain",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:80,ucl_assists:22,intl_goals:8,intl_apps:91,intl_assists:18}},
+{name:"Dani Carvajal",nat:"Spain",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:3,ucl_apps:88,ucl_assists:12,intl_goals:0,intl_apps:56,intl_assists:6}},
+{name:"Hierro",nat:"Spain",pos:["DEF","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:7,ucl_apps:80,ucl_assists:8,intl_goals:29,intl_apps:89,intl_assists:8}},
+{name:"Emilio Butragueño",nat:"Spain",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:8,ucl_apps:14,ucl_assists:6,intl_goals:26,intl_apps:69,intl_assists:12}},
+{name:"Hugo Sánchez",nat:"Mexico",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:2,ucl_assists:0,intl_goals:29,intl_apps:58,intl_assists:8}},
+{name:"Iván Zamorano",nat:"Chile",pos:["FW"],stats:{pl_goals:4,pl_apps:40,pl_assists:4,ucl_goals:6,ucl_apps:18,ucl_assists:4,intl_goals:34,intl_apps:69,intl_assists:10}},
+{name:"Gianfranco Zola",nat:"Italy",pos:["FW","MID"],stats:{pl_goals:80,pl_apps:312,pl_assists:62,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:10,intl_apps:35,intl_assists:8}},
+{name:"Paolo Di Canio",nat:"Italy",pos:["FW","MID"],stats:{pl_goals:66,pl_apps:264,pl_assists:40,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+{name:"Jorginho",nat:"Italy",pos:["MID"],stats:{pl_goals:9,pl_apps:173,pl_assists:8,ucl_goals:4,ucl_apps:56,ucl_assists:8,intl_goals:2,intl_apps:55,intl_assists:4}},
+{name:"Fabrizio Ravanelli",nat:"Italy",pos:["FW"],stats:{pl_goals:31,pl_apps:48,pl_assists:8,ucl_goals:14,ucl_apps:28,ucl_assists:6,intl_goals:7,intl_apps:22,intl_assists:2}},
+{name:"Gianluca Vialli",nat:"Italy",pos:["FW"],stats:{pl_goals:40,pl_apps:78,pl_assists:16,ucl_goals:18,ucl_apps:32,ucl_assists:8,intl_goals:16,intl_apps:59,intl_assists:8}},
+{name:"Roberto Di Matteo",nat:"Italy",pos:["MID"],stats:{pl_goals:15,pl_apps:175,pl_assists:18,ucl_goals:2,ucl_apps:20,ucl_assists:4,intl_goals:2,intl_apps:34,intl_assists:2}},
+{name:"Benito Carbone",nat:"Italy",pos:["MID","FW"],stats:{pl_goals:24,pl_apps:152,pl_assists:28,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+{name:"Filippo Inzaghi",nat:"Italy",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:46,ucl_apps:81,ucl_assists:10,intl_goals:25,intl_apps:57,intl_assists:6}},
+{name:"Alessandro Del Piero",nat:"Italy",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:42,ucl_apps:89,ucl_assists:22,intl_goals:27,intl_apps:91,intl_assists:18}},
+{name:"Roberto Baggio",nat:"Italy",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:12,ucl_apps:36,ucl_assists:10,intl_goals:27,intl_apps:56,intl_assists:16}},
+{name:"Francesco Totti",nat:"Italy",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:16,ucl_apps:62,ucl_assists:14,intl_goals:9,intl_apps:58,intl_assists:8}},
+{name:"Andrea Pirlo",nat:"Italy",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:84,ucl_assists:28,intl_goals:13,intl_apps:116,intl_assists:28}},
+{name:"Paolo Maldini",nat:"Italy",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:6,ucl_apps:174,ucl_assists:10,intl_goals:7,intl_apps:126,intl_assists:8}},
+{name:"Fabio Cannavaro",nat:"Italy",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:2,ucl_apps:88,ucl_assists:4,intl_goals:2,intl_apps:136,intl_assists:4}},
+{name:"Alessandro Nesta",nat:"Italy",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:2,ucl_apps:99,ucl_assists:4,intl_goals:1,intl_apps:78,intl_assists:2}},
+{name:"Giorgio Chiellini",nat:"Italy",pos:["DEF"],stats:{pl_goals:2,pl_apps:18,pl_assists:0,ucl_goals:2,ucl_apps:115,ucl_assists:4,intl_goals:8,intl_apps:117,intl_assists:4}},
+{name:"Leonardo Bonucci",nat:"Italy",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:118,ucl_assists:6,intl_goals:7,intl_apps:121,intl_assists:4}},
+{name:"Paolo Rossi",nat:"Italy",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:8,ucl_apps:18,ucl_assists:4,intl_goals:20,intl_apps:48,intl_assists:6}},
+{name:"Dino Baggio",nat:"Italy",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:8,ucl_apps:20,ucl_assists:6,intl_goals:7,intl_apps:60,intl_assists:6}},
+{name:"Claudio Marchisio",nat:"Italy",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:10,ucl_apps:68,ucl_assists:14,intl_goals:5,intl_apps:55,intl_assists:6}},
+{name:"Ciro Immobile",nat:"Italy",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:28,ucl_assists:4,intl_goals:20,intl_apps:60,intl_assists:8}},
+{name:"Antonio Di Natale",nat:"Italy",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:11,intl_apps:42,intl_assists:6}},
+{name:"Sinisa Mihajlovic",nat:"Serbia",pos:["DEF","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:6,ucl_apps:38,ucl_assists:8,intl_goals:10,intl_apps:63,intl_assists:8}},
+{name:"Demetrio Albertini",nat:"Italy",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:52,ucl_assists:14,intl_goals:3,intl_apps:79,intl_assists:12}},
+{name:"Lionel Messi",nat:"Argentina",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:129,ucl_apps:163,ucl_assists:40,intl_goals:109,intl_apps:191,intl_assists:52}},
+{name:"Sergio Agüero",nat:"Argentina",pos:["FW"],stats:{pl_goals:184,pl_apps:275,pl_assists:76,ucl_goals:31,ucl_apps:78,ucl_assists:18,intl_goals:41,intl_apps:101,intl_assists:14}},
+{name:"Carlos Tevez",nat:"Argentina",pos:["FW"],stats:{pl_goals:84,pl_apps:187,pl_assists:36,ucl_goals:12,ucl_apps:44,ucl_assists:8,intl_goals:13,intl_apps:76,intl_assists:6}},
+{name:"Gabriel Batistuta",nat:"Argentina",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:12,ucl_apps:28,ucl_assists:8,intl_goals:56,intl_apps:78,intl_assists:12}},
+{name:"Hernán Crespo",nat:"Argentina",pos:["FW"],stats:{pl_goals:12,pl_apps:49,pl_assists:4,ucl_goals:18,ucl_apps:52,ucl_assists:10,intl_goals:35,intl_apps:64,intl_assists:10}},
+{name:"Gonzalo Higuaín",nat:"Argentina",pos:["FW"],stats:{pl_goals:8,pl_apps:44,pl_assists:4,ucl_goals:28,ucl_apps:64,ucl_assists:10,intl_goals:31,intl_apps:75,intl_assists:8}},
+{name:"Paulo Dybala",nat:"Argentina",pos:["FW","MID"],stats:{pl_goals:6,pl_apps:22,pl_assists:2,ucl_goals:26,ucl_apps:80,ucl_assists:16,intl_goals:29,intl_apps:50,intl_assists:10}},
+{name:"Lautaro Martínez",nat:"Argentina",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:24,ucl_apps:62,ucl_assists:10,intl_goals:30,intl_apps:70,intl_assists:8}},
+{name:"Juan Sebastián Verón",nat:"Argentina",pos:["MID"],stats:{pl_goals:8,pl_apps:92,pl_assists:16,ucl_goals:6,ucl_apps:38,ucl_assists:10,intl_goals:9,intl_apps:73,intl_assists:8}},
+{name:"Mauro Icardi",nat:"Argentina",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:10,ucl_apps:28,ucl_assists:4,intl_goals:2,intl_apps:8,intl_assists:0}},
+{name:"Alexis Mac Allister",nat:"Argentina",pos:["MID"],stats:{pl_goals:14,pl_apps:104,pl_assists:18,ucl_goals:4,ucl_apps:20,ucl_assists:6,intl_goals:10,intl_apps:52,intl_assists:8}},
+{name:"Javier Zanetti",nat:"Argentina",pos:["DEF","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:5,ucl_apps:88,ucl_assists:14,intl_goals:5,intl_apps:145,intl_assists:12}},
+{name:"Roberto Ayala",nat:"Argentina",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:14,ucl_assists:2,intl_goals:7,intl_apps:115,intl_assists:4}},
+{name:"Julio Cruz",nat:"Argentina",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:18,ucl_apps:44,ucl_assists:8,intl_goals:10,intl_apps:40,intl_assists:4}},
+{name:"Diego Milito",nat:"Argentina",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:8,ucl_apps:18,ucl_assists:4,intl_goals:4,intl_apps:24,intl_assists:2}},
+{name:"Ronaldo (R9)",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:17,ucl_apps:38,ucl_assists:10,intl_goals:62,intl_apps:98,intl_assists:18}},
+{name:"Ronaldinho",nat:"Brazil",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:15,ucl_apps:44,ucl_assists:18,intl_goals:33,intl_apps:97,intl_assists:28}},
+{name:"Kaká",nat:"Brazil",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:30,ucl_apps:82,ucl_assists:24,intl_goals:29,intl_apps:92,intl_assists:22}},
+{name:"Pelé",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:77,intl_apps:92,intl_assists:22}},
+{name:"Rivaldo",nat:"Brazil",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:24,ucl_apps:44,ucl_assists:14,intl_goals:35,intl_apps:74,intl_assists:18}},
+{name:"Romário",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:3,ucl_apps:8,ucl_assists:4,intl_goals:55,intl_apps:70,intl_assists:10}},
+{name:"Bebeto",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:10,ucl_assists:4,intl_goals:39,intl_apps:75,intl_assists:12}},
+{name:"Roberto Carlos",nat:"Brazil",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:12,ucl_apps:125,ucl_assists:22,intl_goals:11,intl_apps:125,intl_assists:18}},
+{name:"Cafu",nat:"Brazil",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:3,ucl_apps:88,ucl_assists:10,intl_goals:5,intl_apps:142,intl_assists:14}},
+{name:"Dani Alves",nat:"Brazil",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:150,ucl_assists:38,intl_goals:8,intl_apps:126,intl_assists:20}},
+{name:"Thiago Silva",nat:"Brazil",pos:["DEF"],stats:{pl_goals:4,pl_apps:60,pl_assists:2,ucl_goals:8,ucl_apps:138,ucl_assists:14,intl_goals:7,intl_apps:113,intl_assists:8}},
+{name:"Marcelo",nat:"Brazil",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:12,ucl_apps:145,ucl_assists:28,intl_goals:6,intl_apps:58,intl_assists:8}},
+{name:"Casemiro",nat:"Brazil",pos:["MID"],stats:{pl_goals:18,pl_apps:92,pl_assists:8,ucl_goals:14,ucl_apps:90,ucl_assists:10,intl_goals:7,intl_apps:74,intl_assists:6}},
+{name:"Roberto Firmino",nat:"Brazil",pos:["FW","MID"],stats:{pl_goals:111,pl_apps:362,pl_assists:82,ucl_goals:28,ucl_apps:102,ucl_assists:32,intl_goals:18,intl_apps:62,intl_assists:10}},
+{name:"Neymar",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:43,ucl_apps:97,ucl_assists:34,intl_goals:79,intl_apps:130,intl_assists:52}},
+{name:"Vinícius Jr",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:26,ucl_apps:72,ucl_assists:18,intl_goals:20,intl_apps:44,intl_assists:8}},
+{name:"Rodrygo",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:26,ucl_apps:58,ucl_assists:10,intl_goals:12,intl_apps:36,intl_assists:6}},
+{name:"Raphinha",nat:"Brazil",pos:["FW","MID"],stats:{pl_goals:34,pl_apps:100,pl_assists:28,ucl_goals:11,ucl_apps:36,ucl_assists:10,intl_goals:14,intl_apps:44,intl_assists:8}},
+{name:"Adriano",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:13,ucl_apps:26,ucl_assists:6,intl_goals:27,intl_apps:48,intl_assists:8}},
+{name:"Robinho",nat:"Brazil",pos:["FW","MID"],stats:{pl_goals:14,pl_apps:53,pl_assists:14,ucl_goals:10,ucl_apps:30,ucl_assists:8,intl_goals:28,intl_apps:100,intl_assists:16}},
+{name:"Giovane Élber",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:44,ucl_assists:8,intl_goals:10,intl_apps:26,intl_assists:4}},
+{name:"Hulk",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:11,ucl_apps:32,ucl_assists:8,intl_goals:11,intl_apps:50,intl_assists:8}},
+{name:"Bruno Guimarães",nat:"Brazil",pos:["MID"],stats:{pl_goals:18,pl_apps:118,pl_assists:18,ucl_goals:2,ucl_apps:14,ucl_assists:4,intl_goals:4,intl_apps:26,intl_assists:4}},
+{name:"Gabriel Magalhães",nat:"Brazil",pos:["DEF"],stats:{pl_goals:12,pl_apps:164,pl_assists:4,ucl_goals:2,ucl_apps:22,ucl_assists:2,intl_goals:2,intl_apps:18,intl_assists:0}},
+{name:"Fabinho",nat:"Brazil",pos:["MID","DEF"],stats:{pl_goals:8,pl_apps:202,pl_assists:12,ucl_goals:3,ucl_apps:78,ucl_assists:6,intl_goals:4,intl_apps:40,intl_assists:4}},
+{name:"Didier Drogba",nat:"Ivory Coast",pos:["FW"],stats:{pl_goals:104,pl_apps:284,pl_assists:56,ucl_goals:24,ucl_apps:80,ucl_assists:12,intl_goals:65,intl_apps:105,intl_assists:14}},
+{name:"Samuel Eto'o",nat:"Cameroon",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:30,ucl_apps:68,ucl_assists:14,intl_goals:56,intl_apps:118,intl_assists:14}},
+{name:"Mohamed Salah",nat:"Egypt",pos:["FW"],stats:{pl_goals:210,pl_apps:338,pl_assists:93,ucl_goals:46,ucl_apps:102,ucl_assists:28,intl_goals:58,intl_apps:101,intl_assists:20}},
+{name:"Sadio Mané",nat:"Senegal",pos:["FW","MID"],stats:{pl_goals:120,pl_apps:269,pl_assists:46,ucl_goals:26,ucl_apps:76,ucl_assists:14,intl_goals:34,intl_apps:100,intl_assists:12}},
+{name:"Riyad Mahrez",nat:"Algeria",pos:["FW","MID"],stats:{pl_goals:77,pl_apps:291,pl_assists:62,ucl_goals:19,ucl_apps:74,ucl_assists:16,intl_goals:30,intl_apps:92,intl_assists:18}},
+{name:"Pierre-Emerick Aubameyang",nat:"Gabon",pos:["FW"],stats:{pl_goals:92,pl_apps:163,pl_assists:24,ucl_goals:14,ucl_apps:48,ucl_assists:10,intl_goals:30,intl_apps:72,intl_assists:8}},
+{name:"Yaya Touré",nat:"Ivory Coast",pos:["MID"],stats:{pl_goals:62,pl_apps:230,pl_assists:42,ucl_goals:14,ucl_apps:72,ucl_assists:18,intl_goals:19,intl_apps:101,intl_assists:8}},
+{name:"Emmanuel Adebayor",nat:"Togo",pos:["FW"],stats:{pl_goals:97,pl_apps:242,pl_assists:30,ucl_goals:8,ucl_apps:22,ucl_assists:4,intl_goals:30,intl_apps:87,intl_assists:8}},
+{name:"Hossam Hassan",nat:"Egypt",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:69,intl_apps:169,intl_assists:14}},
+{name:"Asamoah Gyan",nat:"Ghana",pos:["FW"],stats:{pl_goals:6,pl_apps:26,pl_assists:2,ucl_goals:2,ucl_apps:4,ucl_assists:0,intl_goals:51,intl_apps:109,intl_assists:10}},
+{name:"Jay-Jay Okocha",nat:"Nigeria",pos:["MID"],stats:{pl_goals:14,pl_apps:101,pl_assists:22,ucl_goals:0,ucl_apps:2,ucl_assists:0,intl_goals:14,intl_apps:73,intl_assists:12}},
+{name:"Nwankwo Kanu",nat:"Nigeria",pos:["FW","MID"],stats:{pl_goals:44,pl_apps:197,pl_assists:28,ucl_goals:8,ucl_apps:28,ucl_assists:6,intl_goals:13,intl_apps:87,intl_assists:10}},
+{name:"Michael Essien",nat:"Ghana",pos:["MID"],stats:{pl_goals:19,pl_apps:196,pl_assists:22,ucl_goals:4,ucl_apps:62,ucl_assists:10,intl_goals:9,intl_apps:58,intl_assists:6}},
+{name:"Roger Milla",nat:"Cameroon",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:28,intl_apps:102,intl_assists:6}},
+{name:"Abedi Pelé",nat:"Ghana",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:8,ucl_apps:14,ucl_assists:6,intl_goals:15,intl_apps:73,intl_assists:10}},
+{name:"George Weah",nat:"Liberia",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:10,ucl_apps:22,ucl_assists:6,intl_goals:22,intl_apps:60,intl_assists:8}},
+{name:"Frédéric Kanouté",nat:"Mali",pos:["FW"],stats:{pl_goals:55,pl_apps:145,pl_assists:16,ucl_goals:4,ucl_apps:10,ucl_assists:4,intl_goals:23,intl_apps:37,intl_assists:6}},
+{name:"El-Hadji Diouf",nat:"Senegal",pos:["FW","MID"],stats:{pl_goals:35,pl_apps:164,pl_assists:20,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:22,intl_apps:69,intl_assists:8}},
+{name:"Diafra Sakho",nat:"Senegal",pos:["FW"],stats:{pl_goals:30,pl_apps:80,pl_assists:8,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:9,intl_apps:28,intl_assists:2}},
+{name:"Victor Osimhen",nat:"Nigeria",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:26,ucl_assists:6,intl_goals:18,intl_apps:50,intl_assists:8}},
+{name:"Sebastian Haller",nat:"Ivory Coast",pos:["FW"],stats:{pl_goals:14,pl_apps:52,pl_assists:8,ucl_goals:14,ucl_apps:28,ucl_assists:6,intl_goals:10,intl_apps:30,intl_assists:4}},
+{name:"Kevin-Prince Boateng",nat:"Ghana",pos:["MID","FW"],stats:{pl_goals:4,pl_apps:34,pl_assists:4,ucl_goals:6,ucl_apps:24,ucl_assists:6,intl_goals:9,intl_apps:19,intl_assists:2}},
+{name:"Mido",nat:"Egypt",pos:["FW"],stats:{pl_goals:26,pl_apps:83,pl_assists:8,ucl_goals:2,ucl_apps:6,ucl_assists:2,intl_goals:18,intl_apps:51,intl_assists:4}},
+{name:"Efan Ekoku",nat:"Nigeria",pos:["FW"],stats:{pl_goals:35,pl_apps:106,pl_assists:10,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:6,intl_apps:8,intl_assists:0}},
+{name:"Seydou Keïta",nat:"Mali",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:7,ucl_apps:42,ucl_assists:10,intl_goals:16,intl_apps:102,intl_assists:12}},
+{name:"Peter Odemwingie",nat:"Nigeria",pos:["FW","MID"],stats:{pl_goals:48,pl_apps:148,pl_assists:14,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:10,intl_apps:60,intl_assists:8}},
+{name:"Khvicha Kvaratskhelia",nat:"Georgia",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:8,ucl_apps:24,ucl_assists:10,intl_goals:12,intl_apps:48,intl_assists:14}},
+{name:"Luka Modrić",nat:"Croatia",pos:["MID"],stats:{pl_goals:17,pl_apps:160,pl_assists:28,ucl_goals:20,ucl_apps:138,ucl_assists:32,intl_goals:23,intl_apps:180,intl_assists:28}},
+{name:"Ivan Rakitić",nat:"Croatia",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:18,ucl_apps:78,ucl_assists:20,intl_goals:15,intl_apps:106,intl_assists:18}},
+{name:"Mario Mandžukić",nat:"Croatia",pos:["FW"],stats:{pl_goals:3,pl_apps:20,pl_assists:2,ucl_goals:12,ucl_apps:48,ucl_assists:6,intl_goals:33,intl_apps:89,intl_assists:8}},
+{name:"Davor Šuker",nat:"Croatia",pos:["FW"],stats:{pl_goals:8,pl_apps:26,pl_assists:4,ucl_goals:10,ucl_apps:24,ucl_assists:4,intl_goals:45,intl_apps:69,intl_assists:10}},
+{name:"Zvonimir Boban",nat:"Croatia",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:38,ucl_assists:8,intl_goals:12,intl_apps:51,intl_assists:10}},
+{name:"Edin Džeko",nat:"Bosnia",pos:["FW"],stats:{pl_goals:50,pl_apps:130,pl_assists:26,ucl_goals:24,ucl_apps:72,ucl_assists:12,intl_goals:65,intl_apps:110,intl_assists:14}},
+{name:"Andriy Shevchenko",nat:"Ukraine",pos:["FW"],stats:{pl_goals:9,pl_apps:27,pl_assists:2,ucl_goals:59,ucl_apps:100,ucl_assists:22,intl_goals:48,intl_apps:111,intl_assists:16}},
+{name:"Zdeněk Nedvěd",nat:"Czechia",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:80,ucl_assists:20,intl_goals:18,intl_apps:91,intl_assists:14}},
+{name:"Marek Hamšík",nat:"Slovakia",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:8,ucl_apps:46,ucl_assists:12,intl_goals:26,intl_apps:136,intl_assists:20}},
+{name:"Dimitar Berbatov",nat:"Bulgaria",pos:["FW"],stats:{pl_goals:94,pl_apps:253,pl_assists:44,ucl_goals:8,ucl_apps:44,ucl_assists:10,intl_goals:48,intl_apps:78,intl_assists:12}},
+{name:"Hristo Stoichkov",nat:"Bulgaria",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:12,ucl_apps:28,ucl_assists:10,intl_goals:37,intl_apps:83,intl_assists:14}},
+{name:"Gheorghe Hagi",nat:"Romania",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:10,ucl_apps:22,ucl_assists:10,intl_goals:35,intl_apps:125,intl_assists:22}},
+{name:"Savo Milošević",nat:"Serbia",pos:["FW"],stats:{pl_goals:41,pl_apps:116,pl_assists:14,ucl_goals:3,ucl_apps:10,ucl_assists:4,intl_goals:37,intl_apps:102,intl_assists:10}},
+{name:"Predrag Mijatović",nat:"Montenegro",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:10,ucl_apps:20,ucl_assists:6,intl_goals:28,intl_apps:68,intl_assists:8}},
+{name:"Milan Baroš",nat:"Czechia",pos:["FW"],stats:{pl_goals:27,pl_apps:84,pl_assists:14,ucl_goals:8,ucl_apps:22,ucl_assists:6,intl_goals:41,intl_apps:93,intl_assists:12}},
+{name:"Stelios Giannakopoulos",nat:"Greece",pos:["MID","FW"],stats:{pl_goals:24,pl_apps:109,pl_assists:16,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:9,intl_apps:73,intl_assists:12}},
+{name:"Nikos Dabizas",nat:"Greece",pos:["DEF"],stats:{pl_goals:8,pl_apps:164,pl_assists:4,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:2,intl_apps:73,intl_assists:2}},
+{name:"Erling Haaland",nat:"Norway",pos:["FW"],stats:{pl_goals:91,pl_apps:95,pl_assists:18,ucl_goals:40,ucl_apps:50,ucl_assists:10,intl_goals:31,intl_apps:44,intl_assists:8}},
+{name:"Ole Gunnar Solskjaer",nat:"Norway",pos:["FW"],stats:{pl_goals:91,pl_apps:235,pl_assists:38,ucl_goals:14,ucl_apps:40,ucl_assists:8,intl_goals:23,intl_apps:67,intl_assists:6}},
+{name:"Tore Andre Flo",nat:"Norway",pos:["FW"],stats:{pl_goals:37,pl_apps:124,pl_assists:20,ucl_goals:4,ucl_apps:14,ucl_assists:4,intl_goals:23,intl_apps:76,intl_assists:6}},
+{name:"John Carew",nat:"Norway",pos:["FW"],stats:{pl_goals:40,pl_apps:133,pl_assists:16,ucl_goals:8,ucl_apps:16,ucl_assists:4,intl_goals:24,intl_apps:91,intl_assists:8}},
+{name:"Martin Ødegaard",nat:"Norway",pos:["MID"],stats:{pl_goals:40,pl_apps:152,pl_assists:30,ucl_goals:6,ucl_apps:30,ucl_assists:8,intl_goals:14,intl_apps:70,intl_assists:12}},
+{name:"Zlatan Ibrahimović",nat:"Sweden",pos:["FW"],stats:{pl_goals:29,pl_apps:57,pl_assists:12,ucl_goals:48,ucl_apps:120,ucl_assists:26,intl_goals:62,intl_apps:116,intl_assists:24}},
+{name:"Henrik Larsson",nat:"Sweden",pos:["FW"],stats:{pl_goals:18,pl_apps:48,pl_assists:8,ucl_goals:10,ucl_apps:26,ucl_assists:6,intl_goals:37,intl_apps:106,intl_assists:14}},
+{name:"Robert Lewandowski",nat:"Poland",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:91,ucl_apps:116,ucl_assists:28,intl_goals:82,intl_apps:148,intl_assists:22}},
+{name:"Eidur Gudjohnsen",nat:"Iceland",pos:["FW","MID"],stats:{pl_goals:78,pl_apps:277,pl_assists:50,ucl_goals:10,ucl_apps:38,ucl_assists:14,intl_goals:26,intl_apps:89,intl_assists:14}},
+{name:"Christian Eriksen",nat:"Denmark",pos:["MID"],stats:{pl_goals:52,pl_apps:306,pl_assists:62,ucl_goals:4,ucl_apps:44,ucl_assists:14,intl_goals:42,intl_apps:125,intl_assists:48}},
+{name:"Michael Laudrup",nat:"Denmark",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:8,ucl_apps:24,ucl_assists:16,intl_goals:37,intl_apps:104,intl_assists:36}},
+{name:"Nicolas Bendtner",nat:"Denmark",pos:["FW"],stats:{pl_goals:45,pl_apps:171,pl_assists:14,ucl_goals:4,ucl_apps:18,ucl_assists:4,intl_goals:30,intl_apps:81,intl_assists:8}},
+{name:"Dwight Yorke",nat:"Trinidad",pos:["FW"],stats:{pl_goals:123,pl_apps:375,pl_assists:60,ucl_goals:8,ucl_apps:14,ucl_assists:6,intl_goals:19,intl_apps:72,intl_assists:8}},
+{name:"Park Ji-Sung",nat:"South Korea",pos:["MID","FW"],stats:{pl_goals:27,pl_apps:205,pl_assists:28,ucl_goals:6,ucl_apps:38,ucl_assists:8,intl_goals:13,intl_apps:100,intl_assists:14}},
+{name:"Son Heung-min",nat:"South Korea",pos:["FW","MID"],stats:{pl_goals:163,pl_apps:364,pl_assists:80,ucl_goals:16,ucl_apps:80,ucl_assists:14,intl_goals:35,intl_apps:126,intl_assists:20}},
+{name:"Ali Daei",nat:"Iran",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:109,intl_apps:149,intl_assists:20}},
+{name:"Hasan Şükür",nat:"Turkey",pos:["FW"],stats:{pl_goals:1,pl_apps:7,pl_assists:2,ucl_goals:4,ucl_apps:10,ucl_assists:2,intl_goals:51,intl_apps:112,intl_assists:14}},
+{name:"Sándor Kocsis",nat:"Hungary",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:75,intl_apps:68,intl_assists:8}},
+{name:"Gary Lineker",nat:"England",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:48,intl_apps:80,intl_assists:14}},
+{name:"Luis Suárez",nat:"Uruguay",pos:["FW"],stats:{pl_goals:82,pl_apps:133,pl_assists:46,ucl_goals:26,ucl_apps:68,ucl_assists:20,intl_goals:68,intl_apps:134,intl_assists:28}},
+{name:"Edinson Cavani",nat:"Uruguay",pos:["FW"],stats:{pl_goals:19,pl_apps:58,pl_assists:6,ucl_goals:36,ucl_apps:72,ucl_assists:14,intl_goals:58,intl_apps:136,intl_assists:20}},
+{name:"Diego Forlán",nat:"Uruguay",pos:["FW"],stats:{pl_goals:17,pl_apps:98,pl_assists:10,ucl_goals:12,ucl_apps:42,ucl_assists:8,intl_goals:36,intl_apps:112,intl_assists:12}},
+{name:"Radamel Falcao",nat:"Colombia",pos:["FW"],stats:{pl_goals:4,pl_apps:29,pl_assists:2,ucl_goals:15,ucl_apps:44,ucl_assists:8,intl_goals:36,intl_apps:109,intl_assists:12}},
+{name:"James Rodríguez",nat:"Colombia",pos:["MID","FW"],stats:{pl_goals:6,pl_apps:68,pl_assists:12,ucl_goals:7,ucl_apps:36,ucl_assists:14,intl_goals:36,intl_apps:101,intl_assists:22}},
+{name:"Stephane Chapuisat",nat:"Switzerland",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:32,ucl_assists:8,intl_goals:21,intl_apps:103,intl_assists:14}},
+{name:"Paolo Wanchope",nat:"Costa Rica",pos:["FW"],stats:{pl_goals:40,pl_apps:121,pl_assists:16,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:45,intl_apps:73,intl_assists:10}},
+{name:"Mark Viduka",nat:"Australia",pos:["FW"],stats:{pl_goals:72,pl_apps:211,pl_assists:24,ucl_goals:8,ucl_apps:20,ucl_assists:6,intl_goals:11,intl_apps:43,intl_assists:4}},
+{name:"Jason Roberts",nat:"Grenada",pos:["FW"],stats:{pl_goals:42,pl_apps:166,pl_assists:10,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+{name:"David Alaba",nat:"Austria",pos:["DEF","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:10,ucl_apps:125,ucl_assists:20,intl_goals:17,intl_apps:106,intl_assists:22}},
+{name:"Cha Bum-kun",nat:"South Korea",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:58,intl_apps:136,intl_assists:14}},
 ];
+
 
 // ═══════════════════════════════════════════════════════════════════
 // CATEGORY SYSTEM
@@ -883,7 +996,7 @@ function buildCategories() {
   });
 }
 
-const CATEGORIES = buildCategories();
+let CATEGORIES = buildCategories();
 
 // ═══════════════════════════════════════════════════════════════════
 // GAME MODES
@@ -1190,7 +1303,7 @@ function confirmThrow() {
       G.history.push({ pname:G.p[cur].name, player:name, stat, type:'checkout', remaining:0, scored:sc });
       renderHistory(); renderScoreboard();
       playCheckout(); showPop('🎯 CHECKOUT!','checkout');
-      setTimeout(() => finishLegWithExtras(cur), 700);
+      setTimeout(() => window.finishLegWithExtras(cur), 700);
       return;
     }
   }
@@ -1719,30 +1832,734 @@ function injectUnlockChips(newUnlocks) {
   }
 }
 
-// Override confirmThrow to track unlocks per guess
-const _origConfirmThrow = confirmThrow;
-window.confirmThrow = function() {
-  if (!G.selectedPlayer) return;
-  const name = G.selectedPlayer.name;
-
-  // Unlock on selection (regardless of bust/score)
-  const isNew = unlockPlayer(name);
-  if (isNew) {
-    if (!G._newUnlocks) G._newUnlocks = [];
-    G._newUnlocks.push(name);
-    showUnlockToast(name);
-  }
-
-  _origConfirmThrow();
-};
-
-// Close modals on overlay click
+// Close achievements modal on overlay click
+document.getElementById('achOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeAchievements();
+});
 document.getElementById('statsOverlay').addEventListener('click', function(e) {
   if (e.target === this) closeStats();
 });
 document.getElementById('sbOverlay').addEventListener('click', function(e) {
   if (e.target === this) closeStickerBook();
 });
+
+// ═══════════════════════════════════════════════════════════════════
+// EXPANDED CATEGORY DEFINITIONS — adds 20+ new categories
+// ═══════════════════════════════════════════════════════════════════
+(function expandCategories() {
+  const newDefs = [
+    // ── By nation: PL Goals+Assists ─────────────────────────────
+    {id:'pl_ga_ger', title:'German Players — PL Goals + Assists',       type:'PL Goals+Assists', statKey:'pl_goals+pl_assists', filters:{nat:'Germany'},   desc:'Combined PL goals and assists for German players.'},
+    {id:'pl_ga_ita', title:'Italian Players — PL Goals + Assists',      type:'PL Goals+Assists', statKey:'pl_goals+pl_assists', filters:{nat:'Italy'},     desc:'Combined PL goals and assists for Italian players.'},
+    {id:'pl_ga_sco', title:'Scottish Players — PL Goals + Assists',     type:'PL Goals+Assists', statKey:'pl_goals+pl_assists', filters:{nat:'Scotland'},  desc:'Combined PL goals and assists for Scottish players.'},
+    {id:'pl_ga_spa', title:'Spanish Players — PL Goals + Assists',      type:'PL Goals+Assists', statKey:'pl_goals+pl_assists', filters:{nat:'Spain'},     desc:'Combined PL goals and assists for Spanish players.'},
+    {id:'pl_ga_bra', title:'Brazilian Players — PL Goals + Assists',    type:'PL Goals+Assists', statKey:'pl_goals+pl_assists', filters:{nat:'Brazil'},    desc:'Combined PL goals and assists for Brazilian players.'},
+    {id:'pl_ga_arg', title:'Argentine Players — PL Goals + Assists',    type:'PL Goals+Assists', statKey:'pl_goals+pl_assists', filters:{nat:'Argentina'}, desc:'Combined PL goals and assists for Argentine players.'},
+    // ── By nation: UCL Goals+Assists ────────────────────────────
+    {id:'ucl_ga_esp',title:'Spanish Players — UCL Goals + Assists',     type:'UCL Goals+Assists',statKey:'ucl_goals+ucl_assists',filters:{nat:'Spain'},    desc:'Combined UCL goals and assists for Spanish players.'},
+    {id:'ucl_ga_ita',title:'Italian Players — UCL Goals + Assists',     type:'UCL Goals+Assists',statKey:'ucl_goals+ucl_assists',filters:{nat:'Italy'},    desc:'Combined UCL goals and assists for Italian players.'},
+    {id:'ucl_ga_arg',title:'Argentine Players — UCL Goals + Assists',   type:'UCL Goals+Assists',statKey:'ucl_goals+ucl_assists',filters:{nat:'Argentina'},desc:'Combined UCL goals and assists for Argentine players.'},
+    {id:'ucl_ga_fra',title:'French Players — UCL Goals + Assists',      type:'UCL Goals+Assists',statKey:'ucl_goals+ucl_assists',filters:{nat:'France'},   desc:'Combined UCL goals and assists for French players.'},
+    {id:'ucl_ga_ned',title:'Dutch Players — UCL Goals + Assists',       type:'UCL Goals+Assists',statKey:'ucl_goals+ucl_assists',filters:{nat:'Netherlands'},desc:'Combined UCL goals and assists for Dutch players.'},
+    // ── By nation: International Goals ──────────────────────────
+    {id:'intl_g_ger',title:'German Players — International Goals',      type:'Intl Goals',       statKey:'intl_goals',           filters:{nat:'Germany'},  desc:'Career international goals for German players.'},
+    {id:'intl_g_ita',title:'Italian Players — International Goals',     type:'Intl Goals',       statKey:'intl_goals',           filters:{nat:'Italy'},    desc:'Career international goals for Italian players.'},
+    {id:'intl_g_spa',title:'Spanish Players — International Goals',     type:'Intl Goals',       statKey:'intl_goals',           filters:{nat:'Spain'},    desc:'Career international goals for Spanish players.'},
+    {id:'intl_g_por',title:'Portuguese Players — International Goals',  type:'Intl Goals',       statKey:'intl_goals',           filters:{nat:'Portugal'}, desc:'Career international goals for Portuguese players.'},
+    {id:'intl_g_ned',title:'Dutch Players — International Goals',       type:'Intl Goals',       statKey:'intl_goals',           filters:{nat:'Netherlands'},desc:'Career international goals for Dutch players.'},
+    // ── By nation: International Goals+Assists ──────────────────
+    {id:'intl_ga_ge',title:'German Players — Intl Goals + Assists',     type:'Intl Goals+Assists',statKey:'intl_goals+intl_assists',filters:{nat:'Germany'},desc:'Combined international goals and assists for Germany.'},
+    {id:'intl_ga_sp',title:'Spanish Players — Intl Goals + Assists',    type:'Intl Goals+Assists',statKey:'intl_goals+intl_assists',filters:{nat:'Spain'}, desc:'Combined international goals and assists for Spain.'},
+    {id:'intl_ga_po',title:'Portuguese Players — Intl Goals + Assists', type:'Intl Goals+Assists',statKey:'intl_goals+intl_assists',filters:{nat:'Portugal'},desc:'Combined international goals and assists for Portugal.'},
+    {id:'intl_ga_sa',title:'South American — Intl Goals + Assists',     type:'Intl Goals+Assists',statKey:'intl_goals+intl_assists',filters:{nats:['Brazil','Argentina','Uruguay','Colombia','Chile','Peru']},desc:'Combined international goals and assists for South Americans.'},
+    // ── By position: appearance-based ───────────────────────────
+    {id:'ucl_apps_fw',title:'Forwards — Career UCL Appearances',        type:'UCL Apps',         statKey:'ucl_apps',             filters:{pos:'FW'},       desc:'Total UCL appearances for recognised forwards.'},
+    {id:'intl_ap_mid',title:'Midfielders — Career International Caps',  type:'Intl Apps',        statKey:'intl_apps',            filters:{pos:'MID'},      desc:'Career international appearances for midfielders. Stats over 180 bust!'},
+    {id:'pl_apps_def',title:'Defenders — Career PL Appearances',        type:'PL Apps',          statKey:'pl_apps',              filters:{pos:'DEF'},      desc:'Total PL appearances for defenders. Stats over 180 bust!'},
+    {id:'pl_apps_gk', title:'Goalkeepers — Career PL Appearances',      type:'PL Apps',          statKey:'pl_apps',              filters:{pos:'GK'},       desc:'Total PL appearances for goalkeepers. Stats over 180 bust!'},
+    // ── Defenders: goals+assists (surprise scorers) ─────────────
+    {id:'def_pl_ga',  title:'Defenders — PL Goals + Assists',           type:'PL Goals+Assists', statKey:'pl_goals+pl_assists',  filters:{pos:'DEF'},      desc:'Combined PL goals and assists for defenders — surprise scorers!'},
+    // ── Broad combined: high range ───────────────────────────────
+    {id:'ucl_ga_mid', title:'Midfielders — UCL Goals + Assists',        type:'UCL Goals+Assists',statKey:'ucl_goals+ucl_assists', filters:{pos:'MID'},     desc:'Combined UCL goals and assists for midfielders.'},
+    {id:'intl_ga_fw', title:'Forwards — International Goals + Assists', type:'Intl Goals+Assists',statKey:'intl_goals+intl_assists',filters:{pos:'FW'},    desc:'Combined international goals and assists for forwards.'},
+  ];
+
+  // Add only defs that don't already exist
+  const existingIds = new Set(CATEGORY_DEFS.map(d => d.id));
+  newDefs.forEach(d => { if (!existingIds.has(d.id)) CATEGORY_DEFS.push(d); });
+
+  // Rebuild CATEGORIES array by appending newly valid ones
+  // (CATEGORIES is const so we splice into it)
+  const MIN_POOL2 = 14, MIN_MEDIAN2 = 30, MAX_MEDIAN2 = 155;
+  newDefs.forEach(def => {
+    if (existingIds.has(def.id)) return; // already existed — skip
+    const players = buildCategoryPlayers(def);
+    if (players.length < MIN_POOL2) return;
+    const vals = players.map(p => Math.min(180, p.stat));
+    const med = median(vals);
+    if (med < MIN_MEDIAN2 || med > MAX_MEDIAN2) return;
+    if (vals.reduce((a,b) => a+b, 0) < 501) return;
+    CATEGORIES.push({...def, players});
+  });
+})();
+
+// ═══════════════════════════════════════════════════════════════════
+// ENHANCED STATS — extra fields layered on top of existing schema
+// ═══════════════════════════════════════════════════════════════════
+// Existing saveStats() writes to LS_STATS. We extend it by patching
+// after the base call. We use G._lastCheckoutScore and G._totalBusts.
+
+// Track busts and checkout scores per leg in game state
+// G._legBusts  — number of busts this leg (all players)
+// G._lastCheckoutScore — the stat used to check out (sc, not stat)
+// G._legHighThrow — highest non-bust stat scored this leg
+
+function getEnhancedStats() {
+  const base = lsGet(LS_STATS, {});
+  return Object.assign({
+    totalLegs:0, totalWins:0, bestLeg:null,
+    winStreak:0, bestStreak:0, totalThrows:0, history:[],
+    // extended
+    totalBusts:0, totalCheckoutSum:0, totalCheckouts:0,
+    highestThrow:0, legsByCategory:{},
+  }, base);
+}
+
+function saveEnhancedStats() {
+  const st = getEnhancedStats();
+  const winner = G._lastLegWinner;
+  const throws  = G.p[winner].throws;
+  const cat     = getCat();
+
+  st.totalLegs++;
+  st.totalThrows += throws;
+
+  if (winner === 0) {
+    st.totalWins++;
+    st.winStreak++;
+    if (st.winStreak > st.bestStreak) st.bestStreak = st.winStreak;
+  } else {
+    st.winStreak = 0;
+  }
+
+  if (st.bestLeg === null || throws < st.bestLeg) st.bestLeg = throws;
+
+  // Extended fields
+  const busts = (G._legBusts || 0);
+  st.totalBusts = (st.totalBusts || 0) + busts;
+
+  if (G._lastCheckoutScore) {
+    st.totalCheckoutSum  = (st.totalCheckoutSum  || 0) + G._lastCheckoutScore;
+    st.totalCheckouts    = (st.totalCheckouts    || 0) + 1;
+  }
+
+  const highThrow = G._legHighThrow || 0;
+  if (highThrow > (st.highestThrow || 0)) st.highestThrow = highThrow;
+
+  if (cat) {
+    st.legsByCategory = st.legsByCategory || {};
+    st.legsByCategory[cat.type] = (st.legsByCategory[cat.type] || 0) + 1;
+  }
+
+  const entry = {
+    date: new Date().toISOString(),
+    mode: G.mode, gameMode: G.gameMode,
+    p0Name: G.p[0].name, p1Name: G.p[1].name,
+    winnerIdx: winner,
+    p0Legs: G.p[0].legs + (winner===0?1:0),
+    p1Legs: G.p[1].legs + (winner===1?1:0),
+    throws,
+    checkoutScore: G._lastCheckoutScore || null,
+    catType: cat ? cat.type : null,
+  };
+  st.history.unshift(entry);
+  if (st.history.length > 50) st.history = st.history.slice(0, 50);
+
+  lsSet(LS_STATS, st);
+}
+
+// Override the old saveStats with the enhanced version
+window.saveStats = saveEnhancedStats;
+
+// Also override renderStatsModal to show new fields
+window.renderStatsModal = function() {
+  const st = getEnhancedStats();
+  const body = document.getElementById('statsBody');
+
+  if (st.totalLegs === 0) {
+    body.innerHTML = `<div class="no-stats">🎯 No games recorded yet.<br>Play your first leg to start tracking stats!</div>`;
+    return;
+  }
+
+  const winRate   = st.totalLegs > 0 ? Math.round((st.totalWins / st.totalLegs) * 100) : 0;
+  const avgThrows = st.totalLegs > 0 ? (st.totalThrows / st.totalLegs).toFixed(1) : '—';
+  const bustPct   = st.totalThrows > 0 ? Math.round(((st.totalBusts||0) / st.totalThrows) * 100) : 0;
+  const avgCo     = (st.totalCheckouts||0) > 0 ? Math.round((st.totalCheckoutSum||0) / st.totalCheckouts) : '—';
+  const highThrow = st.highestThrow || '—';
+
+  // Top category
+  const catEntries = Object.entries(st.legsByCategory || {}).sort((a,b)=>b[1]-a[1]);
+  const topCat = catEntries[0] ? `${catEntries[0][0]} (${catEntries[0][1]})` : '—';
+
+  const recentHTML = (st.history || []).slice(0, 8).map(h => {
+    const isWin  = h.winnerIdx === 0;
+    const dateStr = new Date(h.date).toLocaleDateString('en-GB', {day:'numeric',month:'short'});
+    const timeStr = new Date(h.date).toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
+    const opponent = h.mode===1 ? 'Practice' : h.p1Name;
+    const resultLabel = h.mode===1 ? '✓ Checked out' : (isWin ? `${h.p0Name} won` : `${h.p1Name} won`);
+    const legs = h.mode===2 ? ` (${h.p0Legs}–${h.p1Legs})` : '';
+    const co = h.checkoutScore ? ` · co:${h.checkoutScore}` : '';
+    return `<div class="recent-item">
+      <div>
+        <div class="ri-result ${isWin?'win':'loss'}">${resultLabel}${legs}</div>
+        <div class="ri-meta">${opponent} · ${h.throws} throws${co}</div>
+      </div>
+      <div class="ri-meta" style="text-align:right">${dateStr}<br>${timeStr}</div>
+    </div>`;
+  }).join('');
+
+  body.innerHTML = `
+    <div class="stat-grid">
+      <div class="stat-card gold-card">
+        <div class="stat-card-val">${st.bestLeg !== null ? st.bestLeg : '—'}</div>
+        <div class="stat-card-label">🏆 Best Leg (throws)</div>
+      </div>
+      <div class="stat-card gold-card">
+        <div class="stat-card-val">${st.bestStreak}</div>
+        <div class="stat-card-label">🔥 Best Win Streak</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-val">${st.totalLegs}</div>
+        <div class="stat-card-label">Legs Played</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-val">${winRate}%</div>
+        <div class="stat-card-label">Win Rate</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-val">${avgThrows}</div>
+        <div class="stat-card-label">Avg Throws/Leg</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-val">${bustPct}%</div>
+        <div class="stat-card-label">💥 Bust Rate</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-val">${avgCo}</div>
+        <div class="stat-card-label">Avg Checkout Score</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-val">${highThrow}</div>
+        <div class="stat-card-label">🎯 Highest Single Throw</div>
+      </div>
+    </div>
+    <div class="lb-section-title">Current Streak</div>
+    <div style="font-size:28px;font-family:'Bebas Neue',cursive;color:${st.winStreak>0?'var(--green)':'var(--gray)'};margin-bottom:4px;">
+      ${st.winStreak > 0 ? '🔥 ' + st.winStreak + ' in a row!' : 'No active streak'}
+    </div>
+    <div style="font-size:12px;color:var(--gray);margin-bottom:2px;">Favourite category type: <b>${topCat}</b></div>
+    <hr class="lb-divider">
+    <div class="lb-section-title">Recent Legs</div>
+    <div class="recent-list">${recentHTML}</div>
+    <hr class="lb-divider">
+    <button class="btn btn-outline" style="width:100%;height:36px;font-size:12px;border-radius:8px;margin-top:4px;"
+      onclick="if(confirm('Reset all stats? This cannot be undone.')){localStorage.removeItem('${LS_STATS}');renderStatsModal();}">
+      Reset Stats
+    </button>
+  `;
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// ACHIEVEMENTS SYSTEM
+// ═══════════════════════════════════════════════════════════════════
+const LS_ACH = 'football501_achievements';
+
+const ACH_DEFS = [
+  // Core gameplay
+  {id:'speed_demon',    icon:'⚡',  name:'Speed Demon',       desc:'Check out in just 1 throw.',                    type:'bool'},
+  {id:'surgeon',        icon:'🥼',  name:'Surgeon',           desc:'Check out in exactly 2 throws.',                type:'bool'},
+  {id:'hat_trick_legs', icon:'🎩',  name:'Hat Trick',         desc:'Win 3 legs in a row.',                          type:'progress', max:3},
+  {id:'perfect_match',  icon:'🏆',  name:'Perfect Match',     desc:'Win a Best of 3 without dropping a leg (3-0).',  type:'bool'},
+  {id:'comeback',       icon:'📈',  name:'Great Comeback',    desc:'Win a leg from 150+ points behind.',             type:'bool'},
+  {id:'clutch',         icon:'💪',  name:'Clutch',            desc:'Win a leg while trailing opponent by 100+.',     type:'bool'},
+  // Sticker Book
+  {id:'collector_10',   icon:'⭐',  name:'Collector I',       desc:'Unlock 10 players in the Sticker Book.',        type:'progress', max:10},
+  {id:'collector_50',   icon:'⭐⭐', name:'Collector II',      desc:'Unlock 50 players in the Sticker Book.',        type:'progress', max:50},
+  {id:'collector_100',  icon:'🏅',  name:'Collector III',     desc:'Unlock 100 players in the Sticker Book.',       type:'progress', max:100},
+  {id:'collector_200',  icon:'🎖️',  name:'World Class',       desc:'Unlock 200 players in the Sticker Book.',       type:'progress', max:200},
+  {id:'nation_10',      icon:'🌍',  name:'National Hero',     desc:'Unlock 10 players of the same nationality.',    type:'bool'},
+  {id:'session_10',     icon:'⚡📚', name:'Speed Collector',   desc:'Unlock 10 players in a single session.',        type:'bool'},
+  // Category milestones
+  {id:'cat_variety_5',  icon:'🗂️',  name:'Category Variety',  desc:'Win legs in 5 different category types.',       type:'progress', max:5},
+  {id:'legs_10',        icon:'🎯',  name:'On a Roll',         desc:'Win 10 legs total.',                            type:'progress', max:10},
+  {id:'legs_50',        icon:'🏆',  name:'Veteran',           desc:'Win 50 legs total.',                            type:'progress', max:50},
+  // Practice
+  {id:'practice_5',     icon:'🎓',  name:'Dedicated',         desc:'Complete 5 practice legs.',                     type:'progress', max:5},
+  // Bust rate
+  {id:'clean_leg',      icon:'✨',  name:'Clean Leg',         desc:'Win a leg with zero busts.',                    type:'bool'},
+  {id:'bust_free_5',    icon:'🧊',  name:'Ice Cold',          desc:'Win 5 legs in a row without a bust.',           type:'progress', max:5},
+];
+
+function getAchievements() {
+  const saved = lsGet(LS_ACH, {});
+  const result = {};
+  ACH_DEFS.forEach(def => {
+    result[def.id] = saved[def.id] || {
+      unlocked: false,
+      unlockedAt: null,
+      progress: 0,
+      progressMax: def.max || 1,
+    };
+  });
+  return result;
+}
+
+function unlockAchievement(id) {
+  const achs = getAchievements();
+  if (achs[id] && achs[id].unlocked) return false; // already unlocked
+  if (!achs[id]) return false;
+  achs[id].unlocked = true;
+  achs[id].unlockedAt = new Date().toISOString();
+  lsSet(LS_ACH, achs);
+  const def = ACH_DEFS.find(d => d.id === id);
+  if (def) showAchievementToast(def);
+  return true;
+}
+
+function setAchievementProgress(id, value) {
+  const achs = getAchievements();
+  if (!achs[id] || achs[id].unlocked) return;
+  achs[id].progress = value;
+  lsSet(LS_ACH, achs);
+  const def = ACH_DEFS.find(d => d.id === id);
+  if (def && def.type === 'progress' && value >= def.max) {
+    unlockAchievement(id);
+  }
+}
+
+function incrementAchievement(id, by = 1) {
+  const achs = getAchievements();
+  if (!achs[id] || achs[id].unlocked) return;
+  const newVal = (achs[id].progress || 0) + by;
+  setAchievementProgress(id, newVal);
+}
+
+function showAchievementToast(def) {
+  const t = document.createElement('div');
+  t.className = 'unlock-toast';
+  t.style.background = 'linear-gradient(135deg,#c8922a,#f0b429)';
+  t.style.color = '#0f4526';
+  t.innerHTML = `<span class="unlock-toast-icon">${def.icon}</span>Achievement Unlocked!<br><strong>${def.name}</strong>`;
+  document.body.appendChild(t);
+  setTimeout(() => { t.classList.add('fade-out'); setTimeout(() => t.remove(), 400); }, 2800);
+}
+
+function openAchievements() {
+  renderAchievementsModal();
+  document.getElementById('achOverlay').classList.remove('hidden');
+}
+function closeAchievements() {
+  document.getElementById('achOverlay').classList.add('hidden');
+}
+
+function renderAchievementsModal() {
+  const achs  = getAchievements();
+  const total  = ACH_DEFS.length;
+  const earned = ACH_DEFS.filter(d => achs[d.id] && achs[d.id].unlocked).length;
+  const body   = document.getElementById('achBody');
+
+  const cards = ACH_DEFS.map(def => {
+    const a = achs[def.id];
+    const isUnlocked = a && a.unlocked;
+    const prog = a ? (a.progress || 0) : 0;
+    const max  = def.max || 1;
+    const pct  = Math.min(100, Math.round((prog / max) * 100));
+    const dateStr = isUnlocked && a.unlockedAt
+      ? new Date(a.unlockedAt).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'2-digit'})
+      : '';
+    const progressHTML = !isUnlocked && def.type === 'progress' ? `
+      <div class="ach-progress">
+        <div class="ach-prog-bar"><div class="ach-prog-fill" style="width:${pct}%"></div></div>
+        <div class="ach-prog-label">${prog} / ${max}</div>
+      </div>` : '';
+
+    return `<div class="ach-card ${isUnlocked ? 'unlocked' : 'locked'}">
+      <span class="ach-icon">${def.icon}</span>
+      <div class="ach-name">${def.name}</div>
+      <div class="ach-desc">${def.desc}</div>
+      ${isUnlocked ? `<div class="ach-date">Unlocked ${dateStr}</div>` : progressHTML}
+    </div>`;
+  }).join('');
+
+  body.innerHTML = `
+    <div style="text-align:center;font-size:13px;color:var(--gray);margin-bottom:14px;">
+      <span style="font-family:'Bebas Neue',cursive;font-size:28px;color:var(--gd);">${earned}</span>
+      <span style="font-size:16px;color:var(--gray);"> / ${total} Unlocked</span>
+    </div>
+    <div class="ach-grid">${cards}</div>
+  `;
+}
+
+// ── Achievement check on leg end ─────────────────────────────────
+function checkAchievementsAfterLeg(winner) {
+  const st     = getEnhancedStats();
+  const throws  = G.p[winner].throws;
+  const legBusts = G._legBusts || 0;
+
+  // Speed Demon — checkout in 1 throw
+  if (throws === 1) unlockAchievement('speed_demon');
+
+  // Surgeon — checkout in 2 throws
+  if (throws === 2) unlockAchievement('surgeon');
+
+  // Clean Leg — no busts
+  if (legBusts === 0) {
+    unlockAchievement('clean_leg');
+    G._cleanStreak = (G._cleanStreak || 0) + 1;
+    if (G._cleanStreak >= 5) setAchievementProgress('bust_free_5', G._cleanStreak);
+  } else {
+    G._cleanStreak = 0;
+  }
+
+  // Streak — 3 wins in a row
+  if (st.winStreak >= 3) {
+    setAchievementProgress('hat_trick_legs', Math.min(st.winStreak, 3));
+  }
+
+  // Perfect Match — 2P BO3, win 2-0 (legs won by p0 = 2, p1 = 0 at match end)
+  if (G.mode === 2 && G.gameMode === 'bo3') {
+    if (G.p[winner].legs + 1 >= 2 && G.p[1-winner].legs === 0) {
+      unlockAchievement('perfect_match');
+    }
+  }
+
+  // Comeback — win from 150+ down
+  if (G._legMaxDeficit && G._legMaxDeficit >= 150) unlockAchievement('comeback');
+
+  // Clutch — win while trailing by 100+ (at any point this leg)
+  if (G._legMaxTrail && G._legMaxTrail >= 100) unlockAchievement('clutch');
+
+  // Legs milestones
+  incrementAchievement('legs_10');
+  incrementAchievement('legs_50');
+  if (G.mode === 1) incrementAchievement('practice_5');
+
+  // Category variety
+  const catTypes = new Set((st.legsByCategory ? Object.keys(st.legsByCategory) : []));
+  if (getCat()) catTypes.add(getCat().type);
+  setAchievementProgress('cat_variety_5', Math.min(catTypes.size, 5));
+
+  // Sticker book milestones
+  const unlocked = getUnlockedCount();
+  setAchievementProgress('collector_10',  Math.min(unlocked, 10));
+  setAchievementProgress('collector_50',  Math.min(unlocked, 50));
+  setAchievementProgress('collector_100', Math.min(unlocked, 100));
+  setAchievementProgress('collector_200', Math.min(unlocked, 200));
+
+  // National collection
+  const sb  = getStickerBook();
+  const natCounts = {};
+  DB.forEach(p => { if (sb[p.name]) natCounts[p.nat] = (natCounts[p.nat]||0)+1; });
+  if (Object.values(natCounts).some(v => v >= 10)) unlockAchievement('nation_10');
+
+  // Session unlocks
+  if ((G._sessionUnlocks || 0) >= 10) unlockAchievement('session_10');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CATEGORY INSIGHTS PANEL
+// ═══════════════════════════════════════════════════════════════════
+function renderInsights() {
+  const el = document.getElementById('catInsights');
+  if (!el) return;
+  const cat = getCat();
+  if (!cat) { el.innerHTML = ''; return; }
+
+  const remaining = cat.players.filter(p => !G.usedPlayers.has(p.name));
+  const count = remaining.length;
+
+  if (count === 0) {
+    el.innerHTML = `<span class="ci-pill warn">⚠️ All players used — consider skipping</span>`;
+    return;
+  }
+
+  const avg = count > 0
+    ? Math.round(remaining.reduce((s,p) => s + Math.min(180, p.stat), 0) / count)
+    : 0;
+
+  const sc = G.p[G.current].score;
+  const inWindow = sc <= 170
+    ? remaining.filter(p => { const v = Math.min(180,p.stat); return v >= sc && v <= sc + 10; }).length
+    : 0;
+
+  let html = `
+    <span class="ci-pill">👥 ${count} remaining</span>
+    <span class="ci-pill">📊 Avg: ${avg}</span>
+  `;
+  if (sc <= 170) {
+    const cls = inWindow > 0 ? '' : ' warn';
+    html += `<span class="ci-pill${cls}">🎯 ${inWindow} in checkout range</span>`;
+  }
+
+  el.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// UNDO THROW (practice mode only, max 3 per leg)
+// ═══════════════════════════════════════════════════════════════════
+function undoThrow() {
+  if (G.mode !== 1) return;
+  if (!G.history.length) return;
+  const undosLeft = 3 - (G._undoCount || 0);
+  if (undosLeft <= 0) return;
+
+  const last = G.history[G.history.length - 1];
+  G.history.pop();
+  G.p[0].throws = Math.max(0, G.p[0].throws - 1);
+  G.p[0].score  = last.remaining;
+  G.usedPlayers.delete(last.player);
+
+  // Undo bust/score trackers
+  if (last.type === 'bust') {
+    G._legBusts = Math.max(0, (G._legBusts || 0) - 1);
+  } else if (last.type !== 'checkout') {
+    G._legHighThrow = G.history.length
+      ? Math.max(...G.history.filter(h=>h.type==='ok').map(h=>h.stat), 0)
+      : 0;
+  }
+
+  G._undoCount = (G._undoCount || 0) + 1;
+  const left = 3 - G._undoCount;
+  const btn = document.getElementById('undoBtn');
+  if (btn) {
+    btn.style.display = left > 0 && G.history.length > 0 ? 'block' : 'none';
+    btn.textContent = `↶ Undo (${left})`;
+  }
+
+  renderScoreboard();
+  renderHistory();
+  renderInsights();
+  document.getElementById('playerInput').focus();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// STREAK METER — rendered inside pcard for current player
+// ═══════════════════════════════════════════════════════════════════
+function renderStreakMeter() {
+  // Remove any existing meters
+  document.querySelectorAll('.streak-meter').forEach(el => el.remove());
+  const st = getEnhancedStats();
+  const streak = st.winStreak || 0;
+  if (streak < 2) return;
+
+  const width = Math.min(100, streak * 10);
+  const card  = document.getElementById('card0'); // always P0 streak
+  if (!card) return;
+
+  const meter = document.createElement('div');
+  meter.className = 'streak-meter';
+  meter.style.display = 'block';
+  meter.innerHTML = `
+    <div class="streak-bar" style="width:${width}%"></div>
+    <div class="streak-label">🔥 ${streak}-leg streak</div>
+  `;
+  card.appendChild(meter);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// KEYBOARD SHORTCUTS
+// ═══════════════════════════════════════════════════════════════════
+document.addEventListener('keydown', function(e) {
+  // Don't fire if user is typing in an input
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+
+  // Don't fire if any modal is open
+  const modalsOpen = ['statsOverlay','sbOverlay','achOverlay','legModal','matchModal']
+    .some(id => { const el = document.getElementById(id); return el && !el.classList.contains('hidden'); });
+
+  switch(e.key.toLowerCase()) {
+    case 'm':
+      if (modalsOpen) return;
+      if (!document.getElementById('mainGame').classList.contains('hidden')) goToMenu();
+      break;
+    case 's':
+      if (modalsOpen) return;
+      if (!document.getElementById('mainGame').classList.contains('hidden')) skipCategory();
+      break;
+    case 'u':
+      if (modalsOpen) return;
+      if (G.mode === 1) undoThrow();
+      break;
+    case '?':
+    case 'h':
+      showKbHelp();
+      break;
+    case 'escape':
+      // Close any open modal
+      ['statsOverlay','sbOverlay','achOverlay'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && !el.classList.contains('hidden')) el.classList.add('hidden');
+      });
+      break;
+  }
+});
+
+function showKbHelp() {
+  // Simple toast-style help
+  const existing = document.getElementById('kbHelp');
+  if (existing) { existing.remove(); return; }
+  const div = document.createElement('div');
+  div.id = 'kbHelp';
+  div.style.cssText = `position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:var(--gd);color:white;border-radius:14px;padding:14px 20px;
+    font-size:12px;z-index:900;box-shadow:0 8px 24px rgba(0,0,0,.4);line-height:2;
+    max-width:280px;text-align:center;`;
+  div.innerHTML = `
+    <div style="font-family:'Bebas Neue',cursive;font-size:18px;color:var(--gold);margin-bottom:4px;">Keyboard Shortcuts</div>
+    <b>M</b> Menu &nbsp;|&nbsp; <b>S</b> Skip Category<br>
+    <b>U</b> Undo (practice) &nbsp;|&nbsp; <b>Esc</b> Close modal<br>
+    <b>H</b> or <b>?</b> Toggle this help<br>
+    <div style="margin-top:6px;color:rgba(255,255,255,.5);font-size:10px;">Click anywhere to dismiss</div>
+  `;
+  div.onclick = () => div.remove();
+  document.body.appendChild(div);
+  setTimeout(() => div && div.remove(), 6000);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PATCH: confirmThrow to track new stat fields for achievements
+// ═══════════════════════════════════════════════════════════════════
+const _baseConfirmThrow = confirmThrow;  // capture the original base before overriding
+
+window.confirmThrow = function() {
+  if (!G.selectedPlayer) return;
+  const { name, stat } = G.selectedPlayer;
+
+  // Already-used guard (handled inside base, but we need it here too for tracking)
+  if (G.usedPlayers.has(name)) {
+    document.getElementById('playerInput').classList.add('invalid');
+    setTimeout(() => document.getElementById('playerInput').classList.remove('invalid'), 400);
+    return;
+  }
+
+  const cur = G.current;
+  const sc  = G.p[cur].score;
+
+  // Track high throw (non-bust)
+  if (stat <= 180 && sc - stat >= 0) {
+    if (stat > (G._legHighThrow || 0)) G._legHighThrow = stat;
+  }
+
+  // Track deficit for comeback achievement (2P only)
+  if (G.mode === 2) {
+    const gap = G.p[1-cur].score - sc;
+    if (gap > (G._legMaxDeficit || 0)) G._legMaxDeficit = gap;
+    if (gap > (G._legMaxTrail   || 0)) G._legMaxTrail   = gap;
+  }
+
+  // Track bust
+  const willBust = stat > 180 || (sc - stat < 0 && !(sc <= 170 && stat >= sc && stat <= sc + 10));
+  if (willBust) G._legBusts = (G._legBusts || 0) + 1;
+
+  // Sticker unlock + achievement tracking
+  const isNew = unlockPlayer(name);
+  if (isNew) {
+    if (!G._newUnlocks) G._newUnlocks = [];
+    G._newUnlocks.push(name);
+    G._sessionUnlocks = (G._sessionUnlocks || 0) + 1;
+    showUnlockToast(name);
+  }
+
+  // Call the base (which handles score, history, sounds, checkout)
+  _baseConfirmThrow.call(this);
+
+  // Update insights and undo button after every throw
+  renderInsights();
+  const undoBtn = document.getElementById('undoBtn');
+  if (undoBtn) {
+    const left = 3 - (G._undoCount || 0);
+    undoBtn.style.display = (G.mode === 1 && left > 0 && G.history.length > 0) ? 'block' : 'none';
+    undoBtn.textContent = `↶ Undo (${left})`;
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// PATCH: finishLegWithExtras to also check achievements + streak meter
+// ═══════════════════════════════════════════════════════════════════
+const _baseFinishLegWithExtras = finishLegWithExtras;
+
+window.finishLegWithExtras = function(winner) {
+  G._lastLegWinner = winner;
+  G._lastCheckoutScore = G.p[winner].score; // score at the moment of checkout (always 0 after, so use pre)
+  // Actually checkoutScore is stored in history as last entry's 'scored'
+  const lastEntry = G.history[G.history.length - 1];
+  if (lastEntry && lastEntry.type === 'checkout') G._lastCheckoutScore = lastEntry.scored;
+
+  // Run achievements check before base (base calls saveStats)
+  checkAchievementsAfterLeg(winner);
+
+  // Call base (saves stats, shows modal, injects unlock chips)
+  _baseFinishLegWithExtras.call(this, winner);
+
+  // Render streak meter in scoreboard
+  renderStreakMeter();
+
+  // Reset per-leg trackers
+  G._legBusts       = 0;
+  G._legHighThrow   = 0;
+  G._legMaxDeficit  = 0;
+  G._legMaxTrail    = 0;
+  G._lastCheckoutScore = null;
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// PATCH: nextLeg to reset undo counter and insights
+// ═══════════════════════════════════════════════════════════════════
+const _baseNextLeg = nextLeg;
+window.nextLeg = function(newCat) {
+  G._undoCount  = 0;
+  G._legBusts   = 0;
+  G._legHighThrow = 0;
+  G._legMaxDeficit = 0;
+  G._legMaxTrail   = 0;
+  const undoBtn = document.getElementById('undoBtn');
+  if (undoBtn) undoBtn.style.display = 'none';
+  _baseNextLeg.call(this, newCat);
+  renderInsights();
+  renderStreakMeter();
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// PATCH: startGame to reset session trackers and render insights
+// ═══════════════════════════════════════════════════════════════════
+const _baseStartGame = startGame;
+window.startGame = function() {
+  G._sessionUnlocks = 0;
+  G._undoCount      = 0;
+  G._legBusts       = 0;
+  G._legHighThrow   = 0;
+  G._legMaxDeficit  = 0;
+  G._legMaxTrail    = 0;
+  G._cleanStreak    = 0;
+  _baseStartGame.call(this);
+  renderInsights();
+  renderStreakMeter();
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// PATCH: skipCategory to re-render insights on category change
+// ═══════════════════════════════════════════════════════════════════
+const _baseSkipCategory = skipCategory;
+window.skipCategory = function() {
+  _baseSkipCategory.call(this);
+  renderInsights();
+  const undoBtn = document.getElementById('undoBtn');
+  if (undoBtn) undoBtn.style.display = 'none';
+  G._undoCount = 0;
+};
+
+// Initial insight render when page loads (before first game)
+// (runs after init, harmless if catIdx === -1)
 </script>
 </body>
 </html>

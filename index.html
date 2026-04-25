@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Football 501</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --green:#1a6b3c;--gl:#228a4e;--gd:#0f4526;
+  --gold:#f0b429;--goldd:#c8922a;--red:#c0392b;
+  --cream:#f5f0e8;--pitch:#166534;--gray:#6b7280;--dark:#111827;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--pitch);min-height:100vh;color:var(--dark);}
+.pitch-bg{
+  background:
+    repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(255,255,255,.025) 60px,rgba(255,255,255,.025) 120px),
+    repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(255,255,255,.015) 60px,rgba(255,255,255,.015) 120px),
+    var(--pitch);
+  min-height:100vh;padding:14px;max-width:700px;margin:0 auto;
+}
+/* ── SETUP ────────────────────────────────────────────────────────── */
+.setup-overlay{
+  position:fixed;inset:0;z-index:300;
+  background:repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(255,255,255,.025) 60px,rgba(255,255,255,.025) 120px),
+    repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(255,255,255,.015) 60px,rgba(255,255,255,.015) 120px),var(--pitch);
+  display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;
+}
+.setup-card{background:white;border-radius:22px;padding:28px 24px;max-width:480px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,.35);}
+.setup-logo{font-family:'Bebas Neue',cursive;font-size:44px;color:var(--gd);letter-spacing:3px;text-align:center;line-height:1;}
+.setup-logo span{color:var(--gold);}
+.setup-sub{text-align:center;font-size:12px;color:var(--gray);margin:3px 0 18px;letter-spacing:1.5px;text-transform:uppercase;}
+.mode-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.mode-btn{height:52px;border:2px solid rgba(0,0,0,.12);border-radius:12px;background:white;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--gray);transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.mode-btn:hover{border-color:var(--green);color:var(--green);}
+.mode-btn.selected{border-color:var(--green);background:#f0faf4;color:var(--gd);}
+.player-block{background:#f9fafb;border-radius:12px;padding:14px;margin-bottom:12px;}
+.player-block-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--gray);margin-bottom:10px;}
+.field-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:var(--gray);margin-bottom:4px;display:block;}
+.text-input{width:100%;height:42px;border:1.5px solid rgba(0,0,0,.15);border-radius:10px;padding:0 12px;font-size:15px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;background:white;margin-bottom:10px;}
+.text-input:focus{border-color:var(--green);}
+.badge-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:var(--gray);margin-bottom:6px;display:block;}
+.badge-row{display:flex;gap:8px;flex-wrap:wrap;}
+.badge-opt{width:44px;height:44px;border-radius:10px;cursor:pointer;border:2px solid transparent;transition:all .15s;display:flex;align-items:center;justify-content:center;font-size:22px;user-select:none;}
+.badge-opt:hover{transform:scale(1.1);}
+.badge-opt.picked{border-color:var(--gd);box-shadow:0 0 0 3px rgba(26,107,60,.25);}
+/* Game mode selector for 2p */
+.gm-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+.gm-btn{height:38px;border:1.5px solid rgba(0,0,0,.12);border-radius:9px;background:white;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--gray);transition:all .15s;}
+.gm-btn:hover{border-color:var(--green);color:var(--green);}
+.gm-btn.selected{border-color:var(--green);background:#f0faf4;color:var(--gd);}
+.rules{background:#f0faf4;border:1px solid #c3e6cb;border-radius:10px;padding:10px 14px;font-size:12px;color:#2d6a4f;line-height:1.75;margin:14px 0 16px;}
+.rules b{color:var(--gd);}
+.btn{height:44px;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:14px;cursor:pointer;transition:all .15s;padding:0 16px;}
+.btn:active{transform:scale(.97);}
+.btn-gold{background:var(--gold);color:var(--gd);font-weight:700;}
+.btn-gold:hover{background:var(--goldd);color:white;}
+.btn-green{background:var(--green);color:white;}
+.btn-green:hover{background:var(--gl);}
+.btn-outline{background:transparent;color:var(--gray);border:1.5px solid rgba(0,0,0,.18);}
+.btn-outline:hover{background:#f3f4f6;}
+.btn-red{background:var(--red);color:white;}
+.btn-red:hover{background:#a93226;}
+/* ── HEADER ───────────────────────────────────────────────────────── */
+.header{text-align:center;padding:8px 0 12px;}
+.title{font-family:'Bebas Neue',cursive;font-size:46px;color:var(--gold);letter-spacing:3px;line-height:1;text-shadow:0 2px 8px rgba(0,0,0,.5);}
+.subtitle{font-size:12px;color:rgba(255,255,255,.55);letter-spacing:2px;text-transform:uppercase;margin-top:2px;}
+/* ── GAME MODE BAR ────────────────────────────────────────────────── */
+.game-mode-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:0 2px;}
+.gm-name{font-family:'Bebas Neue',cursive;font-size:18px;color:rgba(255,255,255,.5);letter-spacing:2px;}
+.gm-score{font-family:'Bebas Neue',cursive;font-size:22px;color:var(--gold);letter-spacing:2px;}
+.menu-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:rgba(255,255,255,.7);font-size:12px;font-weight:600;padding:5px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.menu-btn:hover{background:rgba(255,255,255,.2);color:white;}
+/* ── SCOREBOARD ───────────────────────────────────────────────────── */
+.scoreboard{display:grid;gap:8px;margin-bottom:12px;}
+.scoreboard.two-player{grid-template-columns:1fr auto 1fr;}
+.scoreboard.one-player{grid-template-columns:1fr;}
+.pcard{background:rgba(255,255,255,.07);border:2px solid rgba(255,255,255,.15);border-radius:14px;padding:12px 16px;position:relative;transition:all .3s;}
+.pcard.active{background:rgba(240,180,41,.15);border-color:var(--gold);box-shadow:0 0 18px rgba(240,180,41,.2);}
+.pcard.winner-flash{animation:wFlash .5s ease-in-out infinite alternate;}
+@keyframes wFlash{from{background:rgba(240,180,41,.1)}to{background:rgba(240,180,41,.3)}}
+.pcard-top{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+.pbadge{font-size:22px;line-height:1;border-radius:8px;padding:4px 6px;flex-shrink:0;}
+.pname-col .plabel{font-size:10px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:1.5px;}
+.pname-col .pname{font-family:'Bebas Neue',cursive;font-size:20px;color:white;letter-spacing:1px;line-height:1.1;}
+.pscore{font-family:'Bebas Neue',cursive;font-size:58px;color:var(--gold);line-height:1;margin:2px 0;}
+.pthrows{font-size:11px;color:rgba(255,255,255,.45);}
+.pthrows span{color:rgba(255,255,255,.8);font-weight:600;}
+.pdot{position:absolute;top:10px;right:12px;width:8px;height:8px;border-radius:50%;background:var(--gold);animation:blink 1.2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+.legs-row{display:flex;gap:4px;margin-top:4px;}
+.ldot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);}
+.ldot.won{background:var(--gold);border-color:var(--goldd);}
+.vs{font-family:'Bebas Neue',cursive;font-size:24px;color:rgba(255,255,255,.3);text-align:center;align-self:center;}
+/* ── PANEL ────────────────────────────────────────────────────────── */
+.panel{background:var(--cream);border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.3);}
+.panel-header{background:var(--gd);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;}
+.cat-type-label{font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1.5px;}
+.leg-badge{background:var(--gold);color:var(--gd);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;}
+.cat-body{padding:14px 18px 12px;}
+.cat-title{font-family:'Bebas Neue',cursive;font-size:24px;color:var(--gd);letter-spacing:1px;line-height:1.15;margin-bottom:5px;}
+.cat-desc{font-size:12px;color:var(--gray);line-height:1.5;}
+.cat-note{font-size:11px;color:#8a6200;background:rgba(240,180,41,.1);border:1px solid rgba(240,180,41,.25);border-radius:8px;padding:5px 10px;margin-top:8px;display:none;}
+/* ── INPUT ZONE ───────────────────────────────────────────────────── */
+.input-zone{background:white;border-top:1px solid rgba(0,0,0,.08);padding:14px 18px;}
+.turn-line{font-size:13px;font-weight:600;color:var(--gd);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.turn-badge{font-size:18px;}
+/* Checkout info box */
+.checkout-box{border-radius:10px;padding:10px 14px;margin-bottom:10px;display:none;}
+.checkout-box.in-range{background:#f0faf4;border:1px solid #c3e6cb;}
+.checkout-box.approaching{background:#fff8e6;border:1px solid rgba(240,180,41,.4);}
+.checkout-title{font-size:12px;font-weight:700;color:var(--gd);margin-bottom:5px;}
+.checkout-detail{font-size:12px;color:#374151;line-height:1.6;}
+.checkout-counts{display:flex;gap:12px;margin-top:6px;}
+.co-pill{background:white;border:1px solid rgba(0,0,0,.1);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;color:var(--gd);}
+.co-pill.perfect{background:var(--gold);border-color:var(--goldd);color:var(--gd);}
+.autocomplete-wrap{position:relative;margin-bottom:8px;}
+.styled-input{height:44px;border:1.5px solid rgba(0,0,0,.15);border-radius:10px;padding:0 12px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--dark);background:#f9f9f9;outline:none;transition:border-color .2s;width:100%;}
+.styled-input:focus{border-color:var(--green);background:white;}
+.styled-input.invalid{border-color:var(--red);animation:shake .35s ease;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.dropdown{position:absolute;top:46px;left:0;right:0;background:white;border:1.5px solid rgba(0,0,0,.12);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:50;max-height:240px;overflow-y:auto;display:none;}
+.dropdown.open{display:block;}
+.drop-item{padding:10px 14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:13px;border-bottom:1px solid rgba(0,0,0,.04);transition:background .1s;}
+.drop-item:last-child{border-bottom:none;}
+.drop-item:hover,.drop-item.kbd-sel{background:#f0faf4;}
+.drop-item.used-player{opacity:.4;cursor:default;}
+.drop-item.used-player:hover{background:transparent;}
+.dname{font-weight:500;color:var(--dark);}
+.dused{font-size:10px;color:var(--gray);font-style:italic;}
+.btn-row{display:flex;gap:8px;}
+/* ── HISTORY ──────────────────────────────────────────────────────── */
+.history-zone{background:#f9fafb;border-top:1px solid rgba(0,0,0,.06);padding:12px 18px;}
+.history-title{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--gray);margin-bottom:8px;font-weight:600;}
+.throws-list{max-height:180px;overflow-y:auto;}
+.throw-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.05);}
+.throw-row:last-child{border-bottom:none;}
+.throw-who{font-weight:600;font-size:11px;color:var(--dark);min-width:60px;}
+.throw-player{flex:1;font-size:13px;color:#374151;}
+.throw-scored{font-family:'Bebas Neue',cursive;font-size:20px;color:var(--gd);min-width:34px;}
+.tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
+.tag-ok{background:#d4edda;color:#1a5c2e;}
+.tag-bad{background:#fde8e8;color:#8b0000;}
+.tag-co{background:var(--gold);color:var(--gd);}
+/* ── SCORE POP ────────────────────────────────────────────────────── */
+.score-pop{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Bebas Neue',cursive;font-size:88px;letter-spacing:4px;pointer-events:none;z-index:610;opacity:0;text-shadow:0 4px 20px rgba(0,0,0,.35);}
+.score-pop.good{color:#fff;}
+.score-pop.bust{color:#ff6b6b;}
+.score-pop.checkout{color:var(--gold);}
+.score-pop.show{animation:sPop .9s ease forwards;}
+@keyframes sPop{0%{opacity:0;transform:translate(-50%,-50%) scale(.6);}25%{opacity:1;transform:translate(-50%,-50%) scale(1.15);}55%{opacity:1;transform:translate(-50%,-50%) scale(1);}100%{opacity:0;transform:translate(-50%,-60%) scale(.95);}}
+/* ── MODALS ───────────────────────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:400;padding:20px;}
+.modal{background:white;border-radius:20px;padding:26px 22px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+.modal-icon{font-size:48px;margin-bottom:6px;text-align:center;}
+.modal-title{font-family:'Bebas Neue',cursive;font-size:34px;color:var(--gd);letter-spacing:2px;margin-bottom:4px;text-align:center;}
+.modal-sub{font-size:13px;color:var(--gray);margin-bottom:16px;text-align:center;line-height:1.5;}
+.modal-stats{background:var(--cream);border-radius:12px;padding:12px;margin-bottom:18px;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.mstat-val{font-family:'Bebas Neue',cursive;font-size:30px;color:var(--gd);text-align:center;}
+.mstat-label{font-size:10px;color:var(--gray);text-transform:uppercase;letter-spacing:1px;text-align:center;}
+.modal-btn-col{display:flex;flex-direction:column;gap:8px;}
+/* ── MATCH WIN MODAL ──────────────────────────────────────────────── */
+.match-win-modal{background:linear-gradient(135deg,var(--gd),var(--green));border-radius:20px;padding:32px 24px;max-width:380px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+.match-win-title{font-family:'Bebas Neue',cursive;font-size:42px;color:var(--gold);letter-spacing:3px;text-align:center;line-height:1;}
+.match-win-sub{font-size:14px;color:rgba(255,255,255,.8);text-align:center;margin:8px 0 20px;line-height:1.5;}
+.match-win-score{font-family:'Bebas Neue',cursive;font-size:56px;color:white;text-align:center;letter-spacing:4px;margin-bottom:20px;}
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+
+<!-- ══ SETUP ══════════════════════════════════════════════════════ -->
+<div class="setup-overlay" id="setupScreen">
+  <div class="setup-card">
+    <div class="setup-logo">FOOTBALL <span>501</span></div>
+    <div class="setup-sub">The Football Quiz Darts Game</div>
+
+    <div class="mode-row">
+      <button class="mode-btn selected" id="btn1p" onclick="setMode(1)">🎯 Practice</button>
+      <button class="mode-btn" id="btn2p" onclick="setMode(2)">⚔️ 2 Players</button>
+    </div>
+
+    <div class="player-block">
+      <div class="player-block-title" id="p1blockTitle">Your Name</div>
+      <input type="text" class="text-input" id="p1name" value="Player 1" maxlength="20">
+      <span class="badge-label">Choose your badge</span>
+      <div class="badge-row" id="badges0"></div>
+    </div>
+
+    <div class="player-block hidden" id="p2block">
+      <div class="player-block-title">Player 2</div>
+      <input type="text" class="text-input" id="p2name" value="Player 2" maxlength="20">
+      <span class="badge-label">Choose your badge</span>
+      <div class="badge-row" id="badges1"></div>
+
+      <div style="margin-top:12px;">
+        <span class="badge-label">Game Mode</span>
+        <div class="gm-row">
+          <button class="gm-btn selected" id="gm_inf"    onclick="setGM('inf')">♾️ Infinite</button>
+          <button class="gm-btn"          id="gm_bo3"    onclick="setGM('bo3')">Best of 3</button>
+          <button class="gm-btn"          id="gm_bo5"    onclick="setGM('bo5')">Best of 5</button>
+          <button class="gm-btn"          id="gm_bo11"   onclick="setGM('bo11')">Best of 11</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="rules">
+      <b>How to play:</b> A stat category is shown. Type a player name, pick from the dropdown — their real career stat is deducted from your <b>501</b>.<br>
+      <b>Bust:</b> Stats over 180 always bust. Going below 0 is a bust.<br>
+      <b>Checkout:</b> Must reach exactly <b>0</b>. You can checkout on any stat from your score down to <b>10 below</b> it — but only if your remaining score is <b>170 or less</b> (darts rule).<br>
+      <b>Skip:</b> Skip a category to reset and get a new one.
+    </div>
+
+    <button class="btn btn-gold" style="width:100%;height:48px;font-size:16px;border-radius:12px;" onclick="startGame()">Kick Off!</button>
+  </div>
+</div>
+
+<!-- ══ MAIN GAME ═══════════════════════════════════════════════════ -->
+<div class="pitch-bg hidden" id="mainGame">
+  <div class="header">
+    <div class="title">FOOTBALL 501</div>
+    <div class="subtitle">The Football Quiz Darts Game</div>
+  </div>
+
+  <div class="game-mode-bar">
+    <button class="menu-btn" onclick="goToMenu()">← Menu</button>
+    <div class="gm-name" id="gmLabel"></div>
+    <div class="gm-score" id="gmScore"></div>
+  </div>
+
+  <div class="scoreboard" id="scoreboard"></div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div class="cat-type-label" id="catType">Category</div>
+      <div class="leg-badge" id="legBadge">Leg 1</div>
+    </div>
+    <div class="cat-body">
+      <div class="cat-title" id="catTitle">Loading...</div>
+      <div class="cat-desc" id="catDesc"></div>
+      <div class="cat-note" id="catNote"></div>
+    </div>
+    <div class="input-zone">
+      <div class="turn-line">
+        <span class="turn-badge" id="turnBadge">🎯</span>
+        <span id="turnLabel">—</span>
+      </div>
+      <div class="checkout-box" id="checkoutBox">
+        <div class="checkout-title" id="checkoutTitle"></div>
+        <div class="checkout-detail" id="checkoutDetail"></div>
+        <div class="checkout-counts" id="checkoutCounts"></div>
+      </div>
+      <div class="autocomplete-wrap">
+        <input type="text" class="styled-input" id="playerInput"
+          placeholder="Start typing a player name..."
+          autocomplete="off" autocorrect="off" spellcheck="false">
+        <div class="dropdown" id="dropdown"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-green" style="flex:1;" id="throwBtn" onclick="confirmThrow()" disabled>Throw</button>
+        <button class="btn btn-outline" onclick="skipCategory()">Skip Category</button>
+      </div>
+    </div>
+    <div class="history-zone">
+      <div class="history-title">This Leg — Throw History</div>
+      <div class="throws-list" id="throwsList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="score-pop" id="scorePop"></div>
+
+<!-- Leg win modal -->
+<div class="modal-overlay hidden" id="legModal">
+  <div class="modal">
+    <div class="modal-icon">🎯</div>
+    <div class="modal-title" id="legModalTitle">CHECKOUT!</div>
+    <div class="modal-sub" id="legModalSub"></div>
+    <div class="modal-stats" id="legModalStats"></div>
+    <div class="modal-btn-col">
+      <button class="btn btn-gold" style="height:46px;font-size:15px;border-radius:12px;" onclick="nextLeg(true)">Next Leg — New Category</button>
+      <button class="btn btn-outline" style="height:40px;font-size:13px;border-radius:10px;" onclick="nextLeg(false)">Next Leg — Same Category</button>
+    </div>
+  </div>
+</div>
+
+<!-- Match win modal -->
+<div class="modal-overlay hidden" id="matchModal">
+  <div class="match-win-modal">
+    <div style="font-size:52px;text-align:center;margin-bottom:8px;">🏆</div>
+    <div class="match-win-title" id="matchWinTitle">WINNER!</div>
+    <div class="match-win-sub" id="matchWinSub"></div>
+    <div class="match-win-score" id="matchWinScore"></div>
+    <div class="modal-btn-col">
+      <button class="btn btn-gold" style="height:46px;font-size:15px;border-radius:12px;width:100%;" onclick="startRematch()">Rematch</button>
+      <button class="btn" style="height:40px;font-size:13px;border-radius:10px;width:100%;background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);" onclick="goToMenu()">Back to Menu</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// BADGES
+// ═══════════════════════════════════════════════════════════════════
+const BADGES = [
+  {emoji:'🔴',bg:'#DB0007',label:'Cannon'},
+  {emoji:'😈',bg:'#DA020E',label:'Devil'},
+  {emoji:'🦅',bg:'#C8102E',label:'Bird'},
+  {emoji:'🍒',bg:'#111111',label:'Cherry'},
+  {emoji:'💙',bg:'#034694',label:'Blue Star'},
+  {emoji:'🐂',bg:'#1B458F',label:'Bull'},
+  {emoji:'🦊',bg:'#F8991D',label:'Fox'},
+  {emoji:'⭐',bg:'#87CEEB',label:'Sky Eagle'},
+];
+
+function renderBadgePicker(id, playerIdx) {
+  const wrap = document.getElementById(id);
+  wrap.innerHTML = BADGES.map((b, i) =>
+    `<div class="badge-opt${i===G.pickedBadge[playerIdx]?' picked':''}"
+       style="background:${b.bg};" title="${b.label}"
+       onclick="pickBadge(${playerIdx},${i})">${b.emoji}</div>`
+  ).join('');
+}
+function pickBadge(pi, bi) {
+  G.pickedBadge[pi] = bi;
+  renderBadgePicker('badges' + pi, pi);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PLAYER DATABASE — expanded with focus on coverage at all score levels
+// stat > 180 = always bust. Combined stats used for + categories.
+// ═══════════════════════════════════════════════════════════════════
+const DB = [
+  // ── ENGLISH FORWARDS ──────────────────────────────────────────
+  {name:"Alan Shearer",nat:"England",pos:["FW"],stats:{pl_goals:260,pl_apps:441,pl_assists:65,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:30,intl_apps:63,intl_assists:8}},
+  {name:"Andrew Cole",nat:"England",pos:["FW"],stats:{pl_goals:187,pl_apps:414,pl_assists:56,ucl_goals:7,ucl_apps:38,ucl_assists:10,intl_goals:1,intl_apps:15,intl_assists:2}},
+  {name:"Wayne Rooney",nat:"England",pos:["FW","MID"],stats:{pl_goals:175,pl_apps:491,pl_assists:103,ucl_goals:30,ucl_apps:83,ucl_assists:22,intl_goals:53,intl_apps:120,intl_assists:30}},
+  {name:"Harry Kane",nat:"England",pos:["FW"],stats:{pl_goals:213,pl_apps:320,pl_assists:62,ucl_goals:29,ucl_apps:75,ucl_assists:14,intl_goals:69,intl_apps:98,intl_assists:18}},
+  {name:"Jamie Vardy",nat:"England",pos:["FW"],stats:{pl_goals:168,pl_apps:360,pl_assists:47,ucl_goals:6,ucl_apps:12,ucl_assists:2,intl_goals:7,intl_apps:26,intl_assists:3}},
+  {name:"Michael Owen",nat:"England",pos:["FW"],stats:{pl_goals:150,pl_apps:326,pl_assists:42,ucl_goals:22,ucl_apps:61,ucl_assists:8,intl_goals:40,intl_apps:89,intl_assists:12}},
+  {name:"Robbie Fowler",nat:"England",pos:["FW"],stats:{pl_goals:163,pl_apps:379,pl_assists:56,ucl_goals:8,ucl_apps:26,ucl_assists:6,intl_goals:7,intl_apps:26,intl_assists:3}},
+  {name:"Jermain Defoe",nat:"England",pos:["FW"],stats:{pl_goals:162,pl_apps:496,pl_assists:52,ucl_goals:2,ucl_apps:8,ucl_assists:1,intl_goals:20,intl_apps:57,intl_assists:5}},
+  {name:"Les Ferdinand",nat:"England",pos:["FW"],stats:{pl_goals:149,pl_apps:351,pl_assists:55,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:5,intl_apps:17,intl_assists:2}},
+  {name:"Ian Wright",nat:"England",pos:["FW"],stats:{pl_goals:113,pl_apps:213,pl_assists:32,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:9,intl_apps:33,intl_assists:3}},
+  {name:"Emile Heskey",nat:"England",pos:["FW"],stats:{pl_goals:110,pl_apps:516,pl_assists:65,ucl_goals:4,ucl_apps:17,ucl_assists:5,intl_goals:7,intl_apps:62,intl_assists:12}},
+  {name:"Teddy Sheringham",nat:"England",pos:["FW","MID"],stats:{pl_goals:146,pl_apps:418,pl_assists:76,ucl_goals:5,ucl_apps:28,ucl_assists:8,intl_goals:11,intl_apps:51,intl_assists:10}},
+  {name:"Peter Crouch",nat:"England",pos:["FW"],stats:{pl_goals:108,pl_apps:468,pl_assists:58,ucl_goals:8,ucl_apps:22,ucl_assists:4,intl_goals:22,intl_apps:42,intl_assists:4}},
+  {name:"Darren Bent",nat:"England",pos:["FW"],stats:{pl_goals:106,pl_apps:312,pl_assists:22,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:4,intl_apps:13,intl_assists:1}},
+  {name:"Dion Dublin",nat:"England",pos:["FW"],stats:{pl_goals:111,pl_apps:326,pl_assists:41,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:6,intl_apps:4,intl_assists:0}},
+  {name:"Kevin Campbell",nat:"England",pos:["FW"],stats:{pl_goals:101,pl_apps:275,pl_assists:28,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+  {name:"Chris Armstrong",nat:"England",pos:["FW"],stats:{pl_goals:80,pl_apps:264,pl_assists:22,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+  {name:"Chris Sutton",nat:"England",pos:["FW"],stats:{pl_goals:83,pl_apps:282,pl_assists:40,ucl_goals:3,ucl_apps:10,ucl_assists:4,intl_goals:1,intl_apps:1,intl_assists:0}},
+  {name:"Stan Collymore",nat:"England",pos:["FW"],stats:{pl_goals:55,pl_apps:163,pl_assists:28,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:3,intl_apps:3,intl_assists:0}},
+  {name:"Dean Holdsworth",nat:"England",pos:["FW"],stats:{pl_goals:59,pl_apps:185,pl_assists:18,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+  {name:"Uwe Rösler",nat:"Germany",pos:["FW"],stats:{pl_goals:64,pl_apps:175,pl_assists:20,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:6,intl_apps:5,intl_assists:0}},
+  {name:"James Beattie",nat:"England",pos:["FW"],stats:{pl_goals:64,pl_apps:215,pl_assists:16,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:5,intl_apps:5,intl_assists:0}},
+  {name:"Kevin Davies",nat:"England",pos:["FW"],stats:{pl_goals:76,pl_apps:364,pl_assists:30,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:1,intl_assists:0}},
+  {name:"Charlie Austin",nat:"England",pos:["FW"],stats:{pl_goals:58,pl_apps:158,pl_assists:12,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:1,intl_assists:0}},
+  {name:"Bobby Zamora",nat:"England",pos:["FW"],stats:{pl_goals:46,pl_apps:192,pl_assists:18,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+  {name:"Marcus Bent",nat:"England",pos:["FW"],stats:{pl_goals:40,pl_apps:168,pl_assists:14,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+  {name:"Dean Saunders",nat:"Wales",pos:["FW"],stats:{pl_goals:41,pl_apps:139,pl_assists:22,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:22,intl_apps:75,intl_assists:8}},
+  {name:"Robert Earnshaw",nat:"Wales",pos:["FW"],stats:{pl_goals:29,pl_apps:106,pl_assists:14,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:16,intl_apps:59,intl_assists:6}},
+  {name:"Nathan Blake",nat:"Wales",pos:["FW"],stats:{pl_goals:41,pl_apps:161,pl_assists:18,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:4,intl_apps:29,intl_assists:3}},
+  {name:"Kieffer Moore",nat:"Wales",pos:["FW"],stats:{pl_goals:16,pl_apps:104,pl_assists:8,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:18,intl_apps:56,intl_assists:4}},
+  {name:"Marcus Rashford",nat:"England",pos:["FW","MID"],stats:{pl_goals:138,pl_apps:338,pl_assists:62,ucl_goals:22,ucl_apps:78,ucl_assists:14,intl_goals:17,intl_apps:60,intl_assists:8}},
+  {name:"Raheem Sterling",nat:"England",pos:["FW","MID"],stats:{pl_goals:124,pl_apps:366,pl_assists:96,ucl_goals:26,ucl_apps:104,ucl_assists:32,intl_goals:20,intl_apps:82,intl_assists:18}},
+  {name:"Bukayo Saka",nat:"England",pos:["FW","MID"],stats:{pl_goals:68,pl_apps:220,pl_assists:62,ucl_goals:14,ucl_apps:52,ucl_assists:16,intl_goals:14,intl_apps:44,intl_assists:12}},
+  {name:"Callum Wilson",nat:"England",pos:["FW"],stats:{pl_goals:80,pl_apps:228,pl_assists:28,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:4,intl_apps:17,intl_assists:1}},
+  {name:"Ollie Watkins",nat:"England",pos:["FW"],stats:{pl_goals:72,pl_apps:194,pl_assists:28,ucl_goals:0,ucl_apps:4,ucl_assists:2,intl_goals:5,intl_apps:13,intl_assists:2}},
+  {name:"Dominic Calvert-Lewin",nat:"England",pos:["FW"],stats:{pl_goals:72,pl_apps:224,pl_assists:14,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:7,intl_apps:11,intl_assists:0}},
+  {name:"Ivan Toney",nat:"England",pos:["FW"],stats:{pl_goals:36,pl_apps:100,pl_assists:10,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:2,intl_apps:4,intl_assists:0}},
+  {name:"Jarrod Bowen",nat:"England",pos:["FW","MID"],stats:{pl_goals:56,pl_apps:204,pl_assists:40,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:4,intl_apps:12,intl_assists:2}},
+  {name:"Aiyegbeni Yakubu",nat:"Nigeria",pos:["FW"],stats:{pl_goals:95,pl_apps:253,pl_assists:18,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:21,intl_apps:57,intl_assists:6}},
+  {name:"Kevin Nolan",nat:"England",pos:["MID"],stats:{pl_goals:74,pl_apps:330,pl_assists:42,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+  {name:"Glenn Murray",nat:"England",pos:["FW"],stats:{pl_goals:36,pl_apps:106,pl_assists:8,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+  {name:"Marlon Harewood",nat:"England",pos:["FW"],stats:{pl_goals:29,pl_apps:104,pl_assists:8,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+  {name:"Mark Viduka",nat:"Australia",pos:["FW"],stats:{pl_goals:72,pl_apps:211,pl_assists:24,ucl_goals:8,ucl_apps:20,ucl_assists:6,intl_goals:11,intl_apps:43,intl_assists:4}},
+  {name:"Paolo Wanchope",nat:"Costa Rica",pos:["FW"],stats:{pl_goals:40,pl_apps:121,pl_assists:16,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:45,intl_apps:73,intl_assists:10}},
+  {name:"Tore Andre Flo",nat:"Norway",pos:["FW"],stats:{pl_goals:37,pl_apps:124,pl_assists:20,ucl_goals:4,ucl_apps:14,ucl_assists:4,intl_goals:23,intl_apps:76,intl_assists:6}},
+  {name:"John Carew",nat:"Norway",pos:["FW"],stats:{pl_goals:40,pl_apps:133,pl_assists:16,ucl_goals:8,ucl_apps:16,ucl_assists:4,intl_goals:24,intl_apps:91,intl_assists:8}},
+  {name:"Eidur Gudjohnsen",nat:"Iceland",pos:["FW","MID"],stats:{pl_goals:78,pl_apps:277,pl_assists:50,ucl_goals:10,ucl_apps:38,ucl_assists:14,intl_goals:26,intl_apps:89,intl_assists:14}},
+  {name:"Ole Gunnar Solskjaer",nat:"Norway",pos:["FW"],stats:{pl_goals:91,pl_apps:235,pl_assists:38,ucl_goals:14,ucl_apps:40,ucl_assists:8,intl_goals:23,intl_apps:67,intl_assists:6}},
+  {name:"Dimitar Berbatov",nat:"Bulgaria",pos:["FW"],stats:{pl_goals:94,pl_apps:253,pl_assists:44,ucl_goals:8,ucl_apps:44,ucl_assists:10,intl_goals:48,intl_apps:78,intl_assists:12}},
+  {name:"Peter Odemwingie",nat:"Nigeria",pos:["FW","MID"],stats:{pl_goals:48,pl_apps:148,pl_assists:14,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:10,intl_apps:60,intl_assists:8}},
+  {name:"El-Hadji Diouf",nat:"Senegal",pos:["FW","MID"],stats:{pl_goals:35,pl_apps:164,pl_assists:20,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:22,intl_apps:69,intl_assists:8}},
+  {name:"Frédéric Kanouté",nat:"Mali",pos:["FW"],stats:{pl_goals:55,pl_apps:145,pl_assists:16,ucl_goals:4,ucl_apps:10,ucl_assists:4,intl_goals:23,intl_apps:37,intl_assists:6}},
+  {name:"Mido",nat:"Egypt",pos:["FW"],stats:{pl_goals:26,pl_apps:83,pl_assists:8,ucl_goals:2,ucl_apps:6,ucl_assists:2,intl_goals:18,intl_apps:51,intl_assists:4}},
+  {name:"Jason Roberts",nat:"Grenada",pos:["FW"],stats:{pl_goals:42,pl_apps:166,pl_assists:10,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+  {name:"Efan Ekoku",nat:"Nigeria",pos:["FW"],stats:{pl_goals:35,pl_apps:106,pl_assists:10,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:6,intl_apps:8,intl_assists:0}},
+  {name:"Carlton Cole",nat:"England",pos:["FW"],stats:{pl_goals:38,pl_apps:168,pl_assists:14,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:7,intl_apps:13,intl_assists:2}},
+  {name:"Jay Rodriguez",nat:"England",pos:["FW"],stats:{pl_goals:46,pl_apps:176,pl_assists:16,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:1,intl_apps:2,intl_assists:0}},
+  {name:"Fraizer Campbell",nat:"England",pos:["FW"],stats:{pl_goals:31,pl_apps:108,pl_assists:10,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+  {name:"Daniel Sturridge",nat:"England",pos:["FW"],stats:{pl_goals:68,pl_apps:160,pl_assists:22,ucl_goals:10,ucl_apps:24,ucl_assists:4,intl_goals:8,intl_apps:26,intl_assists:4}},
+  {name:"Milan Baroš",nat:"Czechia",pos:["FW"],stats:{pl_goals:27,pl_apps:84,pl_assists:14,ucl_goals:8,ucl_apps:22,ucl_assists:6,intl_goals:41,intl_apps:93,intl_assists:12}},
+  {name:"Nicolas Bendtner",nat:"Denmark",pos:["FW"],stats:{pl_goals:45,pl_apps:171,pl_assists:14,ucl_goals:4,ucl_apps:18,ucl_assists:4,intl_goals:30,intl_apps:81,intl_assists:8}},
+  {name:"Paul Gallagher",nat:"Scotland",pos:["MID","FW"],stats:{pl_goals:12,pl_apps:72,pl_assists:14,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+  // ── ENGLISH MIDFIELDERS ───────────────────────────────────────
+  {name:"Frank Lampard",nat:"England",pos:["MID"],stats:{pl_goals:177,pl_apps:609,pl_assists:102,ucl_goals:23,ucl_apps:112,ucl_assists:18,intl_goals:29,intl_apps:106,intl_assists:22}},
+  {name:"Steven Gerrard",nat:"England",pos:["MID"],stats:{pl_goals:120,pl_apps:504,pl_assists:92,ucl_goals:24,ucl_apps:115,ucl_assists:20,intl_goals:21,intl_apps:114,intl_assists:16}},
+  {name:"Paul Scholes",nat:"England",pos:["MID"],stats:{pl_goals:107,pl_apps:499,pl_assists:55,ucl_goals:24,ucl_apps:113,ucl_assists:18,intl_goals:14,intl_apps:66,intl_assists:8}},
+  {name:"David Beckham",nat:"England",pos:["MID"],stats:{pl_goals:62,pl_apps:265,pl_assists:80,ucl_goals:15,ucl_apps:82,ucl_assists:30,intl_goals:17,intl_apps:115,intl_assists:42}},
+  {name:"James Milner",nat:"England",pos:["MID","DEF"],stats:{pl_goals:56,pl_apps:624,pl_assists:101,ucl_goals:8,ucl_apps:112,ucl_assists:22,intl_goals:1,intl_apps:61,intl_assists:8}},
+  {name:"Jordan Henderson",nat:"England",pos:["MID"],stats:{pl_goals:42,pl_apps:429,pl_assists:52,ucl_goals:4,ucl_apps:107,ucl_assists:20,intl_goals:3,intl_apps:81,intl_assists:12}},
+  {name:"Phil Foden",nat:"England",pos:["MID","FW"],stats:{pl_goals:74,pl_apps:238,pl_assists:50,ucl_goals:20,ucl_apps:62,ucl_assists:18,intl_goals:12,intl_apps:37,intl_assists:6}},
+  {name:"Dele Alli",nat:"England",pos:["MID"],stats:{pl_goals:67,pl_apps:269,pl_assists:41,ucl_goals:12,ucl_apps:26,ucl_assists:8,intl_goals:3,intl_apps:37,intl_assists:3}},
+  {name:"Jack Grealish",nat:"England",pos:["MID","FW"],stats:{pl_goals:42,pl_apps:248,pl_assists:48,ucl_goals:6,ucl_apps:40,ucl_assists:10,intl_goals:4,intl_apps:37,intl_assists:6}},
+  {name:"Michael Carrick",nat:"England",pos:["MID"],stats:{pl_goals:24,pl_apps:464,pl_assists:49,ucl_goals:3,ucl_apps:89,ucl_assists:15,intl_goals:2,intl_apps:34,intl_assists:5}},
+  {name:"Matt Le Tissier",nat:"England",pos:["MID","FW"],stats:{pl_goals:100,pl_apps:270,pl_assists:47,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:8,intl_assists:0}},
+  {name:"Gareth Barry",nat:"England",pos:["MID"],stats:{pl_goals:53,pl_apps:653,pl_assists:55,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:3,intl_apps:53,intl_assists:5}},
+  {name:"Jude Bellingham",nat:"England",pos:["MID"],stats:{pl_goals:32,pl_apps:104,pl_assists:24,ucl_goals:20,ucl_apps:42,ucl_assists:14,intl_goals:14,intl_apps:38,intl_assists:8}},
+  {name:"Declan Rice",nat:"England",pos:["MID"],stats:{pl_goals:14,pl_apps:238,pl_assists:14,ucl_goals:2,ucl_apps:22,ucl_assists:4,intl_goals:8,intl_apps:56,intl_assists:8}},
+  {name:"James Maddison",nat:"England",pos:["MID"],stats:{pl_goals:55,pl_apps:248,pl_assists:54,ucl_goals:2,ucl_apps:8,ucl_assists:4,intl_goals:3,intl_apps:8,intl_assists:2}},
+  {name:"Paul Merson",nat:"England",pos:["MID","FW"],stats:{pl_goals:55,pl_apps:230,pl_assists:48,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:3,intl_apps:21,intl_assists:4}},
+  {name:"Dennis Wise",nat:"England",pos:["MID"],stats:{pl_goals:53,pl_apps:322,pl_assists:56,ucl_goals:4,ucl_apps:28,ucl_assists:10,intl_goals:1,intl_apps:21,intl_assists:2}},
+  {name:"Nick Barmby",nat:"England",pos:["MID","FW"],stats:{pl_goals:57,pl_apps:258,pl_assists:38,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:4,intl_apps:23,intl_assists:4}},
+  {name:"Kevin Gallacher",nat:"Scotland",pos:["FW"],stats:{pl_goals:34,pl_apps:116,pl_assists:16,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:9,intl_apps:53,intl_assists:8}},
+  {name:"Scott Parker",nat:"England",pos:["MID"],stats:{pl_goals:21,pl_apps:344,pl_assists:28,ucl_goals:0,ucl_apps:6,ucl_assists:2,intl_goals:0,intl_apps:18,intl_assists:2}},
+  {name:"Lee Bowyer",nat:"England",pos:["MID"],stats:{pl_goals:35,pl_apps:289,pl_assists:40,ucl_goals:4,ucl_apps:22,ucl_assists:8,intl_goals:1,intl_apps:1,intl_assists:0}},
+  {name:"Martin Ødegaard",nat:"Norway",pos:["MID"],stats:{pl_goals:40,pl_apps:152,pl_assists:30,ucl_goals:6,ucl_apps:30,ucl_assists:8,intl_goals:14,intl_apps:70,intl_assists:12}},
+  {name:"Alexis Mac Allister",nat:"Argentina",pos:["MID"],stats:{pl_goals:14,pl_apps:104,pl_assists:18,ucl_goals:4,ucl_apps:20,ucl_assists:6,intl_goals:10,intl_apps:52,intl_assists:8}},
+  {name:"Bruno Guimarães",nat:"Brazil",pos:["MID"],stats:{pl_goals:18,pl_apps:118,pl_assists:18,ucl_goals:2,ucl_apps:14,ucl_assists:4,intl_goals:4,intl_apps:26,intl_assists:4}},
+  {name:"Christian Eriksen",nat:"Denmark",pos:["MID"],stats:{pl_goals:52,pl_apps:306,pl_assists:62,ucl_goals:4,ucl_apps:44,ucl_assists:14,intl_goals:42,intl_apps:125,intl_assists:48}},
+  {name:"Cesc Fàbregas",nat:"Spain",pos:["MID"],stats:{pl_goals:62,pl_apps:350,pl_assists:111,ucl_goals:9,ucl_apps:72,ucl_assists:22,intl_goals:15,intl_apps:110,intl_assists:28}},
+  {name:"David Silva",nat:"Spain",pos:["MID"],stats:{pl_goals:77,pl_apps:436,pl_assists:93,ucl_goals:7,ucl_apps:72,ucl_assists:18,intl_goals:35,intl_apps:125,intl_assists:38}},
+  {name:"Juan Mata",nat:"Spain",pos:["MID","FW"],stats:{pl_goals:60,pl_apps:285,pl_assists:60,ucl_goals:12,ucl_apps:62,ucl_assists:20,intl_goals:10,intl_apps:41,intl_assists:14}},
+  {name:"Santi Cazorla",nat:"Spain",pos:["MID"],stats:{pl_goals:52,pl_apps:180,pl_assists:45,ucl_goals:8,ucl_apps:34,ucl_assists:12,intl_goals:19,intl_apps:81,intl_assists:22}},
+  {name:"Mesut Özil",nat:"Germany",pos:["MID"],stats:{pl_goals:35,pl_apps:254,pl_assists:77,ucl_goals:15,ucl_apps:92,ucl_assists:30,intl_goals:23,intl_apps:92,intl_assists:40}},
+  {name:"Ilkay Gündogan",nat:"Germany",pos:["MID"],stats:{pl_goals:60,pl_apps:259,pl_assists:38,ucl_goals:12,ucl_apps:80,ucl_assists:18,intl_goals:19,intl_apps:72,intl_assists:12}},
+  {name:"Leroy Sané",nat:"Germany",pos:["FW","MID"],stats:{pl_goals:39,pl_apps:135,pl_assists:48,ucl_goals:16,ucl_apps:60,ucl_assists:20,intl_goals:16,intl_apps:57,intl_assists:14}},
+  {name:"N'Golo Kanté",nat:"France",pos:["MID"],stats:{pl_goals:20,pl_apps:293,pl_assists:28,ucl_goals:4,ucl_apps:72,ucl_assists:10,intl_goals:2,intl_apps:56,intl_assists:6}},
+  {name:"Paul Pogba",nat:"France",pos:["MID"],stats:{pl_goals:38,pl_apps:233,pl_assists:52,ucl_goals:10,ucl_apps:56,ucl_assists:18,intl_goals:11,intl_apps:91,intl_assists:18}},
+  {name:"Patrick Vieira",nat:"France",pos:["MID"],stats:{pl_goals:33,pl_apps:307,pl_assists:58,ucl_goals:11,ucl_apps:75,ucl_assists:16,intl_goals:6,intl_apps:107,intl_assists:14}},
+  {name:"Samir Nasri",nat:"France",pos:["MID"],stats:{pl_goals:50,pl_apps:244,pl_assists:58,ucl_goals:9,ucl_apps:62,ucl_assists:16,intl_goals:5,intl_apps:41,intl_assists:8}},
+  {name:"Park Ji-Sung",nat:"South Korea",pos:["MID","FW"],stats:{pl_goals:27,pl_apps:205,pl_assists:28,ucl_goals:6,ucl_apps:38,ucl_assists:8,intl_goals:13,intl_apps:100,intl_assists:14}},
+  {name:"Yohan Cabaye",nat:"France",pos:["MID"],stats:{pl_goals:22,pl_apps:150,pl_assists:28,ucl_goals:2,ucl_apps:8,ucl_assists:4,intl_goals:5,intl_apps:48,intl_assists:8}},
+  {name:"Moussa Sissoko",nat:"France",pos:["MID"],stats:{pl_goals:14,pl_apps:256,pl_assists:24,ucl_goals:5,ucl_apps:32,ucl_assists:8,intl_goals:3,intl_apps:69,intl_assists:6}},
+  {name:"Michael Essien",nat:"Ghana",pos:["MID"],stats:{pl_goals:19,pl_apps:196,pl_assists:22,ucl_goals:4,ucl_apps:62,ucl_assists:10,intl_goals:9,intl_apps:58,intl_assists:6}},
+  {name:"Yaya Touré",nat:"Ivory Coast",pos:["MID"],stats:{pl_goals:62,pl_apps:230,pl_assists:42,ucl_goals:14,ucl_apps:72,ucl_assists:18,intl_goals:19,intl_apps:101,intl_assists:8}},
+  {name:"Jay-Jay Okocha",nat:"Nigeria",pos:["MID"],stats:{pl_goals:14,pl_apps:101,pl_assists:22,ucl_goals:0,ucl_apps:2,ucl_assists:0,intl_goals:14,intl_apps:73,intl_assists:12}},
+  // ── FOREIGN PL GOALSCORERS ────────────────────────────────────
+  {name:"Thierry Henry",nat:"France",pos:["FW"],stats:{pl_goals:175,pl_apps:258,pl_assists:74,ucl_goals:50,ucl_apps:112,ucl_assists:28,intl_goals:51,intl_apps:123,intl_assists:30}},
+  {name:"Nicolas Anelka",nat:"France",pos:["FW"],stats:{pl_goals:125,pl_apps:298,pl_assists:40,ucl_goals:12,ucl_apps:52,ucl_assists:10,intl_goals:14,intl_apps:69,intl_assists:8}},
+  {name:"Olivier Giroud",nat:"France",pos:["FW"],stats:{pl_goals:105,pl_apps:253,pl_assists:42,ucl_goals:26,ucl_apps:97,ucl_assists:16,intl_goals:57,intl_apps:132,intl_assists:18}},
+  {name:"Robert Pires",nat:"France",pos:["MID","FW"],stats:{pl_goals:84,pl_apps:284,pl_assists:74,ucl_goals:10,ucl_apps:45,ucl_assists:14,intl_goals:14,intl_apps:79,intl_assists:20}},
+  {name:"Louis Saha",nat:"France",pos:["FW"],stats:{pl_goals:85,pl_apps:253,pl_assists:36,ucl_goals:8,ucl_apps:32,ucl_assists:6,intl_goals:4,intl_apps:20,intl_assists:2}},
+  {name:"Alexandre Lacazette",nat:"France",pos:["FW"],stats:{pl_goals:67,pl_apps:178,pl_assists:32,ucl_goals:6,ucl_apps:20,ucl_assists:6,intl_goals:4,intl_apps:16,intl_assists:2}},
+  {name:"Sylvain Wiltord",nat:"France",pos:["FW","MID"],stats:{pl_goals:48,pl_apps:189,pl_assists:30,ucl_goals:4,ucl_apps:22,ucl_assists:8,intl_goals:26,intl_apps:92,intl_assists:14}},
+  {name:"Djibril Cissé",nat:"France",pos:["FW"],stats:{pl_goals:41,pl_apps:106,pl_assists:18,ucl_goals:8,ucl_apps:22,ucl_assists:4,intl_goals:9,intl_apps:41,intl_assists:4}},
+  {name:"Loïc Rémy",nat:"France",pos:["FW"],stats:{pl_goals:34,pl_apps:104,pl_assists:12,ucl_goals:3,ucl_apps:8,ucl_assists:2,intl_goals:7,intl_apps:25,intl_assists:2}},
+  {name:"Bafétimbi Gomis",nat:"France",pos:["FW"],stats:{pl_goals:26,pl_apps:76,pl_assists:10,ucl_goals:2,ucl_apps:6,ucl_assists:2,intl_goals:8,intl_apps:12,intl_assists:2}},
+  {name:"Laurent Blanc",nat:"France",pos:["DEF"],stats:{pl_goals:4,pl_apps:48,pl_assists:4,ucl_goals:4,ucl_apps:30,ucl_assists:4,intl_goals:16,intl_apps:97,intl_assists:8}},
+  {name:"Emmanuel Petit",nat:"France",pos:["MID"],stats:{pl_goals:8,pl_apps:120,pl_assists:20,ucl_goals:4,ucl_apps:28,ucl_assists:8,intl_goals:6,intl_apps:63,intl_assists:10}},
+  {name:"Morgan Schneiderlin",nat:"France",pos:["MID"],stats:{pl_goals:10,pl_apps:209,pl_assists:20,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:16,intl_assists:2}},
+  {name:"Mathieu Flamini",nat:"France",pos:["MID"],stats:{pl_goals:8,pl_apps:229,pl_assists:14,ucl_goals:2,ucl_apps:40,ucl_assists:6,intl_goals:0,intl_apps:9,intl_assists:0}},
+  {name:"William Gallas",nat:"France",pos:["DEF"],stats:{pl_goals:17,pl_apps:324,pl_assists:8,ucl_goals:2,ucl_apps:62,ucl_assists:4,intl_goals:5,intl_apps:84,intl_assists:4}},
+  {name:"Patrice Evra",nat:"France",pos:["DEF"],stats:{pl_goals:8,pl_apps:379,pl_assists:38,ucl_goals:3,ucl_apps:106,ucl_assists:14,intl_goals:0,intl_apps:81,intl_assists:6}},
+  {name:"Bacary Sagna",nat:"France",pos:["DEF"],stats:{pl_goals:3,pl_apps:284,pl_assists:24,ucl_goals:1,ucl_apps:30,ucl_assists:6,intl_goals:0,intl_apps:65,intl_assists:4}},
+  {name:"Gael Clichy",nat:"France",pos:["DEF"],stats:{pl_goals:3,pl_apps:311,pl_assists:24,ucl_goals:0,ucl_apps:22,ucl_assists:4,intl_goals:0,intl_apps:25,intl_assists:2}},
+  {name:"Dennis Bergkamp",nat:"Netherlands",pos:["FW","MID"],stats:{pl_goals:87,pl_apps:315,pl_assists:94,ucl_goals:8,ucl_apps:48,ucl_assists:18,intl_goals:37,intl_apps:79,intl_assists:24}},
+  {name:"Robin van Persie",nat:"Netherlands",pos:["FW"],stats:{pl_goals:144,pl_apps:280,pl_assists:54,ucl_goals:16,ucl_apps:74,ucl_assists:12,intl_goals:50,intl_apps:102,intl_assists:18}},
+  {name:"Ruud van Nistelrooy",nat:"Netherlands",pos:["FW"],stats:{pl_goals:95,pl_apps:150,pl_assists:22,ucl_goals:60,ucl_apps:73,ucl_assists:20,intl_goals:35,intl_apps:70,intl_assists:8}},
+  {name:"Jimmy Floyd Hasselbaink",nat:"Netherlands",pos:["FW"],stats:{pl_goals:87,pl_apps:177,pl_assists:28,ucl_goals:6,ucl_apps:24,ucl_assists:4,intl_goals:9,intl_apps:23,intl_assists:2}},
+  {name:"Arjen Robben",nat:"Netherlands",pos:["FW","MID"],stats:{pl_goals:28,pl_apps:106,pl_assists:20,ucl_goals:24,ucl_apps:104,ucl_assists:36,intl_goals:37,intl_apps:96,intl_assists:20}},
+  {name:"Dirk Kuyt",nat:"Netherlands",pos:["FW","MID"],stats:{pl_goals:71,pl_apps:285,pl_assists:50,ucl_goals:20,ucl_apps:60,ucl_assists:14,intl_goals:24,intl_apps:104,intl_assists:14}},
+  {name:"Marc Overmars",nat:"Netherlands",pos:["MID","FW"],stats:{pl_goals:41,pl_apps:142,pl_assists:34,ucl_goals:5,ucl_apps:30,ucl_assists:10,intl_goals:17,intl_apps:86,intl_assists:14}},
+  {name:"Pierre van Hooijdonk",nat:"Netherlands",pos:["FW"],stats:{pl_goals:31,pl_apps:65,pl_assists:10,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:11,intl_apps:46,intl_assists:4}},
+  {name:"Boudewijn Zenden",nat:"Netherlands",pos:["MID","FW"],stats:{pl_goals:27,pl_apps:162,pl_assists:34,ucl_goals:4,ucl_apps:28,ucl_assists:8,intl_goals:7,intl_apps:54,intl_assists:8}},
+  {name:"Georginio Wijnaldum",nat:"Netherlands",pos:["MID"],stats:{pl_goals:22,pl_apps:237,pl_assists:28,ucl_goals:8,ucl_apps:80,ucl_assists:14,intl_goals:26,intl_apps:87,intl_assists:16}},
+  {name:"Memphis Depay",nat:"Netherlands",pos:["FW","MID"],stats:{pl_goals:6,pl_apps:53,pl_assists:8,ucl_goals:6,ucl_apps:26,ucl_assists:4,intl_goals:44,intl_apps:88,intl_assists:18}},
+  {name:"Ryan Babel",nat:"Netherlands",pos:["FW","MID"],stats:{pl_goals:15,pl_apps:91,pl_assists:16,ucl_goals:4,ucl_apps:14,ucl_assists:4,intl_goals:10,intl_apps:70,intl_assists:8}},
+  {name:"Rafael van der Vaart",nat:"Netherlands",pos:["MID"],stats:{pl_goals:24,pl_apps:90,pl_assists:24,ucl_goals:6,ucl_apps:28,ucl_assists:10,intl_goals:25,intl_apps:109,intl_assists:22}},
+  {name:"George Boateng",nat:"Netherlands",pos:["MID"],stats:{pl_goals:18,pl_apps:222,pl_assists:18,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:10,intl_assists:0}},
+  {name:"Nigel de Jong",nat:"Netherlands",pos:["MID"],stats:{pl_goals:4,pl_apps:150,pl_assists:10,ucl_goals:2,ucl_apps:18,ucl_assists:4,intl_goals:2,intl_apps:74,intl_assists:4}},
+  {name:"Cody Gakpo",nat:"Netherlands",pos:["FW","MID"],stats:{pl_goals:38,pl_apps:104,pl_assists:18,ucl_goals:8,ucl_apps:28,ucl_assists:8,intl_goals:16,intl_apps:50,intl_assists:10}},
+  {name:"Virgil van Dijk",nat:"Netherlands",pos:["DEF"],stats:{pl_goals:12,pl_apps:198,pl_assists:8,ucl_goals:3,ucl_apps:68,ucl_assists:4,intl_goals:7,intl_apps:69,intl_assists:4}},
+  {name:"Daley Blind",nat:"Netherlands",pos:["DEF","MID"],stats:{pl_goals:3,pl_apps:96,pl_assists:14,ucl_goals:2,ucl_apps:44,ucl_assists:8,intl_goals:4,intl_apps:98,intl_assists:10}},
+  {name:"Fernando Torres",nat:"Spain",pos:["FW"],stats:{pl_goals:85,pl_apps:213,pl_assists:32,ucl_goals:28,ucl_apps:82,ucl_assists:14,intl_goals:38,intl_apps:110,intl_assists:18}},
+  {name:"Álvaro Morata",nat:"Spain",pos:["FW"],stats:{pl_goals:30,pl_apps:82,pl_assists:10,ucl_goals:30,ucl_apps:74,ucl_assists:14,intl_goals:33,intl_apps:76,intl_assists:10}},
+  {name:"Pedro",nat:"Spain",pos:["FW","MID"],stats:{pl_goals:32,pl_apps:165,pl_assists:22,ucl_goals:15,ucl_apps:62,ucl_assists:12,intl_goals:17,intl_apps:79,intl_assists:16}},
+  {name:"Xabi Alonso",nat:"Spain",pos:["MID"],stats:{pl_goals:18,pl_apps:210,pl_assists:36,ucl_goals:16,ucl_apps:122,ucl_assists:24,intl_goals:16,intl_apps:114,intl_assists:18}},
+  {name:"Cesar Azpilicueta",nat:"Spain",pos:["DEF"],stats:{pl_goals:8,pl_apps:490,pl_assists:35,ucl_goals:3,ucl_apps:90,ucl_assists:10,intl_goals:0,intl_apps:36,intl_assists:2}},
+  {name:"Timo Werner",nat:"Germany",pos:["FW"],stats:{pl_goals:12,pl_apps:74,pl_assists:16,ucl_goals:14,ucl_apps:44,ucl_assists:12,intl_goals:24,intl_apps:57,intl_assists:10}},
+  {name:"Kai Havertz",nat:"Germany",pos:["MID","FW"],stats:{pl_goals:36,pl_apps:139,pl_assists:18,ucl_goals:15,ucl_apps:40,ucl_assists:10,intl_goals:20,intl_apps:56,intl_assists:8}},
+  {name:"Per Mertesacker",nat:"Germany",pos:["DEF"],stats:{pl_goals:5,pl_apps:228,pl_assists:4,ucl_goals:2,ucl_apps:24,ucl_assists:2,intl_goals:4,intl_apps:104,intl_assists:4}},
+  {name:"Robert Huth",nat:"Germany",pos:["DEF"],stats:{pl_goals:12,pl_apps:248,pl_assists:6,ucl_goals:0,ucl_apps:6,ucl_assists:0,intl_goals:0,intl_apps:19,intl_assists:0}},
+  {name:"Cristiano Ronaldo",nat:"Portugal",pos:["FW"],stats:{pl_goals:145,pl_apps:236,pl_assists:62,ucl_goals:140,ucl_apps:183,ucl_assists:44,intl_goals:130,intl_apps:220,intl_assists:44}},
+  {name:"Bruno Fernandes",nat:"Portugal",pos:["MID"],stats:{pl_goals:77,pl_apps:230,pl_assists:80,ucl_goals:12,ucl_apps:44,ucl_assists:18,intl_goals:22,intl_apps:78,intl_assists:20}},
+  {name:"Bernardo Silva",nat:"Portugal",pos:["MID","FW"],stats:{pl_goals:46,pl_apps:296,pl_assists:58,ucl_goals:20,ucl_apps:90,ucl_assists:24,intl_goals:14,intl_apps:90,intl_assists:18}},
+  {name:"Diogo Jota",nat:"Portugal",pos:["FW"],stats:{pl_goals:65,pl_apps:174,pl_assists:20,ucl_goals:10,ucl_apps:42,ucl_assists:8,intl_goals:14,intl_apps:58,intl_assists:6}},
+  {name:"Nani",nat:"Portugal",pos:["MID","FW"],stats:{pl_goals:41,pl_apps:230,pl_assists:52,ucl_goals:10,ucl_apps:60,ucl_assists:14,intl_goals:9,intl_apps:112,intl_assists:16}},
+  {name:"Luís Boa Morte",nat:"Portugal",pos:["FW","MID"],stats:{pl_goals:60,pl_apps:296,pl_assists:44,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:7,intl_apps:31,intl_assists:4}},
+  {name:"Simão Sabrosa",nat:"Portugal",pos:["MID","FW"],stats:{pl_goals:18,pl_apps:86,pl_assists:20,ucl_goals:5,ucl_apps:24,ucl_assists:8,intl_goals:22,intl_apps:94,intl_assists:12}},
+  {name:"Rúben Neves",nat:"Portugal",pos:["MID"],stats:{pl_goals:27,pl_apps:197,pl_assists:18,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:4,intl_apps:48,intl_assists:4}},
+  {name:"Gianfranco Zola",nat:"Italy",pos:["FW","MID"],stats:{pl_goals:80,pl_apps:312,pl_assists:62,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:10,intl_apps:35,intl_assists:8}},
+  {name:"Paolo Di Canio",nat:"Italy",pos:["FW","MID"],stats:{pl_goals:66,pl_apps:264,pl_assists:40,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+  {name:"Jorginho",nat:"Italy",pos:["MID"],stats:{pl_goals:9,pl_apps:173,pl_assists:8,ucl_goals:4,ucl_apps:56,ucl_assists:8,intl_goals:2,intl_apps:55,intl_assists:4}},
+  {name:"Fabrizio Ravanelli",nat:"Italy",pos:["FW"],stats:{pl_goals:31,pl_apps:48,pl_assists:8,ucl_goals:14,ucl_apps:28,ucl_assists:6,intl_goals:7,intl_apps:22,intl_assists:2}},
+  {name:"Benito Carbone",nat:"Italy",pos:["MID","FW"],stats:{pl_goals:24,pl_apps:152,pl_assists:28,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+  {name:"Gianluca Vialli",nat:"Italy",pos:["FW"],stats:{pl_goals:40,pl_apps:78,pl_assists:16,ucl_goals:18,ucl_apps:32,ucl_assists:8,intl_goals:16,intl_apps:59,intl_assists:8}},
+  {name:"Roberto Di Matteo",nat:"Italy",pos:["MID"],stats:{pl_goals:15,pl_apps:175,pl_assists:18,ucl_goals:2,ucl_apps:20,ucl_assists:4,intl_goals:2,intl_apps:34,intl_assists:2}},
+  {name:"Ryan Giggs",nat:"Wales",pos:["MID","FW"],stats:{pl_goals:109,pl_apps:672,pl_assists:162,ucl_goals:28,ucl_apps:142,ucl_assists:48,intl_goals:12,intl_apps:64,intl_assists:14}},
+  {name:"Gareth Bale",nat:"Wales",pos:["FW","MID"],stats:{pl_goals:67,pl_apps:203,pl_assists:42,ucl_goals:27,ucl_apps:86,ucl_assists:18,intl_goals:41,intl_apps:111,intl_assists:14}},
+  {name:"Craig Bellamy",nat:"Wales",pos:["FW"],stats:{pl_goals:60,pl_apps:292,pl_assists:52,ucl_goals:6,ucl_apps:30,ucl_assists:6,intl_goals:19,intl_apps:78,intl_assists:8}},
+  {name:"Aaron Ramsey",nat:"Wales",pos:["MID"],stats:{pl_goals:40,pl_apps:267,pl_assists:48,ucl_goals:16,ucl_apps:65,ucl_assists:18,intl_goals:20,intl_apps:76,intl_assists:14}},
+  {name:"John Hartson",nat:"Wales",pos:["FW"],stats:{pl_goals:82,pl_apps:228,pl_assists:30,ucl_goals:5,ucl_apps:20,ucl_assists:4,intl_goals:14,intl_apps:51,intl_assists:4}},
+  {name:"Mark Hughes",nat:"Wales",pos:["FW"],stats:{pl_goals:39,pl_apps:269,pl_assists:28,ucl_goals:0,ucl_apps:10,ucl_assists:4,intl_goals:16,intl_apps:72,intl_assists:8}},
+  {name:"Daniel James",nat:"Wales",pos:["FW","MID"],stats:{pl_goals:24,pl_apps:186,pl_assists:18,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:8,intl_apps:62,intl_assists:6}},
+  {name:"Roy Keane",nat:"Ireland",pos:["MID"],stats:{pl_goals:51,pl_apps:366,pl_assists:40,ucl_goals:0,ucl_apps:54,ucl_assists:10,intl_goals:9,intl_apps:67,intl_assists:8}},
+  {name:"Robbie Keane",nat:"Ireland",pos:["FW"],stats:{pl_goals:126,pl_apps:461,pl_assists:72,ucl_goals:6,ucl_apps:28,ucl_assists:8,intl_goals:68,intl_apps:146,intl_assists:24}},
+  {name:"Niall Quinn",nat:"Ireland",pos:["FW"],stats:{pl_goals:60,pl_apps:215,pl_assists:38,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:21,intl_apps:92,intl_assists:10}},
+  {name:"Damien Duff",nat:"Ireland",pos:["MID","FW"],stats:{pl_goals:46,pl_apps:285,pl_assists:62,ucl_goals:4,ucl_apps:28,ucl_assists:10,intl_goals:8,intl_apps:100,intl_assists:14}},
+  {name:"Shane Long",nat:"Ireland",pos:["FW"],stats:{pl_goals:56,pl_apps:293,pl_assists:28,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:17,intl_apps:88,intl_assists:6}},
+  {name:"Denis Irwin",nat:"Ireland",pos:["DEF"],stats:{pl_goals:22,pl_apps:296,pl_assists:28,ucl_goals:4,ucl_apps:54,ucl_assists:8,intl_goals:4,intl_apps:56,intl_assists:4}},
+  {name:"Séamus Coleman",nat:"Ireland",pos:["DEF"],stats:{pl_goals:20,pl_apps:364,pl_assists:36,ucl_goals:1,ucl_apps:8,ucl_assists:2,intl_goals:5,intl_apps:72,intl_assists:8}},
+  {name:"Shay Given",nat:"Ireland",pos:["GK"],stats:{pl_goals:0,pl_apps:398,pl_assists:0,ucl_goals:0,ucl_apps:4,ucl_assists:0,intl_goals:0,intl_apps:134,intl_assists:0}},
+  {name:"Jon Walters",nat:"Ireland",pos:["FW"],stats:{pl_goals:37,pl_apps:178,pl_assists:28,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:14,intl_apps:54,intl_assists:4}},
+  {name:"Kevin Doyle",nat:"Ireland",pos:["FW"],stats:{pl_goals:37,pl_apps:181,pl_assists:22,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:14,intl_apps:98,intl_assists:6}},
+  {name:"Matt Doherty",nat:"Ireland",pos:["DEF"],stats:{pl_goals:10,pl_apps:178,pl_assists:34,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:3,intl_apps:42,intl_assists:4}},
+  {name:"Ian Harte",nat:"Ireland",pos:["DEF"],stats:{pl_goals:18,pl_apps:196,pl_assists:36,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:11,intl_apps:64,intl_assists:8}},
+  {name:"Steve Staunton",nat:"Ireland",pos:["DEF"],stats:{pl_goals:6,pl_apps:168,pl_assists:10,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:8,intl_apps:102,intl_assists:6}},
+  {name:"Tony Cascarino",nat:"Ireland",pos:["FW"],stats:{pl_goals:36,pl_apps:104,pl_assists:12,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:19,intl_apps:88,intl_assists:6}},
+  {name:"Wes Hoolahan",nat:"Ireland",pos:["MID"],stats:{pl_goals:30,pl_apps:163,pl_assists:38,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:3,intl_apps:43,intl_assists:4}},
+  {name:"Robbie Brady",nat:"Ireland",pos:["MID","DEF"],stats:{pl_goals:16,pl_apps:122,pl_assists:22,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:5,intl_apps:68,intl_assists:8}},
+  {name:"Duncan Ferguson",nat:"Scotland",pos:["FW"],stats:{pl_goals:72,pl_apps:239,pl_assists:20,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:7,intl_apps:7,intl_assists:0}},
+  {name:"Darren Fletcher",nat:"Scotland",pos:["MID"],stats:{pl_goals:24,pl_apps:342,pl_assists:36,ucl_goals:3,ucl_apps:58,ucl_assists:8,intl_goals:5,intl_apps:80,intl_assists:4}},
+  {name:"Andy Robertson",nat:"Scotland",pos:["DEF"],stats:{pl_goals:9,pl_apps:275,pl_assists:60,ucl_goals:3,ucl_apps:90,ucl_assists:18,intl_goals:3,intl_apps:74,intl_assists:8}},
+  {name:"John McGinn",nat:"Scotland",pos:["MID"],stats:{pl_goals:32,pl_apps:175,pl_assists:28,ucl_goals:4,ucl_apps:16,ucl_assists:6,intl_goals:17,intl_apps:68,intl_assists:8}},
+  {name:"Robert Snodgrass",nat:"Scotland",pos:["MID"],stats:{pl_goals:37,pl_apps:180,pl_assists:36,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:7,intl_apps:28,intl_assists:4}},
+  {name:"Gary McAllister",nat:"Scotland",pos:["MID"],stats:{pl_goals:28,pl_apps:202,pl_assists:40,ucl_goals:2,ucl_apps:8,ucl_assists:4,intl_goals:5,intl_apps:57,intl_assists:8}},
+  {name:"Don Hutchison",nat:"Scotland",pos:["MID"],stats:{pl_goals:22,pl_apps:206,pl_assists:18,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:6,intl_apps:26,intl_assists:2}},
+  {name:"Dwight Yorke",nat:"Trinidad",pos:["FW"],stats:{pl_goals:123,pl_apps:375,pl_assists:60,ucl_goals:8,ucl_apps:14,ucl_assists:6,intl_goals:19,intl_apps:72,intl_assists:8}},
+  {name:"Riyad Mahrez",nat:"Algeria",pos:["FW","MID"],stats:{pl_goals:77,pl_apps:291,pl_assists:62,ucl_goals:19,ucl_apps:74,ucl_assists:16,intl_goals:30,intl_apps:92,intl_assists:18}},
+  {name:"Mohamed Salah",nat:"Egypt",pos:["FW"],stats:{pl_goals:210,pl_apps:338,pl_assists:93,ucl_goals:46,ucl_apps:102,ucl_assists:28,intl_goals:58,intl_apps:101,intl_assists:20}},
+  {name:"Sadio Mané",nat:"Senegal",pos:["FW","MID"],stats:{pl_goals:120,pl_apps:269,pl_assists:46,ucl_goals:26,ucl_apps:76,ucl_assists:14,intl_goals:34,intl_apps:100,intl_assists:12}},
+  {name:"Son Heung-min",nat:"South Korea",pos:["FW","MID"],stats:{pl_goals:163,pl_apps:364,pl_assists:80,ucl_goals:16,ucl_apps:80,ucl_assists:14,intl_goals:35,intl_apps:126,intl_assists:20}},
+  {name:"Roberto Firmino",nat:"Brazil",pos:["FW","MID"],stats:{pl_goals:111,pl_apps:362,pl_assists:82,ucl_goals:28,ucl_apps:102,ucl_assists:32,intl_goals:18,intl_apps:62,intl_assists:10}},
+  {name:"Sergio Agüero",nat:"Argentina",pos:["FW"],stats:{pl_goals:184,pl_apps:275,pl_assists:76,ucl_goals:31,ucl_apps:78,ucl_assists:18,intl_goals:41,intl_apps:101,intl_assists:14}},
+  {name:"Carlos Tevez",nat:"Argentina",pos:["FW"],stats:{pl_goals:84,pl_apps:187,pl_assists:36,ucl_goals:12,ucl_apps:44,ucl_assists:8,intl_goals:13,intl_apps:76,intl_assists:6}},
+  {name:"Hernán Crespo",nat:"Argentina",pos:["FW"],stats:{pl_goals:12,pl_apps:49,pl_assists:4,ucl_goals:18,ucl_apps:52,ucl_assists:10,intl_goals:35,intl_apps:64,intl_assists:10}},
+  {name:"Juan Sebastián Verón",nat:"Argentina",pos:["MID"],stats:{pl_goals:8,pl_apps:92,pl_assists:16,ucl_goals:6,ucl_apps:38,ucl_assists:10,intl_goals:9,intl_apps:73,intl_assists:8}},
+  {name:"Didier Drogba",nat:"Ivory Coast",pos:["FW"],stats:{pl_goals:104,pl_apps:284,pl_assists:56,ucl_goals:24,ucl_apps:80,ucl_assists:12,intl_goals:65,intl_apps:105,intl_assists:14}},
+  {name:"Emmanuel Adebayor",nat:"Togo",pos:["FW"],stats:{pl_goals:97,pl_apps:242,pl_assists:30,ucl_goals:8,ucl_apps:22,ucl_assists:4,intl_goals:30,intl_apps:87,intl_assists:8}},
+  {name:"Pierre-Emerick Aubameyang",nat:"Gabon",pos:["FW"],stats:{pl_goals:92,pl_apps:163,pl_assists:24,ucl_goals:14,ucl_apps:48,ucl_assists:10,intl_goals:30,intl_apps:72,intl_assists:8}},
+  {name:"Nwankwo Kanu",nat:"Nigeria",pos:["FW","MID"],stats:{pl_goals:44,pl_apps:197,pl_assists:28,ucl_goals:8,ucl_apps:28,ucl_assists:6,intl_goals:13,intl_apps:87,intl_assists:10}},
+  // ── FULL-BACKS / DEFENDERS ─────────────────────────────────────
+  {name:"Trent Alexander-Arnold",nat:"England",pos:["DEF","MID"],stats:{pl_goals:20,pl_apps:272,pl_assists:67,ucl_goals:6,ucl_apps:72,ucl_assists:22,intl_goals:3,intl_apps:29,intl_assists:6}},
+  {name:"Leighton Baines",nat:"England",pos:["DEF"],stats:{pl_goals:11,pl_apps:420,pl_assists:54,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:1,intl_apps:30,intl_assists:4}},
+  {name:"Ashley Cole",nat:"England",pos:["DEF"],stats:{pl_goals:7,pl_apps:385,pl_assists:32,ucl_goals:5,ucl_apps:98,ucl_assists:12,intl_goals:0,intl_apps:107,intl_assists:6}},
+  {name:"Gary Neville",nat:"England",pos:["DEF"],stats:{pl_goals:5,pl_apps:400,pl_assists:37,ucl_goals:0,ucl_apps:75,ucl_assists:12,intl_goals:0,intl_apps:85,intl_assists:8}},
+  {name:"Phil Neville",nat:"England",pos:["DEF","MID"],stats:{pl_goals:6,pl_apps:386,pl_assists:20,ucl_goals:1,ucl_apps:42,ucl_assists:4,intl_goals:0,intl_apps:59,intl_assists:4}},
+  {name:"Graeme Le Saux",nat:"England",pos:["DEF"],stats:{pl_goals:8,pl_apps:336,pl_assists:44,ucl_goals:1,ucl_apps:18,ucl_assists:4,intl_goals:1,intl_apps:36,intl_assists:4}},
+  {name:"Luke Shaw",nat:"England",pos:["DEF"],stats:{pl_goals:8,pl_apps:254,pl_assists:42,ucl_goals:2,ucl_apps:52,ucl_assists:10,intl_goals:1,intl_apps:28,intl_assists:4}},
+  {name:"Kyle Walker",nat:"England",pos:["DEF"],stats:{pl_goals:4,pl_apps:376,pl_assists:44,ucl_goals:2,ucl_apps:90,ucl_assists:10,intl_goals:1,intl_apps:78,intl_assists:6}},
+  {name:"Kieran Trippier",nat:"England",pos:["DEF"],stats:{pl_goals:12,pl_apps:237,pl_assists:50,ucl_goals:2,ucl_apps:44,ucl_assists:8,intl_goals:2,intl_apps:52,intl_assists:10}},
+  {name:"Reece James",nat:"England",pos:["DEF"],stats:{pl_goals:8,pl_apps:156,pl_assists:26,ucl_goals:2,ucl_apps:38,ucl_assists:8,intl_goals:0,intl_apps:22,intl_assists:2}},
+  {name:"Ben Chilwell",nat:"England",pos:["DEF"],stats:{pl_goals:10,pl_apps:176,pl_assists:22,ucl_goals:2,ucl_apps:28,ucl_assists:6,intl_goals:1,intl_apps:22,intl_assists:4}},
+  {name:"Andy Hinchcliffe",nat:"England",pos:["DEF"],stats:{pl_goals:4,pl_apps:210,pl_assists:36,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:7,intl_assists:0}},
+  {name:"David Unsworth",nat:"England",pos:["DEF"],stats:{pl_goals:32,pl_apps:352,pl_assists:14,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:1,intl_apps:1,intl_assists:0}},
+  {name:"Gary Pallister",nat:"England",pos:["DEF"],stats:{pl_goals:8,pl_apps:314,pl_assists:6,ucl_goals:0,ucl_apps:54,ucl_assists:4,intl_goals:2,intl_apps:22,intl_assists:0}},
+  // ── GOALKEEPERS ─────────────────────────────────────────────────
+  {name:"David James",nat:"England",pos:["GK"],stats:{pl_goals:0,pl_apps:572,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:53,intl_assists:0}},
+  {name:"Brad Friedel",nat:"USA",pos:["GK"],stats:{pl_goals:0,pl_apps:450,pl_assists:0,ucl_goals:0,ucl_apps:6,ucl_assists:0,intl_goals:0,intl_apps:82,intl_assists:0}},
+  {name:"Mark Schwarzer",nat:"Australia",pos:["GK"],stats:{pl_goals:0,pl_apps:514,pl_assists:0,ucl_goals:0,ucl_apps:12,ucl_assists:0,intl_goals:0,intl_apps:109,intl_assists:0}},
+  {name:"Nigel Martyn",nat:"England",pos:["GK"],stats:{pl_goals:0,pl_apps:372,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:23,intl_assists:0}},
+  {name:"Rob Green",nat:"England",pos:["GK"],stats:{pl_goals:0,pl_apps:356,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:12,intl_assists:0}},
+  {name:"Paul Robinson",nat:"England",pos:["GK"],stats:{pl_goals:1,pl_apps:338,pl_assists:0,ucl_goals:0,ucl_apps:12,ucl_assists:0,intl_goals:0,intl_apps:41,intl_assists:0}},
+  {name:"David Seaman",nat:"England",pos:["GK"],stats:{pl_goals:0,pl_apps:405,pl_assists:0,ucl_goals:0,ucl_apps:38,ucl_assists:0,intl_goals:0,intl_apps:75,intl_assists:0}},
+  {name:"Peter Schmeichel",nat:"Denmark",pos:["GK"],stats:{pl_goals:0,pl_apps:310,pl_assists:0,ucl_goals:0,ucl_apps:62,ucl_assists:0,intl_goals:0,intl_apps:129,intl_assists:0}},
+  {name:"Petr Čech",nat:"Czechia",pos:["GK"],stats:{pl_goals:0,pl_apps:443,pl_assists:0,ucl_goals:0,ucl_apps:112,ucl_assists:0,intl_goals:0,intl_apps:124,intl_assists:0}},
+  {name:"Joe Hart",nat:"England",pos:["GK"],stats:{pl_goals:0,pl_apps:348,pl_assists:0,ucl_goals:0,ucl_apps:38,ucl_assists:0,intl_goals:0,intl_apps:75,intl_assists:0}},
+  {name:"Ben Foster",nat:"England",pos:["GK"],stats:{pl_goals:0,pl_apps:253,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:8,intl_assists:0}},
+  {name:"Carlo Cudicini",nat:"Italy",pos:["GK"],stats:{pl_goals:0,pl_apps:98,pl_assists:0,ucl_goals:0,ucl_apps:12,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+  {name:"Heurelho Gomes",nat:"Brazil",pos:["GK"],stats:{pl_goals:0,pl_apps:140,pl_assists:0,ucl_goals:0,ucl_apps:4,ucl_assists:0,intl_goals:0,intl_apps:4,intl_assists:0}},
+  {name:"Hugo Lloris",nat:"France",pos:["GK"],stats:{pl_goals:0,pl_apps:400,pl_assists:0,ucl_goals:0,ucl_apps:68,ucl_assists:0,intl_goals:0,intl_apps:145,intl_assists:0}},
+  {name:"Jussi Jääskeläinen",nat:"Finland",pos:["GK"],stats:{pl_goals:0,pl_apps:325,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:56,intl_assists:0}},
+  {name:"Thomas Sørensen",nat:"Denmark",pos:["GK"],stats:{pl_goals:0,pl_apps:308,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:101,intl_assists:0}},
+  {name:"Dean Kiely",nat:"Ireland",pos:["GK"],stats:{pl_goals:0,pl_apps:115,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:11,intl_assists:0}},
+  // ── UCL / EUROPEAN LEGENDS ──────────────────────────────────────
+  {name:"Lionel Messi",nat:"Argentina",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:129,ucl_apps:163,ucl_assists:40,intl_goals:109,intl_apps:191,intl_assists:52}},
+  {name:"Karim Benzema",nat:"France",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:90,ucl_apps:162,ucl_assists:36,intl_goals:37,intl_apps:97,intl_assists:18}},
+  {name:"Kylian Mbappé",nat:"France",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:49,ucl_apps:92,ucl_assists:28,intl_goals:52,intl_apps:97,intl_assists:30}},
+  {name:"Antoine Griezmann",nat:"France",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:20,ucl_apps:75,ucl_assists:18,intl_goals:57,intl_apps:134,intl_assists:30}},
+  {name:"Zinedine Zidane",nat:"France",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:77,ucl_assists:30,intl_goals:31,intl_apps:108,intl_assists:32}},
+  {name:"Raúl",nat:"Spain",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:71,ucl_apps:142,ucl_assists:38,intl_goals:44,intl_apps:102,intl_assists:18}},
+  {name:"Filippo Inzaghi",nat:"Italy",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:46,ucl_apps:81,ucl_assists:10,intl_goals:25,intl_apps:57,intl_assists:6}},
+  {name:"Andriy Shevchenko",nat:"Ukraine",pos:["FW"],stats:{pl_goals:9,pl_apps:27,pl_assists:2,ucl_goals:59,ucl_apps:100,ucl_assists:22,intl_goals:48,intl_apps:111,intl_assists:16}},
+  {name:"Alessandro Del Piero",nat:"Italy",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:42,ucl_apps:89,ucl_assists:22,intl_goals:27,intl_apps:91,intl_assists:18}},
+  {name:"Robert Lewandowski",nat:"Poland",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:91,ucl_apps:116,ucl_assists:28,intl_goals:82,intl_apps:148,intl_assists:22}},
+  {name:"Erling Haaland",nat:"Norway",pos:["FW"],stats:{pl_goals:91,pl_apps:95,pl_assists:18,ucl_goals:40,ucl_apps:50,ucl_assists:10,intl_goals:31,intl_apps:44,intl_assists:8}},
+  {name:"Zlatan Ibrahimović",nat:"Sweden",pos:["FW"],stats:{pl_goals:29,pl_apps:57,pl_assists:12,ucl_goals:48,ucl_apps:120,ucl_assists:26,intl_goals:62,intl_apps:116,intl_assists:24}},
+  {name:"Neymar",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:43,ucl_apps:97,ucl_assists:34,intl_goals:79,intl_apps:130,intl_assists:52}},
+  {name:"Ronaldinho",nat:"Brazil",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:15,ucl_apps:44,ucl_assists:18,intl_goals:33,intl_apps:97,intl_assists:28}},
+  {name:"Ronaldo (R9)",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:17,ucl_apps:38,ucl_assists:10,intl_goals:62,intl_apps:98,intl_assists:18}},
+  {name:"Kaká",nat:"Brazil",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:30,ucl_apps:82,ucl_assists:24,intl_goals:29,intl_apps:92,intl_assists:22}},
+  {name:"Rivaldo",nat:"Brazil",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:24,ucl_apps:44,ucl_assists:14,intl_goals:35,intl_apps:74,intl_assists:18}},
+  {name:"Romário",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:3,ucl_apps:8,ucl_assists:4,intl_goals:55,intl_apps:70,intl_assists:10}},
+  {name:"Roberto Carlos",nat:"Brazil",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:12,ucl_apps:125,ucl_assists:22,intl_goals:11,intl_apps:125,intl_assists:18}},
+  {name:"Marcelo",nat:"Brazil",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:12,ucl_apps:145,ucl_assists:28,intl_goals:6,intl_apps:58,intl_assists:8}},
+  {name:"Dani Alves",nat:"Brazil",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:150,ucl_assists:38,intl_goals:8,intl_apps:126,intl_assists:20}},
+  {name:"Thiago Silva",nat:"Brazil",pos:["DEF"],stats:{pl_goals:4,pl_apps:60,pl_assists:2,ucl_goals:8,ucl_apps:138,ucl_assists:14,intl_goals:7,intl_apps:113,intl_assists:8}},
+  {name:"Casemiro",nat:"Brazil",pos:["MID"],stats:{pl_goals:18,pl_apps:92,pl_assists:8,ucl_goals:14,ucl_apps:90,ucl_assists:10,intl_goals:7,intl_apps:74,intl_assists:6}},
+  {name:"Giovane Élber",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:44,ucl_assists:8,intl_goals:10,intl_apps:26,intl_assists:4}},
+  {name:"Adriano",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:13,ucl_apps:26,ucl_assists:6,intl_goals:27,intl_apps:48,intl_assists:8}},
+  {name:"Robinho",nat:"Brazil",pos:["FW","MID"],stats:{pl_goals:14,pl_apps:53,pl_assists:14,ucl_goals:10,ucl_apps:30,ucl_assists:8,intl_goals:28,intl_apps:100,intl_assists:16}},
+  {name:"Raphinha",nat:"Brazil",pos:["FW","MID"],stats:{pl_goals:34,pl_apps:100,pl_assists:28,ucl_goals:11,ucl_apps:36,ucl_assists:10,intl_goals:14,intl_apps:44,intl_assists:8}},
+  {name:"Pelé",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:77,intl_apps:92,intl_assists:22}},
+  {name:"Bebeto",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:10,ucl_assists:4,intl_goals:39,intl_apps:75,intl_assists:12}},
+  {name:"Xavi",nat:"Spain",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:15,ucl_apps:157,ucl_assists:46,intl_goals:13,intl_apps:133,intl_assists:40}},
+  {name:"Andrés Iniesta",nat:"Spain",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:13,ucl_apps:122,ucl_assists:30,intl_goals:13,intl_apps:131,intl_assists:28}},
+  {name:"Sergio Ramos",nat:"Spain",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:23,ucl_apps:142,ucl_assists:10,intl_goals:23,intl_apps:180,intl_assists:12}},
+  {name:"Carles Puyol",nat:"Spain",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:105,ucl_assists:6,intl_goals:3,intl_apps:100,intl_assists:4}},
+  {name:"Luka Modrić",nat:"Croatia",pos:["MID"],stats:{pl_goals:17,pl_apps:160,pl_assists:28,ucl_goals:20,ucl_apps:138,ucl_assists:32,intl_goals:23,intl_apps:180,intl_assists:28}},
+  {name:"Ivan Rakitić",nat:"Croatia",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:18,ucl_apps:78,ucl_assists:20,intl_goals:15,intl_apps:106,intl_assists:18}},
+  {name:"Mario Mandžukić",nat:"Croatia",pos:["FW"],stats:{pl_goals:3,pl_apps:20,pl_assists:2,ucl_goals:12,ucl_apps:48,ucl_assists:6,intl_goals:33,intl_apps:89,intl_assists:8}},
+  {name:"Edin Džeko",nat:"Bosnia",pos:["FW"],stats:{pl_goals:50,pl_apps:130,pl_assists:26,ucl_goals:24,ucl_apps:72,ucl_assists:12,intl_goals:65,intl_apps:110,intl_assists:14}},
+  {name:"Zdeněk Nedvěd",nat:"Czechia",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:80,ucl_assists:20,intl_goals:18,intl_apps:91,intl_assists:14}},
+  {name:"Clarence Seedorf",nat:"Netherlands",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:16,ucl_apps:125,ucl_assists:24,intl_goals:11,intl_apps:87,intl_assists:14}},
+  {name:"Patrick Kluivert",nat:"Netherlands",pos:["FW"],stats:{pl_goals:8,pl_apps:47,pl_assists:8,ucl_goals:33,ucl_apps:68,ucl_assists:16,intl_goals:40,intl_apps:79,intl_assists:14}},
+  {name:"Andrea Pirlo",nat:"Italy",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:84,ucl_assists:28,intl_goals:13,intl_apps:116,intl_assists:28}},
+  {name:"Paolo Maldini",nat:"Italy",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:6,ucl_apps:174,ucl_assists:10,intl_goals:7,intl_apps:126,intl_assists:8}},
+  {name:"Fabio Cannavaro",nat:"Italy",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:2,ucl_apps:88,ucl_assists:4,intl_goals:2,intl_apps:136,intl_assists:4}},
+  {name:"Alessandro Nesta",nat:"Italy",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:2,ucl_apps:99,ucl_assists:4,intl_goals:1,intl_apps:78,intl_assists:2}},
+  {name:"Giorgio Chiellini",nat:"Italy",pos:["DEF"],stats:{pl_goals:2,pl_apps:18,pl_assists:0,ucl_goals:2,ucl_apps:115,ucl_assists:4,intl_goals:8,intl_apps:117,intl_assists:4}},
+  {name:"Leonardo Bonucci",nat:"Italy",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:118,ucl_assists:6,intl_goals:7,intl_apps:121,intl_assists:4}},
+  {name:"Philip Lahm",nat:"Germany",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:2,ucl_apps:113,ucl_assists:20,intl_goals:5,intl_apps:113,intl_assists:14}},
+  {name:"Thomas Müller",nat:"Germany",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:55,ucl_apps:152,ucl_assists:56,intl_goals:45,intl_apps:131,intl_assists:48}},
+  {name:"Miroslav Klose",nat:"Germany",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:20,ucl_apps:52,ucl_assists:8,intl_goals:71,intl_apps:137,intl_assists:24}},
+  {name:"Gerd Müller",nat:"Germany",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:35,ucl_apps:35,ucl_assists:10,intl_goals:68,intl_apps:62,intl_assists:8}},
+  {name:"Karl-Heinz Rummenigge",nat:"Germany",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:28,ucl_apps:39,ucl_assists:10,intl_goals:45,intl_apps:95,intl_assists:12}},
+  {name:"Jürgen Klinsmann",nat:"Germany",pos:["FW"],stats:{pl_goals:29,pl_apps:64,pl_assists:8,ucl_goals:22,ucl_apps:38,ucl_assists:8,intl_goals:47,intl_apps:108,intl_assists:14}},
+  {name:"Lothar Matthäus",nat:"Germany",pos:["MID","DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:23,ucl_apps:74,ucl_assists:14,intl_goals:23,intl_apps:150,intl_assists:12}},
+  {name:"Stefan Effenberg",nat:"Germany",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:48,ucl_assists:16,intl_goals:5,intl_apps:35,intl_assists:6}},
+  {name:"Manuel Neuer",nat:"Germany",pos:["GK"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:102,ucl_assists:0,intl_goals:0,intl_apps:124,intl_assists:0}},
+  {name:"Gianluigi Buffon",nat:"Italy",pos:["GK"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:112,ucl_assists:0,intl_goals:0,intl_apps:176,intl_assists:0}},
+  {name:"Iker Casillas",nat:"Spain",pos:["GK"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:168,ucl_assists:0,intl_goals:0,intl_apps:167,intl_assists:0}},
+  {name:"Luís Figo",nat:"Portugal",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:16,ucl_apps:72,ucl_assists:28,intl_goals:32,intl_apps:127,intl_assists:24}},
+  {name:"Ruud Gullit",nat:"Netherlands",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:12,ucl_apps:20,ucl_assists:10,intl_goals:17,intl_apps:66,intl_assists:16}},
+  {name:"Marco van Basten",nat:"Netherlands",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:22,ucl_apps:28,ucl_assists:10,intl_goals:24,intl_apps:58,intl_assists:8}},
+  {name:"Samuel Eto'o",nat:"Cameroon",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:30,ucl_apps:68,ucl_assists:14,intl_goals:56,intl_apps:118,intl_assists:14}},
+  {name:"Roberto Baggio",nat:"Italy",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:12,ucl_apps:36,ucl_assists:10,intl_goals:27,intl_apps:56,intl_assists:16}},
+  {name:"Francesco Totti",nat:"Italy",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:16,ucl_apps:62,ucl_assists:14,intl_goals:9,intl_apps:58,intl_assists:8}},
+  {name:"Javier Zanetti",nat:"Argentina",pos:["DEF","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:5,ucl_apps:88,ucl_assists:14,intl_goals:5,intl_apps:145,intl_assists:12}},
+  {name:"Hernán Crespo",nat:"Argentina",pos:["FW"],stats:{pl_goals:12,pl_apps:49,pl_assists:4,ucl_goals:18,ucl_apps:52,ucl_assists:10,intl_goals:35,intl_apps:64,intl_assists:10}},
+  {name:"Gabriel Batistuta",nat:"Argentina",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:12,ucl_apps:28,ucl_assists:8,intl_goals:56,intl_apps:78,intl_assists:12}},
+  {name:"Paulo Dybala",nat:"Argentina",pos:["FW","MID"],stats:{pl_goals:6,pl_apps:22,pl_assists:2,ucl_goals:26,ucl_apps:80,ucl_assists:16,intl_goals:29,intl_apps:50,intl_assists:10}},
+  {name:"Lautaro Martínez",nat:"Argentina",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:24,ucl_apps:62,ucl_assists:10,intl_goals:30,intl_apps:70,intl_assists:8}},
+  {name:"Luis Suárez",nat:"Uruguay",pos:["FW"],stats:{pl_goals:82,pl_apps:133,pl_assists:46,ucl_goals:26,ucl_apps:68,ucl_assists:20,intl_goals:68,intl_apps:134,intl_assists:28}},
+  {name:"Edinson Cavani",nat:"Uruguay",pos:["FW"],stats:{pl_goals:19,pl_apps:58,pl_assists:6,ucl_goals:36,ucl_apps:72,ucl_assists:14,intl_goals:58,intl_apps:136,intl_assists:20}},
+  {name:"Diego Forlán",nat:"Uruguay",pos:["FW"],stats:{pl_goals:17,pl_apps:98,pl_assists:10,ucl_goals:12,ucl_apps:42,ucl_assists:8,intl_goals:36,intl_apps:112,intl_assists:12}},
+  {name:"Radamel Falcao",nat:"Colombia",pos:["FW"],stats:{pl_goals:4,pl_apps:29,pl_assists:2,ucl_goals:15,ucl_apps:44,ucl_assists:8,intl_goals:36,intl_apps:109,intl_assists:12}},
+  {name:"James Rodríguez",nat:"Colombia",pos:["MID","FW"],stats:{pl_goals:6,pl_apps:68,pl_assists:12,ucl_goals:7,ucl_apps:36,ucl_assists:14,intl_goals:36,intl_apps:101,intl_assists:22}},
+  {name:"Henrik Larsson",nat:"Sweden",pos:["FW"],stats:{pl_goals:18,pl_apps:48,pl_assists:8,ucl_goals:10,ucl_apps:26,ucl_assists:6,intl_goals:37,intl_apps:106,intl_assists:14}},
+  {name:"Davor Šuker",nat:"Croatia",pos:["FW"],stats:{pl_goals:8,pl_apps:26,pl_assists:4,ucl_goals:10,ucl_apps:24,ucl_assists:4,intl_goals:45,intl_apps:69,intl_assists:10}},
+  {name:"Hristo Stoichkov",nat:"Bulgaria",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:12,ucl_apps:28,ucl_assists:10,intl_goals:37,intl_apps:83,intl_assists:14}},
+  {name:"Gheorghe Hagi",nat:"Romania",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:10,ucl_apps:22,ucl_assists:10,intl_goals:35,intl_apps:125,intl_assists:22}},
+  {name:"Michael Laudrup",nat:"Denmark",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:8,ucl_apps:24,ucl_assists:16,intl_goals:37,intl_apps:104,intl_assists:36}},
+  {name:"Gary Lineker",nat:"England",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:48,intl_apps:80,intl_assists:14}},
+  {name:"Eusébio",nat:"Portugal",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:6,ucl_apps:12,ucl_assists:4,intl_goals:41,intl_apps:64,intl_assists:10}},
+  {name:"Just Fontaine",nat:"France",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:30,intl_apps:21,intl_assists:4}},
+  {name:"Sándor Kocsis",nat:"Hungary",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:75,intl_apps:68,intl_assists:8}},
+  {name:"Ali Daei",nat:"Iran",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:109,intl_apps:149,intl_assists:20}},
+  {name:"Pelé",nat:"Brazil",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:77,intl_apps:92,intl_assists:22}},
+  {name:"Hossam Hassan",nat:"Egypt",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:69,intl_apps:169,intl_assists:14}},
+  {name:"Asamoah Gyan",nat:"Ghana",pos:["FW"],stats:{pl_goals:6,pl_apps:26,pl_assists:2,ucl_goals:2,ucl_apps:4,ucl_assists:0,intl_goals:51,intl_apps:109,intl_assists:10}},
+  {name:"Roger Milla",nat:"Cameroon",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:28,intl_apps:102,intl_assists:6}},
+];
+
+// ═══════════════════════════════════════════════════════════════════
+// CATEGORY SYSTEM
+// ═══════════════════════════════════════════════════════════════════
+const CHECKOUT_WINDOW = 10;
+const CHECKOUT_CEILING = 170; // darts rule: can only checkout if score ≤ 170
+const MIN_POOL = 16;
+const MIN_MEDIAN = 30;
+const MAX_MEDIAN = 155;
+
+function getStat(player, statKey) {
+  return statKey.split('+').reduce((sum, k) => sum + (player.stats[k.trim()] || 0), 0);
+}
+
+const CATEGORY_DEFS = [
+  // PL goals by nationality
+  {id:'pl_g_eng',  title:'English Players — Premier League Goals',        type:'PL Goals',         statKey:'pl_goals',               filters:{nat:'England',pos:'FW'}, desc:'Career PL goals for English forwards.'},
+  {id:'pl_g_fra',  title:'French Players — Premier League Goals',         type:'PL Goals',         statKey:'pl_goals',                filters:{nat:'France'},          desc:'Career PL goals for French internationals.'},
+  {id:'pl_g_ned',  title:'Dutch Players — Premier League Goals',          type:'PL Goals',         statKey:'pl_goals',                filters:{nat:'Netherlands'},     desc:'Career PL goals for Dutch internationals.'},
+  {id:'pl_g_fw',   title:'Forwards — Career Premier League Goals',        type:'PL Goals',         statKey:'pl_goals',                filters:{pos:'FW'},              desc:'Career PL goals for all forwards. Stats over 180 always bust!'},
+  // PL goals+assists (combined) — gives better range
+  {id:'pl_ga_fra', title:'French Players — PL Goals + Assists',           type:'PL Goals+Assists', statKey:'pl_goals+pl_assists',     filters:{nat:'France'},          desc:'Combined PL goals and assists for French players.'},
+  {id:'pl_ga_ned', title:'Dutch Players — PL Goals + Assists',            type:'PL Goals+Assists', statKey:'pl_goals+pl_assists',     filters:{nat:'Netherlands'},     desc:'Combined PL goals and assists for Dutch players.'},
+  {id:'pl_ga_irl', title:'Irish Players — PL Goals + Assists',            type:'PL Goals+Assists', statKey:'pl_goals+pl_assists',     filters:{nat:'Ireland'},         desc:'Combined PL goals and assists for Irish internationals.'},
+  {id:'pl_ga_wal', title:'Welsh Players — PL Goals + Assists',            type:'PL Goals+Assists', statKey:'pl_goals+pl_assists',     filters:{nat:'Wales'},           desc:'Combined PL goals and assists for Welsh players.'},
+  {id:'pl_ga_mid', title:'Midfielders — PL Goals + Assists',              type:'PL Goals+Assists', statKey:'pl_goals+pl_assists',     filters:{pos:'MID'},             desc:'Combined PL goals and assists for midfielders.'},
+  {id:'pl_ga_fw',  title:'Forwards — Premier League Goals + Assists',     type:'PL Goals+Assists', statKey:'pl_goals+pl_assists',     filters:{pos:'FW'},              desc:'Combined PL goals and assists for forwards.'},
+  {id:'pl_ga_all', title:'Players — Premier League Goals + Assists',      type:'PL Goals+Assists', statKey:'pl_goals+pl_assists',     filters:{},                      desc:'Combined PL goals and assists — all players.'},
+  {id:'pl_ga_por', title:'Portuguese Players — PL Goals + Assists',       type:'PL Goals+Assists', statKey:'pl_goals+pl_assists',     filters:{nat:'Portugal'},        desc:'Combined PL goals and assists for Portuguese players.'},
+  // PL assists
+  {id:'pl_a_def',  title:'Full-Backs — Career Premier League Assists',    type:'PL Assists',       statKey:'pl_assists',              filters:{pos:'DEF'},             desc:'Career PL assists for defenders.'},
+  {id:'pl_a_mid',  title:'Midfielders — Career PL Assists',               type:'PL Assists',       statKey:'pl_assists',              filters:{pos:'MID'},             desc:'Career PL assists for midfielders.'},
+  // UCL goals
+  {id:'ucl_g_all', title:'Players — Career UCL Goals',                    type:'UCL Goals',        statKey:'ucl_goals',               filters:{},                      desc:'Total UCL goals across all clubs. Stats over 180 bust!'},
+  {id:'ucl_g_fw',  title:'Forwards — Career UCL Goals',                   type:'UCL Goals',        statKey:'ucl_goals',               filters:{pos:'FW'},              desc:'Career UCL goals for forwards.'},
+  // UCL goals+assists
+  {id:'ucl_ga_fw', title:'Forwards — UCL Goals + Assists',                type:'UCL Goals+Assists',statKey:'ucl_goals+ucl_assists',   filters:{pos:'FW'},              desc:'Combined UCL goals and assists for forwards.'},
+  {id:'ucl_ga_al', title:'Players — UCL Goals + Assists',                 type:'UCL Goals+Assists',statKey:'ucl_goals+ucl_assists',   filters:{},                      desc:'Combined UCL goals and assists — all players.'},
+  {id:'ucl_ga_ge', title:'German Players — UCL Goals + Assists',          type:'UCL Goals+Assists',statKey:'ucl_goals+ucl_assists',   filters:{nat:'Germany'},         desc:'Combined UCL goals and assists for German players.'},
+  {id:'ucl_ga_br', title:'Brazilian Players — UCL Goals + Assists',       type:'UCL Goals+Assists',statKey:'ucl_goals+ucl_assists',   filters:{nat:'Brazil'},          desc:'Combined UCL goals and assists for Brazilians.'},
+  {id:'ucl_ga_po', title:'Portuguese Players — UCL Goals + Assists',      type:'UCL Goals+Assists',statKey:'ucl_goals+ucl_assists',   filters:{nat:'Portugal'},        desc:'Combined UCL goals and assists for Portuguese players.'},
+  // UCL apps (defenders only — avoids GK issue)
+  {id:'ucl_ap_df', title:'Defenders — Career UCL Appearances',            type:'UCL Apps',         statKey:'ucl_apps',                filters:{pos:'DEF'},             desc:'Total UCL appearances for defenders. Stats over 180 bust!'},
+  {id:'ucl_ap_mi', title:'Midfielders — UCL Appearances + Goals',         type:'UCL Apps+Goals',   statKey:'ucl_apps+ucl_goals',      filters:{pos:'MID'},             desc:'Combined UCL appearances and goals for midfielders.'},
+  // International goals
+  {id:'intl_g_afr',title:'African Players — International Goals',         type:'Intl Goals',       statKey:'intl_goals',              filters:{nats:['Egypt','Senegal','Ghana','Ivory Coast','Algeria','Togo','Nigeria','Mali','Gabon','Cameroon','Liberia']}, desc:'Official international goals for African nations.'},
+  {id:'intl_g_sam',title:'South American Players — International Goals',  type:'Intl Goals',       statKey:'intl_goals',              filters:{nats:['Brazil','Argentina','Uruguay','Colombia','Peru','Chile']}, desc:'Career international goals for South Americans.'},
+  {id:'intl_g_eur',title:'European Players — International Goals',        type:'Intl Goals',       statKey:'intl_goals',              filters:{nats:['England','France','Germany','Spain','Portugal','Italy','Netherlands','Croatia','Bosnia','Sweden','Norway','Denmark','Poland','Ukraine','Bulgaria','Czechia','Hungary','Romania','Greece','Scotland','Wales','Ireland','Iceland']}, desc:'Career international goals for Europeans.'},
+  // International goals+assists
+  {id:'intl_ga_br',title:'Brazilian Players — Intl Goals + Assists',      type:'Intl Goals+Assists',statKey:'intl_goals+intl_assists', filters:{nat:'Brazil'},         desc:'Combined international goals and assists for Brazil.'},
+  {id:'intl_ga_fr',title:'French Players — Intl Goals + Assists',         type:'Intl Goals+Assists',statKey:'intl_goals+intl_assists', filters:{nat:'France'},         desc:'Combined international goals and assists for France.'},
+  {id:'intl_ga_ar',title:'Argentine Players — Intl Goals + Assists',      type:'Intl Goals+Assists',statKey:'intl_goals+intl_assists', filters:{nat:'Argentina'},      desc:'Combined international goals and assists for Argentina.'},
+];
+
+function matchesFilter(p, f) {
+  if (!f) return true;
+  if (f.nat && p.nat !== f.nat) return false;
+  if (f.pos && !p.pos.includes(f.pos)) return false;
+  if (f.nats && !f.nats.includes(p.nat)) return false;
+  return true;
+}
+
+function buildCategoryPlayers(def) {
+  // Deduplicate by name to prevent same player appearing twice
+  const seen = new Set();
+  return DB.filter(p => {
+    if (seen.has(p.name)) return false;
+    if (!matchesFilter(p, def.filters)) return false;
+    const v = getStat(p, def.statKey);
+    if (v <= 0) return false;
+    seen.add(p.name);
+    return true;
+  }).map(p => ({ name: p.name, stat: getStat(p, def.statKey) }));
+}
+
+function median(arr) {
+  const s = [...arr].sort((a, b) => a - b);
+  const m = Math.floor(s.length / 2);
+  return s.length % 2 ? s[m] : (s[m-1] + s[m]) / 2;
+}
+
+function buildCategories() {
+  return CATEGORY_DEFS.map(def => {
+    // Deduplicate players in DB before building
+    const players = buildCategoryPlayers(def);
+    return { ...def, players };
+  }).filter(cat => {
+    if (cat.players.length < MIN_POOL) return false;
+    const vals = cat.players.map(p => Math.min(180, p.stat));
+    const med = median(vals);
+    if (med < MIN_MEDIAN || med > MAX_MEDIAN) return false;
+    return vals.reduce((a, b) => a + b, 0) >= 501;
+  });
+}
+
+const CATEGORIES = buildCategories();
+
+// ═══════════════════════════════════════════════════════════════════
+// GAME MODES
+// ═══════════════════════════════════════════════════════════════════
+const GAME_MODES = {
+  inf:  { label: 'Infinite',    winsNeeded: Infinity },
+  bo3:  { label: 'Best of 3',   winsNeeded: 2 },
+  bo5:  { label: 'Best of 5',   winsNeeded: 3 },
+  bo11: { label: 'Best of 11',  winsNeeded: 6 },
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// GAME STATE
+// ═══════════════════════════════════════════════════════════════════
+let G = {
+  mode: 1,
+  gameMode: 'inf',
+  pickedBadge: [0, 1],
+  p: [
+    { name:'', score:501, throws:0, legs:0 },
+    { name:'', score:501, throws:0, legs:0 },
+  ],
+  current: 0, leg: 1,
+  history: [], catIdx: -1, usedCats: [],
+  usedPlayers: new Set(),   // Set to prevent duplicates
+  selectedPlayer: null,
+  legStartScores: [501, 501],
+};
+let ddIdx = -1, audioCtx = null;
+
+// ═══════════════════════════════════════════════════════════════════
+// SETUP UI
+// ═══════════════════════════════════════════════════════════════════
+function setMode(n) {
+  G.mode = n;
+  document.getElementById('btn1p').classList.toggle('selected', n===1);
+  document.getElementById('btn2p').classList.toggle('selected', n===2);
+  document.getElementById('p2block').classList.toggle('hidden', n!==2);
+  document.getElementById('p1blockTitle').textContent = n===1 ? 'Your Name' : 'Player 1';
+}
+function setGM(gm) {
+  G.gameMode = gm;
+  ['inf','bo3','bo5','bo11'].forEach(k => {
+    document.getElementById('gm_'+k).classList.toggle('selected', k===gm);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// AUDIO
+// ═══════════════════════════════════════════════════════════════════
+function ga(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function playGoal(){
+  try{const ctx=ga(),t=ctx.currentTime;
+  const buf=ctx.createBuffer(1,ctx.sampleRate*.7,ctx.sampleRate);
+  const d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.max(0,.7-i/d.length);
+  const ns=ctx.createBufferSource();ns.buffer=buf;
+  const ng=ctx.createGain();ng.gain.setValueAtTime(.13,t);ng.gain.exponentialRampToValueAtTime(.001,t+.7);
+  const flt=ctx.createBiquadFilter();flt.type='bandpass';flt.frequency.value=1100;flt.Q.value=.5;
+  ns.connect(flt);flt.connect(ng);ng.connect(ctx.destination);ns.start(t);
+  const osc=ctx.createOscillator();const og=ctx.createGain();
+  osc.type='sawtooth';osc.frequency.setValueAtTime(280,t);osc.frequency.exponentialRampToValueAtTime(850,t+.3);
+  og.gain.setValueAtTime(.08,t);og.gain.exponentialRampToValueAtTime(.001,t+.7);
+  osc.connect(og);og.connect(ctx.destination);osc.start(t);osc.stop(t+.7);}catch(e){}
+}
+function playBust(){
+  try{const ctx=ga(),t=ctx.currentTime;
+  [0,.14,.28].forEach((dl,i)=>{
+    const o=ctx.createOscillator();const g=ctx.createGain();
+    o.type='sine';o.frequency.setValueAtTime(190-i*22,t+dl);o.frequency.exponentialRampToValueAtTime(95-i*10,t+dl+.22);
+    g.gain.setValueAtTime(.08,t+dl);g.gain.exponentialRampToValueAtTime(.001,t+dl+.25);
+    o.connect(g);g.connect(ctx.destination);o.start(t+dl);o.stop(t+dl+.25);
+  });}catch(e){}
+}
+function playCheckout(){
+  try{const ctx=ga(),t=ctx.currentTime;
+  [523,659,784,1047].forEach((f,i)=>{
+    const o=ctx.createOscillator();const g=ctx.createGain();
+    o.type='triangle';o.frequency.value=f;
+    g.gain.setValueAtTime(0,t+i*.08);g.gain.linearRampToValueAtTime(.1,t+i*.08+.04);g.gain.exponentialRampToValueAtTime(.001,t+i*.08+.5);
+    o.connect(g);g.connect(ctx.destination);o.start(t+i*.08);o.stop(t+i*.08+.5);
+  });}catch(e){}
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// RENDERING
+// ═══════════════════════════════════════════════════════════════════
+function pickCat() {
+  let avail = CATEGORIES.map((_,i)=>i).filter(i=>!G.usedCats.includes(i));
+  if (!avail.length) { G.usedCats=[]; avail=CATEGORIES.map((_,i)=>i); }
+  const idx = avail[Math.floor(Math.random()*avail.length)];
+  G.usedCats.push(idx);
+  G.catIdx = idx;
+}
+function getCat() { return CATEGORIES[G.catIdx]; }
+
+function renderGameBar() {
+  const gm = GAME_MODES[G.gameMode];
+  document.getElementById('gmLabel').textContent =
+    G.mode===1 ? 'Practice Mode' : gm.label;
+  if (G.mode===2 && G.gameMode!=='inf') {
+    document.getElementById('gmScore').textContent =
+      G.p[0].legs + ' – ' + G.p[1].legs;
+  } else {
+    document.getElementById('gmScore').textContent =
+      G.mode===2 ? G.p[0].legs + ' – ' + G.p[1].legs : '';
+  }
+}
+
+function renderScoreboard() {
+  const sb = document.getElementById('scoreboard');
+  const isSolo = G.mode===1;
+  sb.className = 'scoreboard ' + (isSolo ? 'one-player' : 'two-player');
+
+  function cardHTML(i) {
+    const p = G.p[i];
+    const badge = BADGES[G.pickedBadge[i]];
+    const isActive = G.current===i;
+    return `<div class="pcard${isActive?' active':''}${p.legs>=GAME_MODES[G.gameMode].winsNeeded?' winner-flash':''}" id="card${i}">
+      ${isActive?'<div class="pdot"></div>':''}
+      <div class="pcard-top">
+        <div class="pbadge" style="background:${badge.bg};">${badge.emoji}</div>
+        <div class="pname-col">
+          <div class="plabel">${isSolo?'Player':'Player '+(i+1)}</div>
+          <div class="pname">${p.name}</div>
+        </div>
+      </div>
+      <div class="pscore">${p.score}</div>
+      <div class="pthrows">Throws: <span>${p.throws}</span></div>
+      <div class="legs-row" id="plegs${i}"></div>
+    </div>`;
+  }
+
+  sb.innerHTML = isSolo
+    ? cardHTML(0)
+    : cardHTML(0) + '<div class="vs">VS</div>' + cardHTML(1);
+
+  for (let i=0;i<(isSolo?1:2);i++) {
+    const ld = document.getElementById('plegs'+i);
+    ld.innerHTML = '';
+    const total = G.p[0].legs + G.p[1].legs;
+    const needed = GAME_MODES[G.gameMode].winsNeeded;
+    const dots = isFinite(needed) ? needed : Math.max(3, total+1);
+    for (let l=0;l<dots;l++) {
+      const d = document.createElement('div');
+      d.className = 'ldot' + (l<G.p[i].legs?' won':'');
+      ld.appendChild(d);
+    }
+  }
+
+  document.getElementById('turnBadge').textContent = BADGES[G.pickedBadge[G.current]].emoji;
+  document.getElementById('turnLabel').textContent = G.p[G.current].name + "'s throw";
+  document.getElementById('legBadge').textContent = 'Leg ' + G.leg;
+
+  renderCheckoutBox();
+  renderGameBar();
+}
+
+function renderCheckoutBox() {
+  const sc = G.p[G.current].score;
+  const cb = document.getElementById('checkoutBox');
+
+  // Can only checkout if score ≤ CHECKOUT_CEILING (170 — darts rule)
+  if (sc > CHECKOUT_CEILING || sc <= 0) {
+    cb.style.display = 'none';
+    return;
+  }
+
+  const lo = sc;                         // minimum score to checkout
+  const hi = sc + CHECKOUT_WINDOW;       // maximum score to checkout
+  const catPlayers = getCat().players.filter(p => !G.usedPlayers.has(p.name));
+
+  // Perfect checkout: stat === sc
+  const perfect = catPlayers.filter(p => Math.min(180,p.stat) === sc);
+  // Window checkout: stat in [sc, sc+10]
+  const inWindow = catPlayers.filter(p => {
+    const s = Math.min(180,p.stat);
+    return s >= sc && s <= hi;
+  });
+
+  cb.className = 'checkout-box ' + (inWindow.length > 0 ? 'in-range' : 'approaching');
+  cb.style.display = 'block';
+
+  document.getElementById('checkoutTitle').textContent = '🎯 Checkout range reached!';
+  document.getElementById('checkoutDetail').textContent =
+    `You need a score of ${lo}–${hi} to win the leg. ${
+      inWindow.length === 0
+        ? 'No remaining players in this range — consider skipping the category.'
+        : ''
+    }`;
+
+  document.getElementById('checkoutCounts').innerHTML =
+    `<span class="co-pill${perfect.length>0?' perfect':''}">${perfect.length} perfect (${sc})</span>` +
+    `<span class="co-pill">${inWindow.length} in window (${lo}–${hi})</span>`;
+}
+
+function renderCat() {
+  const c = getCat();
+  document.getElementById('catType').textContent = c.type;
+  document.getElementById('catTitle').textContent = c.title;
+  document.getElementById('catDesc').textContent = c.desc;
+  const n = document.getElementById('catNote');
+  n.textContent = c.note||'';
+  n.style.display = c.note ? 'inline-block' : 'none';
+}
+
+function renderHistory() {
+  const el = document.getElementById('throwsList');
+  if (!G.history.length) {
+    el.innerHTML = '<div style="font-size:12px;color:#9ca3af;padding:4px 0;">No throws yet this leg</div>';
+    return;
+  }
+  el.innerHTML = G.history.map(h => {
+    let tag = '';
+    if (h.type==='bust')     tag = `<span class="tag tag-bad">BUST</span>`;
+    else if (h.type==='checkout') tag = `<span class="tag tag-co">CHECKOUT! (${h.stat})</span>`;
+    else                     tag = `<span class="tag tag-ok">-${h.scored} → ${h.remaining}</span>`;
+    return `<div class="throw-row">
+      <span class="throw-who">${h.pname}</span>
+      <span class="throw-player">${h.player}</span>
+      <span class="throw-scored">${h.stat}</span>
+      ${tag}
+    </div>`;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function showPop(text, cls) {
+  const pop = document.getElementById('scorePop');
+  pop.textContent = text;
+  pop.className = 'score-pop ' + cls + ' show';
+  setTimeout(() => { pop.className = 'score-pop'; }, 1050);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// AUTOCOMPLETE
+// ═══════════════════════════════════════════════════════════════════
+function buildDropdown(query) {
+  const dd = document.getElementById('dropdown');
+  if (!query || query.length<2) { dd.classList.remove('open'); return; }
+  const q = query.toLowerCase();
+  const matches = getCat().players
+    .filter(p => p.name.toLowerCase().includes(q))
+    .slice(0, 12);
+  if (!matches.length) { dd.classList.remove('open'); return; }
+  dd.innerHTML = matches.map(p => {
+    const used = G.usedPlayers.has(p.name);
+    return `<div class="drop-item${used?' used-player':''}"
+      data-name="${esc(p.name)}" data-stat="${p.stat}"
+      onclick="if(!${used})selectPlayer('${esc(p.name)}',${p.stat})">
+      <span class="dname">${p.name}</span>
+      ${used?'<span class="dused">used</span>':''}
+    </div>`;
+  }).join('');
+  ddIdx = -1;
+  dd.classList.add('open');
+}
+function esc(s) { return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+function selectPlayer(name, stat) {
+  document.getElementById('playerInput').value = name;
+  document.getElementById('dropdown').classList.remove('open');
+  G.selectedPlayer = { name, stat };
+  document.getElementById('throwBtn').disabled = false;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// THROW LOGIC
+// Checkout rule: can only checkout if remaining score ≤ CHECKOUT_CEILING (170).
+// Valid checkout: stat in [score, score + CHECKOUT_WINDOW].
+// Bust: stat > 180, OR (score - stat < 0 AND not a valid checkout).
+// ═══════════════════════════════════════════════════════════════════
+function confirmThrow() {
+  if (!G.selectedPlayer) return;
+  const { name, stat } = G.selectedPlayer;
+
+  // Prevent duplicates (belt-and-braces on top of Set)
+  if (G.usedPlayers.has(name)) {
+    document.getElementById('playerInput').classList.add('invalid');
+    setTimeout(() => document.getElementById('playerInput').classList.remove('invalid'), 400);
+    return;
+  }
+
+  const cur = G.current;
+  const sc = G.p[cur].score;
+
+  // Register throw
+  G.p[cur].throws++;
+  G.usedPlayers.add(name);
+  G.selectedPlayer = null;
+  clearInput();
+
+  // ── BUST: stat > 180 (darts ceiling)
+  if (stat > 180) {
+    G.history.push({ pname:G.p[cur].name, player:name, stat, type:'bust', remaining:sc, scored:0 });
+    playBust(); showPop('BUST!','bust');
+    advanceTurn(); return;
+  }
+
+  // ── CHECKOUT logic: only possible if score ≤ CHECKOUT_CEILING
+  if (sc <= CHECKOUT_CEILING) {
+    const lo = sc, hi = sc + CHECKOUT_WINDOW;
+    if (stat >= lo && stat <= hi) {
+      // WIN
+      G.p[cur].score = 0;
+      G.history.push({ pname:G.p[cur].name, player:name, stat, type:'checkout', remaining:0, scored:sc });
+      renderHistory(); renderScoreboard();
+      playCheckout(); showPop('🎯 CHECKOUT!','checkout');
+      setTimeout(() => finishLeg(cur), 700);
+      return;
+    }
+  }
+
+  // ── BUST: goes below 0
+  if (sc - stat < 0) {
+    G.history.push({ pname:G.p[cur].name, player:name, stat, type:'bust', remaining:sc, scored:0 });
+    playBust(); showPop('BUST!','bust');
+    advanceTurn(); return;
+  }
+
+  // ── NORMAL SCORE
+  G.p[cur].score -= stat;
+  G.history.push({ pname:G.p[cur].name, player:name, stat, type:'ok', remaining:G.p[cur].score, scored:stat });
+  playGoal(); showPop('-'+stat,'good');
+  advanceTurn();
+}
+
+function advanceTurn() {
+  if (G.mode===2) G.current = 1 - G.current;
+  renderScoreboard();
+  renderHistory();
+  document.getElementById('playerInput').focus();
+}
+
+function clearInput() {
+  document.getElementById('playerInput').value = '';
+  document.getElementById('throwBtn').disabled = true;
+  document.getElementById('dropdown').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// LEG & MATCH END
+// ═══════════════════════════════════════════════════════════════════
+function finishLeg(winner) {
+  G.p[winner].legs++;
+  const gm = GAME_MODES[G.gameMode];
+
+  // Check match win (2-player only)
+  if (G.mode===2 && isFinite(gm.winsNeeded) && G.p[winner].legs >= gm.winsNeeded) {
+    showMatchWin(winner);
+    return;
+  }
+
+  // Show leg modal
+  const w = G.p[winner];
+  const l = G.p[1-winner];
+  document.getElementById('legModalTitle').textContent = 'CHECKOUT!';
+  document.getElementById('legModalSub').textContent =
+    G.mode===1
+      ? `${w.name} checked out in ${w.throws} throw${w.throws!==1?'s':''}!`
+      : `${w.name} wins Leg ${G.leg}!`;
+
+  const twoP = G.mode===2;
+  document.getElementById('legModalStats').innerHTML = twoP ? `
+    <div class="mstat"><div class="mstat-val">${w.throws}</div><div class="mstat-label">${w.name} throws</div></div>
+    <div class="mstat"><div class="mstat-val">${l.throws}</div><div class="mstat-label">${l.name} throws</div></div>
+    <div class="mstat"><div class="mstat-val">${G.p[0].legs}</div><div class="mstat-label">${G.p[0].name} legs</div></div>
+    <div class="mstat"><div class="mstat-val">${G.p[1].legs}</div><div class="mstat-label">${G.p[1].name} legs</div></div>
+  ` : `
+    <div class="mstat"><div class="mstat-val">${w.throws}</div><div class="mstat-label">Throws</div></div>
+    <div class="mstat"><div class="mstat-val">${w.legs}</div><div class="mstat-label">Legs Won</div></div>
+  `;
+  document.getElementById('legModal').classList.remove('hidden');
+}
+
+function showMatchWin(winner) {
+  const w = G.p[winner];
+  const l = G.p[1-winner];
+  document.getElementById('matchWinTitle').textContent = w.name.toUpperCase() + ' WINS!';
+  document.getElementById('matchWinSub').textContent =
+    GAME_MODES[G.gameMode].label + ' — ' + w.name + ' is the champion!';
+  document.getElementById('matchWinScore').textContent = G.p[0].legs + ' – ' + G.p[1].legs;
+  document.getElementById('matchModal').classList.remove('hidden');
+}
+
+function nextLeg(newCat) {
+  document.getElementById('legModal').classList.add('hidden');
+  G.leg++;
+  G.p[0].score=501; G.p[0].throws=0;
+  G.p[1].score=501; G.p[1].throws=0;
+  G.history=[];
+  G.usedPlayers=new Set();
+  G.selectedPlayer=null;
+  G.legStartScores=[501,501];
+  G.current=0;
+  if (newCat) pickCat();
+  renderCat(); renderHistory(); renderScoreboard();
+  document.getElementById('playerInput').focus();
+}
+
+function startRematch() {
+  document.getElementById('matchModal').classList.add('hidden');
+  G.p[0].legs=0; G.p[1].legs=0;
+  nextLeg(true);
+}
+
+function skipCategory() {
+  G.p[0].score = G.legStartScores[0];
+  G.p[1].score = G.legStartScores[1];
+  G.usedPlayers = new Set();
+  G.history = [];
+  G.selectedPlayer = null;
+  G.current = 0;
+  clearInput();
+  pickCat();
+  renderCat(); renderHistory(); renderScoreboard();
+  document.getElementById('playerInput').focus();
+}
+
+function goToMenu() {
+  document.getElementById('mainGame').classList.add('hidden');
+  document.getElementById('legModal').classList.add('hidden');
+  document.getElementById('matchModal').classList.add('hidden');
+  document.getElementById('setupScreen').classList.remove('hidden');
+}
+
+function startGame() {
+  const p1 = document.getElementById('p1name').value.trim() || 'Player 1';
+  const p2 = document.getElementById('p2name').value.trim() || 'Player 2';
+  G.p[0] = { name:p1, score:501, throws:0, legs:0 };
+  G.p[1] = { name:p2, score:501, throws:0, legs:0 };
+  G.current=0; G.leg=1;
+  G.history=[]; G.usedPlayers=new Set(); G.usedCats=[];
+  G.legStartScores=[501,501]; G.selectedPlayer=null;
+  document.getElementById('setupScreen').classList.add('hidden');
+  document.getElementById('mainGame').classList.remove('hidden');
+  pickCat(); renderCat(); renderHistory(); renderScoreboard();
+  document.getElementById('playerInput').focus();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// INPUT EVENTS
+// ═══════════════════════════════════════════════════════════════════
+document.getElementById('playerInput').addEventListener('input', function() {
+  G.selectedPlayer = null;
+  document.getElementById('throwBtn').disabled = true;
+  buildDropdown(this.value.trim());
+});
+document.getElementById('playerInput').addEventListener('keydown', function(e) {
+  const dd = document.getElementById('dropdown');
+  const items = [...dd.querySelectorAll('.drop-item:not(.used-player)')];
+  if (e.key==='ArrowDown') { e.preventDefault(); ddIdx=Math.min(ddIdx+1,items.length-1); dd.querySelectorAll('.drop-item').forEach(el=>el.classList.remove('kbd-sel')); if(items[ddIdx])items[ddIdx].classList.add('kbd-sel'); }
+  else if (e.key==='ArrowUp') { e.preventDefault(); ddIdx=Math.max(ddIdx-1,0); dd.querySelectorAll('.drop-item').forEach(el=>el.classList.remove('kbd-sel')); if(items[ddIdx])items[ddIdx].classList.add('kbd-sel'); }
+  else if (e.key==='Enter') { if(ddIdx>=0&&items[ddIdx]){const it=items[ddIdx];selectPlayer(it.dataset.name,parseInt(it.dataset.stat));}else if(G.selectedPlayer){confirmThrow();} }
+  else if (e.key==='Escape') { dd.classList.remove('open'); }
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('.autocomplete-wrap')) document.getElementById('dropdown').classList.remove('open');
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════
+(function init() {
+  renderBadgePicker('badges0', 0);
+  renderBadgePicker('badges1', 1);
+  setMode(1);
+  setGM('inf');
+})();
+</script>
+</body>
+</html>

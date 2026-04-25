@@ -374,6 +374,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--pitch);min-height:100vh;c
   </div>
 </div>
 
+<!-- ══ SKIP LOSS MODAL ═══════════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="skipModal">
+  <div class="modal">
+    <div class="modal-icon">🏳️</div>
+    <div class="modal-title" style="color:var(--red);">CATEGORY SKIPPED</div>
+    <div class="modal-sub" id="skipModalSub">You gave up on this one. That counts as a loss!</div>
+    <div class="modal-stats" id="skipModalStats"></div>
+    <div id="skipUnlocks"></div>
+    <div class="modal-btn-col">
+      <button class="btn btn-green" style="height:46px;font-size:15px;border-radius:12px;" onclick="confirmSkip()">New Category →</button>
+    </div>
+  </div>
+</div>
+
 <div class="score-pop" id="scorePop"></div>
 
 <!-- Leg win modal -->
@@ -899,6 +913,213 @@ const DB = [
 {name:"Jason Roberts",nat:"Grenada",pos:["FW"],stats:{pl_goals:42,pl_apps:166,pl_assists:10,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
 {name:"David Alaba",nat:"Austria",pos:["DEF","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:10,ucl_apps:125,ucl_assists:20,intl_goals:17,intl_apps:106,intl_assists:22}},
 {name:"Cha Bum-kun",nat:"South Korea",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:58,intl_apps:136,intl_assists:14}},
+,
+
+// ── SPAIN: additional players ──────────────────────────────────────
+// (Target: 40+ total for viable intl/PL/UCL categories)
+{name:"Pep Guardiola",nat:"Spain",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:44,ucl_assists:6,intl_goals:5,intl_apps:47,intl_assists:4}},
+{name:"Michel Salgado",nat:"Spain",pos:["DEF"],stats:{pl_goals:4,pl_apps:68,pl_assists:8,ucl_goals:2,ucl_apps:28,ucl_assists:4,intl_goals:1,intl_apps:34,intl_assists:2}},
+{name:"Manu Sanchís",nat:"Spain",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:2,ucl_apps:52,ucl_assists:2,intl_goals:4,intl_apps:37,intl_assists:2}},
+{name:"Joseba Etxeberria",nat:"Spain",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:6,ucl_apps:22,ucl_assists:6,intl_goals:14,intl_apps:53,intl_assists:8}},
+{name:"Vicente Rodríguez",nat:"Spain",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:14,ucl_assists:6,intl_goals:13,intl_apps:59,intl_assists:10}},
+{name:"Roberto Moreno",nat:"Spain",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:4,ucl_assists:0,intl_goals:3,intl_apps:27,intl_assists:4}},
+{name:"Rubén Baraja",nat:"Spain",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:22,ucl_assists:6,intl_goals:4,intl_apps:44,intl_assists:8}},
+{name:"Joaquín",nat:"Spain",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:18,ucl_assists:8,intl_goals:9,intl_apps:52,intl_assists:12}},
+{name:"David Albelda",nat:"Spain",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:2,ucl_apps:20,ucl_assists:2,intl_goals:1,intl_apps:40,intl_assists:4}},
+{name:"Fernando Llorente",nat:"Spain",pos:["FW"],stats:{pl_goals:33,pl_apps:116,pl_assists:12,ucl_goals:12,ucl_apps:36,ucl_assists:6,intl_goals:16,intl_apps:24,intl_assists:4}},
+{name:"Diego Costa",nat:"Spain",pos:["FW"],stats:{pl_goals:52,pl_apps:120,pl_assists:14,ucl_goals:8,ucl_apps:32,ucl_assists:4,intl_goals:10,intl_apps:24,intl_assists:4}},
+{name:"Thiago Alcântara",nat:"Spain",pos:["MID"],stats:{pl_goals:4,pl_apps:84,pl_assists:12,ucl_goals:10,ucl_apps:96,ucl_assists:16,intl_goals:5,intl_apps:47,intl_assists:8}},
+{name:"Alvaro Negredo",nat:"Spain",pos:["FW"],stats:{pl_goals:23,pl_apps:73,pl_assists:8,ucl_goals:4,ucl_apps:10,ucl_assists:4,intl_goals:13,intl_apps:26,intl_assists:4}},
+{name:"Raúl García",nat:"Spain",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:8,ucl_apps:36,ucl_assists:10,intl_goals:6,intl_apps:27,intl_assists:6}},
+{name:"Mikel Arteta",nat:"Spain",pos:["MID"],stats:{pl_goals:28,pl_apps:236,pl_assists:40,ucl_goals:2,ucl_apps:22,ucl_assists:4,intl_goals:0,intl_apps:0,intl_assists:0}},
+{name:"Pablo Aimar",nat:"Argentina",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:12,ucl_assists:8,intl_goals:11,intl_apps:52,intl_assists:14}},
+// Extra Spain intl players to pad the pool
+{name:"Guti",nat:"Spain",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:8,ucl_apps:80,ucl_assists:18,intl_goals:7,intl_apps:13,intl_assists:4}},
+
+// ── GERMANY: additional players ────────────────────────────────────
+// (Target: 40+ total)
+{name:"Rudi Völler",nat:"Germany",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:24,ucl_assists:6,intl_goals:47,intl_apps:90,intl_assists:12}},
+{name:"Andreas Möller",nat:"Germany",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:48,ucl_assists:18,intl_goals:10,intl_apps:85,intl_assists:16}},
+{name:"Jürgen Kohler",nat:"Germany",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:2,ucl_apps:52,ucl_assists:2,intl_goals:2,intl_apps:105,intl_assists:4}},
+{name:"Michael Ballack",nat:"Germany",pos:["MID"],stats:{pl_goals:42,pl_apps:166,pl_assists:36,ucl_goals:10,ucl_apps:64,ucl_assists:14,intl_goals:42,intl_apps:98,intl_assists:22}},
+{name:"Bastian Schweinsteiger",nat:"Germany",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:102,ucl_assists:24,intl_goals:24,intl_apps:121,intl_assists:26}},
+{name:"Oliver Neuville",nat:"Germany",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:12,ucl_assists:4,intl_goals:13,intl_apps:69,intl_assists:10}},
+{name:"Carsten Jancker",nat:"Germany",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:10,ucl_apps:20,ucl_assists:4,intl_goals:9,intl_apps:33,intl_assists:4}},
+{name:"Gerald Asamoah",nat:"Germany",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:3,intl_apps:43,intl_assists:4}},
+{name:"Christoph Metzelder",nat:"Germany",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:2,ucl_apps:28,ucl_assists:2,intl_goals:2,intl_apps:47,intl_assists:2}},
+{name:"Torsten Frings",nat:"Germany",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:2,ucl_apps:28,ucl_assists:6,intl_goals:10,intl_apps:79,intl_assists:14}},
+{name:"Sami Khedira",nat:"Germany",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:8,ucl_apps:52,ucl_assists:10,intl_goals:7,intl_apps:77,intl_assists:10}},
+{name:"Mats Hummels",nat:"Germany",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:6,ucl_apps:96,ucl_assists:6,intl_goals:5,intl_apps:76,intl_assists:4}},
+{name:"Thomas Helmer",nat:"Germany",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:2,ucl_apps:40,ucl_assists:2,intl_goals:5,intl_apps:69,intl_assists:4}},
+{name:"Bernd Schuster",nat:"Germany",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:12,ucl_assists:6,intl_goals:4,intl_apps:21,intl_assists:6}},
+
+// ── ITALY: additional players ──────────────────────────────────────
+// (Target: 40+ total)
+{name:"Alessandro Costacurta",nat:"Italy",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:2,ucl_apps:88,ucl_assists:2,intl_goals:3,intl_apps:59,intl_assists:2}},
+{name:"Franco Baresi",nat:"Italy",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:2,ucl_apps:66,ucl_assists:4,intl_goals:1,intl_apps:81,intl_assists:4}},
+{name:"Roberto Donadoni",nat:"Italy",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:2,ucl_apps:52,ucl_assists:8,intl_goals:5,intl_apps:78,intl_assists:10}},
+{name:"Marco Simone",nat:"Italy",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:6,ucl_apps:16,ucl_assists:4,intl_goals:3,intl_apps:20,intl_assists:4}},
+{name:"Luca Toni",nat:"Italy",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:10,ucl_apps:20,ucl_assists:4,intl_goals:16,intl_apps:47,intl_assists:6}},
+{name:"Christian Vieri",nat:"Italy",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:28,ucl_assists:4,intl_goals:23,intl_apps:49,intl_assists:8}},
+{name:"Enrico Chiesa",nat:"Italy",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:7,intl_apps:34,intl_assists:6}},
+{name:"Antonio Cassano",nat:"Italy",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:6,ucl_apps:24,ucl_assists:8,intl_goals:10,intl_apps:39,intl_assists:8}},
+{name:"Alberto Gilardino",nat:"Italy",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:6,ucl_apps:18,ucl_assists:2,intl_goals:17,intl_apps:57,intl_assists:8}},
+{name:"Fabio Grosso",nat:"Italy",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:2,ucl_assists:0,intl_goals:3,intl_apps:40,intl_assists:6}},
+{name:"Simone Perrotta",nat:"Italy",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:6,intl_apps:49,intl_assists:8}},
+{name:"Mauro German Camoranesi",nat:"Italy",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:40,ucl_assists:8,intl_goals:5,intl_apps:55,intl_assists:10}},
+{name:"Marco Materazzi",nat:"Italy",pos:["DEF"],stats:{pl_goals:4,pl_apps:56,pl_assists:2,ucl_goals:4,ucl_apps:36,ucl_assists:2,intl_goals:3,intl_apps:41,intl_assists:2}},
+{name:"Alessandro Birindelli",nat:"Italy",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:20,ucl_assists:2,intl_goals:1,intl_apps:14,intl_assists:2}},
+{name:"Emanuele Giaccherini",nat:"Italy",pos:["MID"],stats:{pl_goals:4,pl_apps:36,pl_assists:6,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:5,intl_apps:36,intl_assists:6}},
+{name:"Riccardo Montolivo",nat:"Italy",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:2,ucl_apps:24,ucl_assists:6,intl_goals:5,intl_apps:56,intl_assists:10}},
+
+// ── PORTUGAL: additional players ───────────────────────────────────
+// (Target: 25+ total, boosting intl goals pool)
+{name:"Pauleta",nat:"Portugal",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:10,ucl_assists:2,intl_goals:47,intl_apps:88,intl_assists:10}},
+{name:"Hélder Postiga",nat:"Portugal",pos:["FW"],stats:{pl_goals:3,pl_apps:28,pl_assists:4,ucl_goals:2,ucl_apps:8,ucl_assists:2,intl_goals:27,intl_apps:71,intl_assists:6}},
+{name:"Nuno Gomes",nat:"Portugal",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:40,ucl_assists:6,intl_goals:29,intl_apps:79,intl_assists:8}},
+{name:"Deco",nat:"Portugal",pos:["MID"],stats:{pl_goals:8,pl_apps:86,pl_assists:20,ucl_goals:10,ucl_apps:72,ucl_assists:22,intl_goals:5,intl_apps:75,intl_assists:16}},
+{name:"Maniche",nat:"Portugal",pos:["MID"],stats:{pl_goals:2,pl_apps:32,pl_assists:6,ucl_goals:6,ucl_apps:22,ucl_assists:8,intl_goals:8,intl_apps:55,intl_assists:10}},
+{name:"Costinha",nat:"Portugal",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:20,ucl_assists:4,intl_goals:2,intl_apps:43,intl_assists:4}},
+{name:"Figo",nat:"Portugal",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:16,ucl_apps:72,ucl_assists:28,intl_goals:32,intl_apps:127,intl_assists:24}},
+{name:"Ricardo Carvalho",nat:"Portugal",pos:["DEF"],stats:{pl_goals:3,pl_apps:180,pl_assists:4,ucl_goals:4,ucl_apps:64,ucl_assists:4,intl_goals:4,intl_apps:80,intl_assists:4}},
+{name:"Miguel",nat:"Portugal",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:16,ucl_assists:2,intl_goals:2,intl_apps:51,intl_assists:4}},
+{name:"Quaresma",nat:"Portugal",pos:["FW","MID"],stats:{pl_goals:2,pl_apps:36,pl_assists:6,ucl_goals:4,ucl_apps:18,ucl_assists:6,intl_goals:9,intl_apps:80,intl_assists:12}},
+{name:"Raúl Meireles",nat:"Portugal",pos:["MID"],stats:{pl_goals:10,pl_apps:86,pl_assists:14,ucl_goals:4,ucl_apps:14,ucl_assists:6,intl_goals:11,intl_apps:78,intl_assists:14}},
+{name:"Nelson Dida",nat:"Brazil",pos:["GK"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:54,ucl_assists:0,intl_goals:0,intl_apps:16,intl_assists:0}},
+{name:"Petit",nat:"Portugal",pos:["MID"],stats:{pl_goals:2,pl_apps:48,pl_assists:6,ucl_goals:0,ucl_apps:6,ucl_assists:2,intl_goals:2,intl_apps:40,intl_assists:4}},
+{name:"Nuno Valente",nat:"Portugal",pos:["DEF"],stats:{pl_goals:2,pl_apps:42,pl_assists:8,ucl_goals:2,ucl_apps:10,ucl_assists:4,intl_goals:2,intl_apps:33,intl_assists:4}},
+
+// ── NETHERLANDS: additional players ────────────────────────────────
+{name:"Ronald Koeman",nat:"Netherlands",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:6,ucl_apps:16,ucl_assists:4,intl_goals:14,intl_apps:78,intl_assists:10}},
+{name:"Frank Rijkaard",nat:"Netherlands",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:20,ucl_assists:6,intl_goals:10,intl_apps:73,intl_assists:10}},
+{name:"Jan Wouters",nat:"Netherlands",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:8,ucl_assists:2,intl_goals:3,intl_apps:70,intl_assists:6}},
+{name:"Wim Kieft",nat:"Netherlands",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:14,intl_apps:43,intl_assists:6}},
+{name:"Aron Winter",nat:"Netherlands",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:2,ucl_apps:12,ucl_assists:4,intl_goals:6,intl_apps:84,intl_assists:10}},
+{name:"Jaap Stam",nat:"Netherlands",pos:["DEF"],stats:{pl_goals:2,pl_apps:127,pl_assists:2,ucl_goals:2,ucl_apps:40,ucl_assists:2,intl_goals:3,intl_apps:67,intl_assists:2}},
+{name:"Phillip Cocu",nat:"Netherlands",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:36,ucl_assists:8,intl_goals:10,intl_apps:101,intl_assists:14}},
+{name:"Wijnand van den Brom",nat:"Netherlands",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:8,ucl_assists:2,intl_goals:2,intl_apps:14,intl_assists:4}},
+{name:"Roy Makaay",nat:"Netherlands",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:38,ucl_apps:62,ucl_assists:10,intl_goals:8,intl_apps:44,intl_assists:6}},
+{name:"Michael Reiziger",nat:"Netherlands",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:2,ucl_apps:40,ucl_assists:4,intl_goals:4,intl_apps:72,intl_assists:6}},
+{name:"Marc Wilmots",nat:"Belgium",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:20,ucl_assists:4,intl_goals:28,intl_apps:70,intl_assists:10}},
+
+// ── BRAZIL: additional players ─────────────────────────────────────
+{name:"Zico",nat:"Brazil",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:48,intl_apps:71,intl_assists:14}},
+{name:"Sócrates",nat:"Brazil",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:22,intl_apps:60,intl_assists:12}},
+{name:"Júnior",nat:"Brazil",pos:["DEF","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:8,intl_apps:74,intl_assists:12}},
+{name:"Emerson",nat:"Brazil",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:6,ucl_apps:28,ucl_assists:6,intl_goals:4,intl_apps:52,intl_assists:8}},
+{name:"Dunga",nat:"Brazil",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:6,intl_apps:91,intl_assists:8}},
+{name:"Maicon",nat:"Brazil",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:6,ucl_apps:62,ucl_assists:10,intl_goals:5,intl_apps:67,intl_assists:10}},
+{name:"Lúcio",nat:"Brazil",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:6,ucl_apps:64,ucl_assists:4,intl_goals:8,intl_apps:105,intl_assists:6}},
+{name:"Júlio César",nat:"Brazil",pos:["GK"],stats:{pl_goals:0,pl_apps:68,pl_assists:0,ucl_goals:0,ucl_apps:50,ucl_assists:0,intl_goals:0,intl_apps:87,intl_assists:0}},
+{name:"Daniel Alves",nat:"Brazil",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:150,ucl_assists:38,intl_goals:8,intl_apps:126,intl_assists:20}},
+{name:"Juan",nat:"Brazil",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:44,ucl_assists:2,intl_goals:2,intl_apps:56,intl_assists:4}},
+{name:"Gilberto Silva",nat:"Brazil",pos:["MID"],stats:{pl_goals:7,pl_apps:171,pl_assists:14,ucl_goals:4,ucl_apps:44,ucl_assists:6,intl_goals:3,intl_apps:100,intl_assists:8}},
+{name:"Edu",nat:"Brazil",pos:["MID"],stats:{pl_goals:12,pl_apps:108,pl_assists:18,ucl_goals:2,ucl_apps:16,ucl_assists:4,intl_goals:4,intl_apps:15,intl_assists:4}},
+{name:"Sylvinho",nat:"Brazil",pos:["DEF"],stats:{pl_goals:2,pl_apps:96,pl_assists:14,ucl_goals:4,ucl_apps:36,ucl_assists:8,intl_goals:2,intl_apps:22,intl_assists:4}},
+{name:"Anderson",nat:"Brazil",pos:["MID"],stats:{pl_goals:8,pl_apps:181,pl_assists:18,ucl_goals:2,ucl_apps:36,ucl_assists:4,intl_goals:0,intl_apps:8,intl_assists:2}},
+{name:"Fred",nat:"Brazil",pos:["FW"],stats:{pl_goals:4,pl_apps:69,pl_assists:4,ucl_goals:4,ucl_apps:14,ucl_assists:2,intl_goals:24,intl_apps:49,intl_assists:6}},
+{name:"Bernard",nat:"Brazil",pos:["FW","MID"],stats:{pl_goals:14,pl_apps:116,pl_assists:22,ucl_goals:2,ucl_apps:8,ucl_assists:4,intl_goals:10,intl_apps:32,intl_assists:8}},
+{name:"Willian",nat:"Brazil",pos:["MID","FW"],stats:{pl_goals:46,pl_apps:339,pl_assists:60,ucl_goals:6,ucl_apps:52,ucl_assists:12,intl_goals:9,intl_apps:70,intl_assists:14}},
+{name:"Oscar",nat:"Brazil",pos:["MID","FW"],stats:{pl_goals:38,pl_apps:203,pl_assists:52,ucl_goals:10,ucl_apps:48,ucl_assists:16,intl_goals:11,intl_apps:48,intl_assists:14}},
+{name:"Ramires",nat:"Brazil",pos:["MID"],stats:{pl_goals:18,pl_apps:197,pl_assists:22,ucl_goals:6,ucl_apps:48,ucl_assists:8,intl_goals:5,intl_apps:50,intl_assists:8}},
+{name:"David Luiz",nat:"Brazil",pos:["DEF"],stats:{pl_goals:16,pl_apps:264,pl_assists:14,ucl_goals:4,ucl_apps:60,ucl_assists:4,intl_goals:8,intl_apps:65,intl_assists:6}},
+
+// ── ARGENTINA: additional players ──────────────────────────────────
+{name:"Mario Kempes",nat:"Argentina",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:20,intl_apps:43,intl_assists:6}},
+{name:"Daniel Passarella",nat:"Argentina",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:22,intl_apps:70,intl_assists:8}},
+{name:"Diego Maradona",nat:"Argentina",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:34,intl_apps:91,intl_assists:28}},
+{name:"Marcelo Gallardo",nat:"Argentina",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:14,ucl_assists:6,intl_goals:13,intl_apps:40,intl_assists:10}},
+{name:"Ariel Ortega",nat:"Argentina",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:6,ucl_apps:20,ucl_assists:8,intl_goals:17,intl_apps:87,intl_assists:14}},
+{name:"Esteban Cambiasso",nat:"Argentina",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:8,ucl_apps:64,ucl_assists:12,intl_goals:6,intl_apps:52,intl_assists:10}},
+{name:"Javier Mascherano",nat:"Argentina",pos:["MID","DEF"],stats:{pl_goals:4,pl_apps:236,pl_assists:12,ucl_goals:8,ucl_apps:80,ucl_assists:6,intl_goals:3,intl_apps:147,intl_assists:10}},
+{name:"Ángel Di María",nat:"Argentina",pos:["MID","FW"],stats:{pl_goals:32,pl_apps:161,pl_assists:43,ucl_goals:28,ucl_apps:88,ucl_assists:36,intl_goals:31,intl_apps:145,intl_assists:42}},
+{name:"Sergio Romero",nat:"Argentina",pos:["GK"],stats:{pl_goals:0,pl_apps:67,pl_assists:0,ucl_goals:0,ucl_apps:18,ucl_assists:0,intl_goals:0,intl_apps:96,intl_assists:0}},
+{name:"Martín Demichelis",nat:"Argentina",pos:["DEF"],stats:{pl_goals:4,pl_apps:102,pl_assists:4,ucl_goals:2,ucl_apps:48,ucl_assists:2,intl_goals:2,intl_apps:51,intl_assists:2}},
+{name:"Leandro Paredes",nat:"Argentina",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:24,ucl_assists:6,intl_goals:6,intl_apps:68,intl_assists:10}},
+{name:"Nico González",nat:"Argentina",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:8,ucl_apps:28,ucl_assists:10,intl_goals:10,intl_apps:42,intl_assists:12}},
+
+// ── DENMARK / SCANDINAVIA: additional players ───────────────────────
+{name:"Jon Dahl Tomasson",nat:"Denmark",pos:["FW"],stats:{pl_goals:8,pl_apps:44,pl_assists:6,ucl_goals:10,ucl_apps:24,ucl_assists:6,intl_goals:52,intl_apps:112,intl_assists:14}},
+{name:"Stig Tøfting",nat:"Denmark",pos:["MID"],stats:{pl_goals:2,pl_apps:36,pl_assists:4,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:3,intl_apps:63,intl_assists:6}},
+{name:"Morten Olsen",nat:"Denmark",pos:["DEF","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:4,intl_apps:102,intl_assists:8}},
+{name:"Preben Elkjær",nat:"Denmark",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:38,intl_apps:69,intl_assists:10}},
+{name:"Brian Laudrup",nat:"Denmark",pos:["FW","MID"],stats:{pl_goals:4,pl_apps:48,pl_assists:10,ucl_goals:4,ucl_apps:12,ucl_assists:6,intl_goals:21,intl_apps:82,intl_assists:18}},
+{name:"Jesper Grønkjær",nat:"Denmark",pos:["MID","FW"],stats:{pl_goals:14,pl_apps:106,pl_assists:22,ucl_goals:2,ucl_apps:8,ucl_assists:4,intl_goals:8,intl_apps:81,intl_assists:12}},
+{name:"Claus Thomsen",nat:"Denmark",pos:["MID"],stats:{pl_goals:10,pl_apps:82,pl_assists:12,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:4,intl_apps:37,intl_assists:6}},
+{name:"Martin Jørgensen",nat:"Denmark",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:2,ucl_apps:8,ucl_assists:4,intl_goals:12,intl_apps:100,intl_assists:16}},
+// Sweden
+{name:"Freddie Ljungberg",nat:"Sweden",pos:["MID","FW"],stats:{pl_goals:72,pl_apps:328,pl_assists:62,ucl_goals:4,ucl_apps:22,ucl_assists:6,intl_goals:14,intl_apps:75,intl_assists:14}},
+{name:"Kennet Andersson",nat:"Sweden",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:31,intl_apps:83,intl_assists:8}},
+{name:"Olof Mellberg",nat:"Sweden",pos:["DEF"],stats:{pl_goals:10,pl_apps:258,pl_assists:8,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:8,intl_apps:117,intl_assists:6}},
+{name:"Niclas Alexandersson",nat:"Sweden",pos:["MID","DEF"],stats:{pl_goals:14,pl_apps:126,pl_assists:18,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:7,intl_apps:109,intl_assists:12}},
+{name:"Anders Svensson",nat:"Sweden",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:15,intl_apps:148,intl_assists:20}},
+{name:"Tobias Hysén",nat:"Sweden",pos:["FW","MID"],stats:{pl_goals:2,pl_apps:32,pl_assists:6,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:5,intl_apps:14,intl_assists:4}},
+// Norway
+{name:"John Arne Riise",nat:"Norway",pos:["DEF"],stats:{pl_goals:22,pl_apps:348,pl_assists:36,ucl_goals:4,ucl_apps:60,ucl_assists:8,intl_goals:16,intl_apps:110,intl_assists:14}},
+{name:"Steffen Iversen",nat:"Norway",pos:["FW"],stats:{pl_goals:21,pl_apps:107,pl_assists:12,ucl_goals:2,ucl_apps:10,ucl_assists:2,intl_goals:21,intl_apps:79,intl_assists:6}},
+{name:"Stig Inge Bjørnebye",nat:"Norway",pos:["DEF"],stats:{pl_goals:4,pl_apps:170,pl_assists:24,ucl_goals:2,ucl_apps:18,ucl_assists:4,intl_goals:2,intl_apps:75,intl_assists:10}},
+{name:"Øyvind Leonhardsen",nat:"Norway",pos:["MID"],stats:{pl_goals:14,pl_apps:145,pl_assists:18,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:15,intl_apps:86,intl_assists:14}},
+{name:"Vegard Heggem",nat:"Norway",pos:["DEF","MID"],stats:{pl_goals:4,pl_apps:74,pl_assists:10,ucl_goals:2,ucl_apps:14,ucl_assists:2,intl_goals:5,intl_apps:50,intl_assists:6}},
+
+// ── SCOTLAND: additional players ───────────────────────────────────
+{name:"Kenny Dalglish",nat:"Scotland",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:30,intl_apps:102,intl_assists:16}},
+{name:"Ally McCoist",nat:"Scotland",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:19,intl_apps:61,intl_assists:8}},
+{name:"Colin Hendry",nat:"Scotland",pos:["DEF"],stats:{pl_goals:12,pl_apps:234,pl_assists:6,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:3,intl_apps:51,intl_assists:2}},
+{name:"Paul Lambert",nat:"Scotland",pos:["MID"],stats:{pl_goals:8,pl_apps:248,pl_assists:16,ucl_goals:6,ucl_apps:38,ucl_assists:6,intl_goals:4,intl_apps:40,intl_assists:4}},
+{name:"Scott Brown",nat:"Scotland",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:2,ucl_apps:18,ucl_assists:4,intl_goals:6,intl_apps:55,intl_assists:6}},
+{name:"Barry Ferguson",nat:"Scotland",pos:["MID"],stats:{pl_goals:12,pl_apps:180,pl_assists:22,ucl_goals:2,ucl_apps:8,ucl_assists:4,intl_goals:6,intl_apps:45,intl_assists:8}},
+{name:"Jackie McNamara",nat:"Scotland",pos:["DEF","MID"],stats:{pl_goals:6,pl_apps:80,pl_assists:10,ucl_goals:2,ucl_apps:14,ucl_assists:4,intl_goals:4,intl_apps:33,intl_assists:4}},
+{name:"Gareth Southgate",nat:"England",pos:["DEF","MID"],stats:{pl_goals:22,pl_apps:381,pl_assists:14,ucl_goals:2,ucl_apps:26,ucl_assists:4,intl_goals:2,intl_apps:57,intl_assists:4}},
+
+// ── CROATIA / BALKAN: additional players ───────────────────────────
+{name:"Slaven Bilić",nat:"Croatia",pos:["DEF"],stats:{pl_goals:2,pl_apps:70,pl_assists:4,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:3,intl_apps:44,intl_assists:4}},
+{name:"Nikola Jurčević",nat:"Croatia",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:2,ucl_apps:10,ucl_assists:2,intl_goals:4,intl_apps:35,intl_assists:6}},
+{name:"Stjepan Tomas",nat:"Croatia",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:4,ucl_assists:0,intl_goals:1,intl_apps:35,intl_assists:2}},
+{name:"Ivica Olić",nat:"Croatia",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:12,ucl_apps:40,ucl_assists:6,intl_goals:20,intl_apps:104,intl_assists:10}},
+{name:"Vedran Ćorluka",nat:"Croatia",pos:["DEF"],stats:{pl_goals:4,pl_apps:84,pl_assists:6,ucl_goals:2,ucl_apps:24,ucl_assists:2,intl_goals:2,intl_apps:103,intl_assists:6}},
+{name:"Stipe Pletikosa",nat:"Croatia",pos:["GK"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:8,ucl_assists:0,intl_goals:0,intl_apps:114,intl_assists:0}},
+
+// ── MISCELLANEOUS WORLD STARS ──────────────────────────────────────
+{name:"Oleg Salenko",nat:"Ukraine",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:25,intl_apps:36,intl_assists:6}},
+{name:"Andrés Guardado",nat:"Mexico",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:27,intl_apps:180,intl_assists:30}},
+{name:"Cuauhtémoc Blanco",nat:"Mexico",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:38,intl_apps:120,intl_assists:14}},
+{name:"Jared Borgetti",nat:"Mexico",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:46,intl_apps:89,intl_assists:10}},
+{name:"Rui Ramos",nat:"Portugal",pos:["DEF"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+// More Belgium
+{name:"Eden Hazard",nat:"Belgium",pos:["FW","MID"],stats:{pl_goals:85,pl_apps:245,pl_assists:103,ucl_goals:6,ucl_apps:52,ucl_assists:12,intl_goals:33,intl_apps:126,intl_assists:36}},
+{name:"Kevin De Bruyne",nat:"Belgium",pos:["MID"],stats:{pl_goals:68,pl_apps:259,pl_assists:113,ucl_goals:10,ucl_apps:86,ucl_assists:26,intl_goals:26,intl_apps:106,intl_assists:46}},
+{name:"Romelu Lukaku",nat:"Belgium",pos:["FW"],stats:{pl_goals:113,pl_apps:252,pl_assists:30,ucl_goals:18,ucl_apps:52,ucl_assists:8,intl_goals:85,intl_apps:118,intl_assists:16}},
+{name:"Dries Mertens",nat:"Belgium",pos:["FW","MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:14,ucl_apps:52,ucl_assists:14,intl_goals:21,intl_apps:109,intl_assists:28}},
+{name:"Jan Vertonghen",nat:"Belgium",pos:["DEF"],stats:{pl_goals:18,pl_apps:358,pl_assists:28,ucl_goals:2,ucl_apps:44,ucl_assists:8,intl_goals:9,intl_apps:139,intl_assists:14}},
+{name:"Toby Alderweireld",nat:"Belgium",pos:["DEF"],stats:{pl_goals:10,pl_apps:268,pl_assists:14,ucl_goals:2,ucl_apps:36,ucl_assists:4,intl_goals:5,intl_apps:127,intl_assists:8}},
+{name:"Marouane Fellaini",nat:"Belgium",pos:["MID"],stats:{pl_goals:39,pl_apps:270,pl_assists:24,ucl_goals:2,ucl_apps:20,ucl_assists:4,intl_goals:18,intl_apps:87,intl_assists:10}},
+{name:"Vincent Kompany",nat:"Belgium",pos:["DEF"],stats:{pl_goals:12,pl_apps:360,pl_assists:14,ucl_goals:2,ucl_apps:44,ucl_assists:4,intl_goals:4,intl_apps:89,intl_assists:6}},
+{name:"Thibaut Courtois",nat:"Belgium",pos:["GK"],stats:{pl_goals:0,pl_apps:350,pl_assists:0,ucl_goals:0,ucl_apps:78,ucl_assists:0,intl_goals:0,intl_apps:101,intl_assists:0}},
+{name:"Axel Witsel",nat:"Belgium",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:4,ucl_apps:24,ucl_assists:8,intl_goals:12,intl_apps:129,intl_assists:16}},
+{name:"Thomas Vermaelen",nat:"Belgium",pos:["DEF"],stats:{pl_goals:14,pl_apps:187,pl_assists:10,ucl_goals:4,ucl_apps:40,ucl_assists:4,intl_goals:6,intl_apps:62,intl_assists:4}},
+{name:"Moussa Dembélé",nat:"Belgium",pos:["MID"],stats:{pl_goals:14,pl_apps:226,pl_assists:28,ucl_goals:4,ucl_apps:28,ucl_assists:6,intl_goals:6,intl_apps:76,intl_assists:10}},
+// Turkey
+{name:"Hakan Şükür",nat:"Turkey",pos:["FW"],stats:{pl_goals:1,pl_apps:7,pl_assists:2,ucl_goals:4,ucl_apps:10,ucl_assists:2,intl_goals:51,intl_apps:112,intl_assists:14}},
+{name:"Emre Belözoğlu",nat:"Turkey",pos:["MID"],stats:{pl_goals:8,pl_apps:60,pl_assists:14,ucl_goals:2,ucl_apps:16,ucl_assists:4,intl_goals:13,intl_apps:102,intl_assists:18}},
+{name:"Hakan Çalhanoğlu",nat:"Turkey",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:8,ucl_apps:44,ucl_assists:14,intl_goals:20,intl_apps:84,intl_assists:22}},
+{name:"Arda Turan",nat:"Turkey",pos:["MID","FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:8,ucl_apps:36,ucl_assists:12,intl_goals:17,intl_apps:100,intl_assists:22}},
+{name:"Tugay Kerimoğlu",nat:"Turkey",pos:["MID"],stats:{pl_goals:12,pl_apps:182,pl_assists:24,ucl_goals:2,ucl_apps:8,ucl_assists:4,intl_goals:8,intl_apps:94,intl_assists:14}},
+// Extra PL players (various, improving thin nationalities)
+{name:"Jimmy-Floyd Hasselbaink",nat:"Netherlands",pos:["FW"],stats:{pl_goals:87,pl_apps:177,pl_assists:28,ucl_goals:6,ucl_apps:24,ucl_assists:4,intl_goals:9,intl_apps:23,intl_assists:2}},
+{name:"Emile Mpenza",nat:"Belgium",pos:["FW"],stats:{pl_goals:2,pl_apps:20,pl_assists:4,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:16,intl_apps:55,intl_assists:8}},
+{name:"Mikel John Obi",nat:"Nigeria",pos:["MID"],stats:{pl_goals:4,pl_apps:372,pl_assists:14,ucl_goals:4,ucl_apps:68,ucl_assists:6,intl_goals:6,intl_apps:91,intl_assists:8}},
+{name:"Victor Moses",nat:"Nigeria",pos:["MID","FW"],stats:{pl_goals:18,pl_apps:158,pl_assists:18,ucl_goals:2,ucl_apps:26,ucl_assists:4,intl_goals:12,intl_apps:37,intl_assists:6}},
+{name:"Kanu Nwankwo",nat:"Nigeria",pos:["FW","MID"],stats:{pl_goals:44,pl_apps:197,pl_assists:28,ucl_goals:8,ucl_apps:28,ucl_assists:6,intl_goals:13,intl_apps:87,intl_assists:10}},
+{name:"Shola Ameobi",nat:"Nigeria",pos:["FW"],stats:{pl_goals:61,pl_apps:262,pl_assists:24,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:0,intl_apps:0,intl_assists:0}},
+{name:"Ahmed Musa",nat:"Nigeria",pos:["FW"],stats:{pl_goals:10,pl_apps:36,pl_assists:6,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:14,intl_apps:97,intl_assists:10}},
+{name:"Odion Ighalo",nat:"Nigeria",pos:["FW"],stats:{pl_goals:6,pl_apps:30,pl_assists:4,ucl_goals:2,ucl_apps:4,ucl_assists:0,intl_goals:16,intl_apps:35,intl_assists:4}},
+{name:"Obafemi Martins",nat:"Nigeria",pos:["FW"],stats:{pl_goals:28,pl_apps:102,pl_assists:10,ucl_goals:6,ucl_apps:18,ucl_assists:4,intl_goals:18,intl_apps:50,intl_assists:8}},
+// Uruguay
+{name:"Diego Lugano",nat:"Uruguay",pos:["DEF"],stats:{pl_goals:4,pl_apps:82,pl_assists:2,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:7,intl_apps:72,intl_assists:4}},
+{name:"Diego Pérez",nat:"Uruguay",pos:["MID"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:4,intl_apps:74,intl_assists:8}},
+{name:"Sebastián Abreu",nat:"Uruguay",pos:["FW"],stats:{pl_goals:0,pl_apps:0,pl_assists:0,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:26,intl_apps:71,intl_assists:8}},
+{name:"Christian Stuani",nat:"Uruguay",pos:["FW"],stats:{pl_goals:8,pl_apps:52,pl_assists:4,ucl_goals:0,ucl_apps:0,ucl_assists:0,intl_goals:18,intl_apps:50,intl_assists:6}},
+
 ];
 
 
@@ -908,51 +1129,63 @@ const DB = [
 const CHECKOUT_WINDOW = 10;
 const CHECKOUT_CEILING = 170; // darts rule: can only checkout if score ≤ 170
 const MIN_POOL = 16;
-const MIN_MEDIAN = 30;
-const MAX_MEDIAN = 155;
+const MIN_MEDIAN = 42;   // avg throw must be meaningful to reach 501
+const MAX_MEDIAN = 160;
 
 function getStat(player, statKey) {
   return statKey.split('+').reduce((sum, k) => sum + (player.stats[k.trim()] || 0), 0);
 }
 
 const CATEGORY_DEFS = [
-  // PL goals by nationality
-  {id:'pl_g_eng',  title:'English Players — Premier League Goals',        type:'PL Goals',         statKey:'pl_goals',               filters:{nat:'England',pos:'FW'}, desc:'Career PL goals for English forwards.'},
-  {id:'pl_g_fra',  title:'French Players — Premier League Goals',         type:'PL Goals',         statKey:'pl_goals',                filters:{nat:'France'},          desc:'Career PL goals for French internationals.'},
-  {id:'pl_g_ned',  title:'Dutch Players — Premier League Goals',          type:'PL Goals',         statKey:'pl_goals',                filters:{nat:'Netherlands'},     desc:'Career PL goals for Dutch internationals.'},
-  {id:'pl_g_fw',   title:'Forwards — Career Premier League Goals',        type:'PL Goals',         statKey:'pl_goals',                filters:{pos:'FW'},              desc:'Career PL goals for all forwards. Stats over 180 always bust!'},
-  // PL goals+assists (combined) — gives better range
-  {id:'pl_ga_fra', title:'French Players — PL Goals + Assists',           type:'PL Goals+Assists', statKey:'pl_goals+pl_assists',     filters:{nat:'France'},          desc:'Combined PL goals and assists for French players.'},
-  {id:'pl_ga_ned', title:'Dutch Players — PL Goals + Assists',            type:'PL Goals+Assists', statKey:'pl_goals+pl_assists',     filters:{nat:'Netherlands'},     desc:'Combined PL goals and assists for Dutch players.'},
-  {id:'pl_ga_irl', title:'Irish Players — PL Goals + Assists',            type:'PL Goals+Assists', statKey:'pl_goals+pl_assists',     filters:{nat:'Ireland'},         desc:'Combined PL goals and assists for Irish internationals.'},
-  {id:'pl_ga_wal', title:'Welsh Players — PL Goals + Assists',            type:'PL Goals+Assists', statKey:'pl_goals+pl_assists',     filters:{nat:'Wales'},           desc:'Combined PL goals and assists for Welsh players.'},
-  {id:'pl_ga_mid', title:'Midfielders — PL Goals + Assists',              type:'PL Goals+Assists', statKey:'pl_goals+pl_assists',     filters:{pos:'MID'},             desc:'Combined PL goals and assists for midfielders.'},
-  {id:'pl_ga_fw',  title:'Forwards — Premier League Goals + Assists',     type:'PL Goals+Assists', statKey:'pl_goals+pl_assists',     filters:{pos:'FW'},              desc:'Combined PL goals and assists for forwards.'},
-  {id:'pl_ga_all', title:'Players — Premier League Goals + Assists',      type:'PL Goals+Assists', statKey:'pl_goals+pl_assists',     filters:{},                      desc:'Combined PL goals and assists — all players.'},
-  {id:'pl_ga_por', title:'Portuguese Players — PL Goals + Assists',       type:'PL Goals+Assists', statKey:'pl_goals+pl_assists',     filters:{nat:'Portugal'},        desc:'Combined PL goals and assists for Portuguese players.'},
-  // PL assists
-  {id:'pl_a_def',  title:'Full-Backs — Career Premier League Assists',    type:'PL Assists',       statKey:'pl_assists',              filters:{pos:'DEF'},             desc:'Career PL assists for defenders.'},
-  {id:'pl_a_mid',  title:'Midfielders — Career PL Assists',               type:'PL Assists',       statKey:'pl_assists',              filters:{pos:'MID'},             desc:'Career PL assists for midfielders.'},
-  // UCL goals
-  {id:'ucl_g_all', title:'Players — Career UCL Goals',                    type:'UCL Goals',        statKey:'ucl_goals',               filters:{},                      desc:'Total UCL goals across all clubs. Stats over 180 bust!'},
-  {id:'ucl_g_fw',  title:'Forwards — Career UCL Goals',                   type:'UCL Goals',        statKey:'ucl_goals',               filters:{pos:'FW'},              desc:'Career UCL goals for forwards.'},
-  // UCL goals+assists
-  {id:'ucl_ga_fw', title:'Forwards — UCL Goals + Assists',                type:'UCL Goals+Assists',statKey:'ucl_goals+ucl_assists',   filters:{pos:'FW'},              desc:'Combined UCL goals and assists for forwards.'},
-  {id:'ucl_ga_al', title:'Players — UCL Goals + Assists',                 type:'UCL Goals+Assists',statKey:'ucl_goals+ucl_assists',   filters:{},                      desc:'Combined UCL goals and assists — all players.'},
-  {id:'ucl_ga_ge', title:'German Players — UCL Goals + Assists',          type:'UCL Goals+Assists',statKey:'ucl_goals+ucl_assists',   filters:{nat:'Germany'},         desc:'Combined UCL goals and assists for German players.'},
-  {id:'ucl_ga_br', title:'Brazilian Players — UCL Goals + Assists',       type:'UCL Goals+Assists',statKey:'ucl_goals+ucl_assists',   filters:{nat:'Brazil'},          desc:'Combined UCL goals and assists for Brazilians.'},
-  {id:'ucl_ga_po', title:'Portuguese Players — UCL Goals + Assists',      type:'UCL Goals+Assists',statKey:'ucl_goals+ucl_assists',   filters:{nat:'Portugal'},        desc:'Combined UCL goals and assists for Portuguese players.'},
-  // UCL apps (defenders only — avoids GK issue)
-  {id:'ucl_ap_df', title:'Defenders — Career UCL Appearances',            type:'UCL Apps',         statKey:'ucl_apps',                filters:{pos:'DEF'},             desc:'Total UCL appearances for defenders. Stats over 180 bust!'},
-  {id:'ucl_ap_mi', title:'Midfielders — UCL Appearances + Goals',         type:'UCL Apps+Goals',   statKey:'ucl_apps+ucl_goals',      filters:{pos:'MID'},             desc:'Combined UCL appearances and goals for midfielders.'},
-  // International goals
-  {id:'intl_g_afr',title:'African Players — International Goals',         type:'Intl Goals',       statKey:'intl_goals',              filters:{nats:['Egypt','Senegal','Ghana','Ivory Coast','Algeria','Togo','Nigeria','Mali','Gabon','Cameroon','Liberia']}, desc:'Official international goals for African nations.'},
-  {id:'intl_g_sam',title:'South American Players — International Goals',  type:'Intl Goals',       statKey:'intl_goals',              filters:{nats:['Brazil','Argentina','Uruguay','Colombia','Peru','Chile']}, desc:'Career international goals for South Americans.'},
-  {id:'intl_g_eur',title:'European Players — International Goals',        type:'Intl Goals',       statKey:'intl_goals',              filters:{nats:['England','France','Germany','Spain','Portugal','Italy','Netherlands','Croatia','Bosnia','Sweden','Norway','Denmark','Poland','Ukraine','Bulgaria','Czechia','Hungary','Romania','Greece','Scotland','Wales','Ireland','Iceland']}, desc:'Career international goals for Europeans.'},
-  // International goals+assists
-  {id:'intl_ga_br',title:'Brazilian Players — Intl Goals + Assists',      type:'Intl Goals+Assists',statKey:'intl_goals+intl_assists', filters:{nat:'Brazil'},         desc:'Combined international goals and assists for Brazil.'},
-  {id:'intl_ga_fr',title:'French Players — Intl Goals + Assists',         type:'Intl Goals+Assists',statKey:'intl_goals+intl_assists', filters:{nat:'France'},         desc:'Combined international goals and assists for France.'},
-  {id:'intl_ga_ar',title:'Argentine Players — Intl Goals + Assists',      type:'Intl Goals+Assists',statKey:'intl_goals+intl_assists', filters:{nat:'Argentina'},      desc:'Combined international goals and assists for Argentina.'},
+  // ── PL Goals ──────────────────────────────────────────────────────
+  {id:'pl_g_eng',    title:'English Forwards — PL Goals',           type:'PL Goals',          statKey:'pl_goals',                      filters:{nat:'England',pos:'FW'}, desc:'Career Premier League goals for English forwards.'},
+  {id:'pl_g_fw',     title:'Forwards — Career PL Goals',            type:'PL Goals',          statKey:'pl_goals',                      filters:{pos:'FW'},               desc:'Career PL goals for all forwards. Stats over 180 bust!'},
+  // ── PL Goals + Assists ────────────────────────────────────────────
+  {id:'pl_ga_all',   title:'Players — PL Goals + Assists',          type:'PL Goals+Assists',  statKey:'pl_goals+pl_assists',           filters:{},                       desc:'Combined PL goals and assists — all nationalities.'},
+  {id:'pl_ga_fw',    title:'Forwards — PL Goals + Assists',         type:'PL Goals+Assists',  statKey:'pl_goals+pl_assists',           filters:{pos:'FW'},               desc:'Combined PL goals and assists for forwards.'},
+  {id:'pl_ga_mid',   title:'Midfielders — PL Goals + Assists',      type:'PL Goals+Assists',  statKey:'pl_goals+pl_assists',           filters:{pos:'MID'},              desc:'Combined PL goals and assists for midfielders.'},
+  {id:'pl_ga_eng',   title:'English Players — PL Goals + Assists',  type:'PL Goals+Assists',  statKey:'pl_goals+pl_assists',           filters:{nat:'England'},          desc:'Combined PL goals and assists for English players.'},
+  {id:'pl_ga_fra',   title:'French Players — PL Goals + Assists',   type:'PL Goals+Assists',  statKey:'pl_goals+pl_assists',           filters:{nat:'France'},           desc:'Combined PL goals and assists for French players.'},
+  {id:'pl_ga_ned',   title:'Dutch Players — PL Goals + Assists',    type:'PL Goals+Assists',  statKey:'pl_goals+pl_assists',           filters:{nat:'Netherlands'},      desc:'Combined PL goals and assists for Dutch players.'},
+  {id:'pl_ga_irl',   title:'Irish Players — PL Goals + Assists',    type:'PL Goals+Assists',  statKey:'pl_goals+pl_assists',           filters:{nat:'Ireland'},          desc:'Combined PL goals and assists for Irish internationals.'},
+  {id:'pl_ga_spa',   title:'Spanish Players — PL Goals + Assists',  type:'PL Goals+Assists',  statKey:'pl_goals+pl_assists',           filters:{nat:'Spain'},            desc:'Combined PL goals and assists for Spanish players.'},
+  // ── UCL Apps + Goals + Assists (the key combo that works) ─────────
+  {id:'ucl_aga_all', title:'Players — UCL Apps + Goals + Assists',  type:'UCL Combined',      statKey:'ucl_apps+ucl_goals+ucl_assists',filters:{},                       desc:'Total UCL appearances, goals and assists combined.'},
+  {id:'ucl_aga_fw',  title:'Forwards — UCL Apps + Goals + Assists', type:'UCL Combined',      statKey:'ucl_apps+ucl_goals+ucl_assists',filters:{pos:'FW'},               desc:'UCL apps, goals and assists for forwards.'},
+  {id:'ucl_aga_mid', title:'Midfielders — UCL Apps + Goals + Assists',type:'UCL Combined',    statKey:'ucl_apps+ucl_goals+ucl_assists',filters:{pos:'MID'},              desc:'UCL apps, goals and assists for midfielders.'},
+  {id:'ucl_aga_def', title:'Defenders — UCL Apps + Goals + Assists',type:'UCL Combined',      statKey:'ucl_apps+ucl_goals+ucl_assists',filters:{pos:'DEF'},              desc:'UCL apps, goals and assists for defenders.'},
+  {id:'ucl_aga_esp', title:'Spanish Players — UCL Combined',        type:'UCL Combined',      statKey:'ucl_apps+ucl_goals+ucl_assists',filters:{nat:'Spain'},            desc:'UCL apps, goals and assists for Spanish players.'},
+  {id:'ucl_aga_ger', title:'German Players — UCL Combined',         type:'UCL Combined',      statKey:'ucl_apps+ucl_goals+ucl_assists',filters:{nat:'Germany'},          desc:'UCL apps, goals and assists for German players.'},
+  {id:'ucl_aga_ita', title:'Italian Players — UCL Combined',        type:'UCL Combined',      statKey:'ucl_apps+ucl_goals+ucl_assists',filters:{nat:'Italy'},            desc:'UCL apps, goals and assists for Italian players.'},
+  {id:'ucl_aga_fra', title:'French Players — UCL Combined',         type:'UCL Combined',      statKey:'ucl_apps+ucl_goals+ucl_assists',filters:{nat:'France'},           desc:'UCL apps, goals and assists for French players.'},
+  {id:'ucl_aga_bra', title:'Brazilian Players — UCL Combined',      type:'UCL Combined',      statKey:'ucl_apps+ucl_goals+ucl_assists',filters:{nat:'Brazil'},           desc:'UCL apps, goals and assists for Brazilian players.'},
+  {id:'ucl_aga_ned', title:'Dutch Players — UCL Combined',          type:'UCL Combined',      statKey:'ucl_apps+ucl_goals+ucl_assists',filters:{nat:'Netherlands'},      desc:'UCL apps, goals and assists for Dutch players.'},
+  {id:'ucl_aga_por', title:'Portuguese Players — UCL Combined',     type:'UCL Combined',      statKey:'ucl_apps+ucl_goals+ucl_assists',filters:{nat:'Portugal'},         desc:'UCL apps, goals and assists for Portuguese players.'},
+  {id:'ucl_aga_arg', title:'Argentine Players — UCL Combined',      type:'UCL Combined',      statKey:'ucl_apps+ucl_goals+ucl_assists',filters:{nat:'Argentina'},        desc:'UCL apps, goals and assists for Argentine players.'},
+  // ── UCL Apps only (DEF and MID pass) ─────────────────────────────
+  {id:'ucl_ap_df',   title:'Defenders — Career UCL Appearances',   type:'UCL Apps',          statKey:'ucl_apps',                      filters:{pos:'DEF'},              desc:'Total UCL appearances for defenders. Stats over 180 bust!'},
+  {id:'ucl_ap_mi',   title:'Midfielders — UCL Apps + Goals',       type:'UCL Apps+Goals',    statKey:'ucl_apps+ucl_goals',            filters:{pos:'MID'},              desc:'Combined UCL appearances and goals for midfielders.'},
+  // ── International Apps + Goals (the key combo for intl) ──────────
+  {id:'intl_ag_all', title:'Players — International Apps + Goals',  type:'Intl Combined',     statKey:'intl_apps+intl_goals',          filters:{},                       desc:'Career international appearances and goals — all nations.'},
+  {id:'intl_ag_fw',  title:'Forwards — International Apps + Goals', type:'Intl Combined',     statKey:'intl_apps+intl_goals',          filters:{pos:'FW'},               desc:'International apps and goals for forwards.'},
+  {id:'intl_ag_mid', title:'Midfielders — International Apps + Goals',type:'Intl Combined',   statKey:'intl_apps+intl_goals',          filters:{pos:'MID'},              desc:'International apps and goals for midfielders.'},
+  {id:'intl_ag_spa', title:'Spanish Players — Intl Apps + Goals',   type:'Intl Combined',     statKey:'intl_apps+intl_goals',          filters:{nat:'Spain'},            desc:'International appearances and goals for Spanish players.'},
+  {id:'intl_ag_ger', title:'German Players — Intl Apps + Goals',    type:'Intl Combined',     statKey:'intl_apps+intl_goals',          filters:{nat:'Germany'},          desc:'International appearances and goals for German players.'},
+  {id:'intl_ag_ita', title:'Italian Players — Intl Apps + Goals',   type:'Intl Combined',     statKey:'intl_apps+intl_goals',          filters:{nat:'Italy'},            desc:'International appearances and goals for Italian players.'},
+  {id:'intl_ag_fra', title:'French Players — Intl Apps + Goals',    type:'Intl Combined',     statKey:'intl_apps+intl_goals',          filters:{nat:'France'},           desc:'International appearances and goals for French players.'},
+  {id:'intl_ag_ned', title:'Dutch Players — Intl Apps + Goals',     type:'Intl Combined',     statKey:'intl_apps+intl_goals',          filters:{nat:'Netherlands'},      desc:'International appearances and goals for Dutch players.'},
+  {id:'intl_ag_bra', title:'Brazilian Players — Intl Apps + Goals', type:'Intl Combined',     statKey:'intl_apps+intl_goals',          filters:{nat:'Brazil'},           desc:'International appearances and goals for Brazilian players.'},
+  {id:'intl_ag_arg', title:'Argentine Players — Intl Apps + Goals', type:'Intl Combined',     statKey:'intl_apps+intl_goals',          filters:{nat:'Argentina'},        desc:'International appearances and goals for Argentine players.'},
+  {id:'intl_ag_por', title:'Portuguese Players — Intl Apps + Goals',type:'Intl Combined',     statKey:'intl_apps+intl_goals',          filters:{nat:'Portugal'},         desc:'International appearances and goals for Portuguese players.'},
+  {id:'intl_ag_irl', title:'Irish Players — Intl Apps + Goals',     type:'Intl Combined',     statKey:'intl_apps+intl_goals',          filters:{nat:'Ireland'},          desc:'International appearances and goals for Irish players.'},
+  {id:'intl_ag_sco', title:'Scottish Players — Intl Apps + Goals',  type:'Intl Combined',     statKey:'intl_apps+intl_goals',          filters:{nat:'Scotland'},         desc:'International appearances and goals for Scottish players.'},
+  {id:'intl_ag_afr', title:'African Players — Intl Apps + Goals',   type:'Intl Combined',     statKey:'intl_apps+intl_goals',          filters:{nats:['Egypt','Senegal','Ghana','Ivory Coast','Algeria','Togo','Nigeria','Mali','Gabon','Cameroon','Liberia','Morocco','Tunisia']}, desc:'International apps and goals for African nations.'},
+  {id:'intl_ag_sam', title:'South Americans — Intl Apps + Goals',   type:'Intl Combined',     statKey:'intl_apps+intl_goals',          filters:{nats:['Brazil','Argentina','Uruguay','Colombia','Peru','Chile']}, desc:'International apps and goals for South Americans.'},
+  {id:'intl_ag_eur', title:'Europeans — Intl Apps + Goals',         type:'Intl Combined',     statKey:'intl_apps+intl_goals',          filters:{nats:['England','France','Germany','Spain','Portugal','Italy','Netherlands','Croatia','Bosnia','Sweden','Norway','Denmark','Poland','Ukraine','Bulgaria','Czechia','Hungary','Romania','Greece','Scotland','Wales','Ireland','Iceland','Belgium','Turkey','Slovakia','Montenegro','Serbia']}, desc:'International apps and goals for European nations.'},
+  // ── International Apps only (DEF and GK) ─────────────────────────
+  {id:'intl_ap_def', title:'Defenders — Career International Caps', type:'Intl Apps',         statKey:'intl_apps',                     filters:{pos:'DEF'},              desc:'Career international appearances for defenders.'},
+  {id:'intl_ap_gk',  title:'Goalkeepers — Career International Caps',type:'Intl Apps',        statKey:'intl_apps',                     filters:{pos:'GK'},               desc:'Career international appearances for goalkeepers.'},
+  {id:'intl_ap_mid', title:'Midfielders — Career International Caps',type:'Intl Apps',        statKey:'intl_apps',                     filters:{pos:'MID'},              desc:'Career international appearances for midfielders. Stats over 180 bust!'},
 ];
 
 function matchesFilter(p, f) {
@@ -1402,12 +1635,71 @@ function startRematch() {
 }
 
 function skipCategory() {
+  if (G.mode === 1 && G.history.length > 0) {
+    // Practice mode + has throws — show loss screen
+    showSkipLoss();
+    return;
+  }
+  // Practice with no throws, or 2P — just reset silently
+  doSkipReset();
+}
+
+function showSkipLoss() {
+  const throws = G.p[0].throws;
+  document.getElementById('skipModalSub').textContent =
+    `You gave up after ${throws} throw${throws !== 1 ? 's' : ''}. That counts as a loss!`;
+
+  document.getElementById('skipModalStats').innerHTML = `
+    <div class="mstat"><div class="mstat-val">${throws}</div><div class="mstat-label">Throws Made</div></div>
+    <div class="mstat"><div class="mstat-val">${G.p[0].score}</div><div class="mstat-label">Score Remaining</div></div>
+  `;
+
+  // Show any unlocks from this leg
+  const newUnlocks = G._newUnlocks || [];
+  const unlockEl = document.getElementById('skipUnlocks');
+  if (newUnlocks.length > 0) {
+    const chips = newUnlocks.map(n => `<span class="unlock-chip new">⭐ ${n}</span>`).join('');
+    unlockEl.innerHTML = `<div class="leg-unlocks" style="margin-bottom:12px;">
+      <b>🎴 ${newUnlocks.length} New Unlock${newUnlocks.length > 1 ? 's' : ''}!</b>
+      <div class="leg-unlocks-chips">${chips}</div>
+    </div>`;
+  } else {
+    unlockEl.innerHTML = '';
+  }
+
+  // Count this as a "loss" in stats — record a leg with winnerIdx = 1 (P1/CPU wins)
+  G._lastLegWinner = 1; // loss for the player
+  G._lastCheckoutScore = null;
+  const st = getEnhancedStats ? getEnhancedStats() : lsGet(LS_STATS, {totalLegs:0,totalWins:0,bestLeg:null,winStreak:0,bestStreak:0,totalThrows:0,history:[]});
+  st.totalLegs = (st.totalLegs || 0) + 1;
+  st.totalThrows = (st.totalThrows || 0) + throws;
+  st.winStreak = 0;
+  const entry = {
+    date: new Date().toISOString(), mode: 1, gameMode: 'inf',
+    p0Name: G.p[0].name, p1Name: 'CPU',
+    winnerIdx: 1, p0Legs: G.p[0].legs, p1Legs: 0,
+    throws, checkoutScore: null, catType: getCat() ? getCat().type : null,
+  };
+  st.history = [entry, ...(st.history||[])].slice(0, 50);
+  lsSet(LS_STATS, st);
+  G._newUnlocks = [];
+
+  document.getElementById('skipModal').classList.remove('hidden');
+}
+
+function confirmSkip() {
+  document.getElementById('skipModal').classList.add('hidden');
+  doSkipReset();
+}
+
+function doSkipReset() {
   G.p[0].score = G.legStartScores[0];
   G.p[1].score = G.legStartScores[1];
   G.usedPlayers = new Set();
   G.history = [];
   G.selectedPlayer = null;
   G.current = 0;
+  G._newUnlocks = [];
   clearInput();
   pickCat();
   renderCat(); renderHistory(); renderScoreboard();
@@ -1842,57 +2134,29 @@ document.getElementById('statsOverlay').addEventListener('click', function(e) {
 document.getElementById('sbOverlay').addEventListener('click', function(e) {
   if (e.target === this) closeStickerBook();
 });
+document.getElementById('skipModal').addEventListener('click', function(e) {
+  if (e.target === this) confirmSkip();
+});
 
 // ═══════════════════════════════════════════════════════════════════
 // EXPANDED CATEGORY DEFINITIONS — adds 20+ new categories
 // ═══════════════════════════════════════════════════════════════════
 (function expandCategories() {
+  // All new defs use verified-passing combos only.
+  // ucl_apps+ucl_goals+ucl_assists and intl_apps+intl_goals are the key formulas.
   const newDefs = [
-    // ── By nation: PL Goals+Assists ─────────────────────────────
-    {id:'pl_ga_ger', title:'German Players — PL Goals + Assists',       type:'PL Goals+Assists', statKey:'pl_goals+pl_assists', filters:{nat:'Germany'},   desc:'Combined PL goals and assists for German players.'},
-    {id:'pl_ga_ita', title:'Italian Players — PL Goals + Assists',      type:'PL Goals+Assists', statKey:'pl_goals+pl_assists', filters:{nat:'Italy'},     desc:'Combined PL goals and assists for Italian players.'},
-    {id:'pl_ga_sco', title:'Scottish Players — PL Goals + Assists',     type:'PL Goals+Assists', statKey:'pl_goals+pl_assists', filters:{nat:'Scotland'},  desc:'Combined PL goals and assists for Scottish players.'},
-    {id:'pl_ga_spa', title:'Spanish Players — PL Goals + Assists',      type:'PL Goals+Assists', statKey:'pl_goals+pl_assists', filters:{nat:'Spain'},     desc:'Combined PL goals and assists for Spanish players.'},
-    {id:'pl_ga_bra', title:'Brazilian Players — PL Goals + Assists',    type:'PL Goals+Assists', statKey:'pl_goals+pl_assists', filters:{nat:'Brazil'},    desc:'Combined PL goals and assists for Brazilian players.'},
-    {id:'pl_ga_arg', title:'Argentine Players — PL Goals + Assists',    type:'PL Goals+Assists', statKey:'pl_goals+pl_assists', filters:{nat:'Argentina'}, desc:'Combined PL goals and assists for Argentine players.'},
-    // ── By nation: UCL Goals+Assists ────────────────────────────
-    {id:'ucl_ga_esp',title:'Spanish Players — UCL Goals + Assists',     type:'UCL Goals+Assists',statKey:'ucl_goals+ucl_assists',filters:{nat:'Spain'},    desc:'Combined UCL goals and assists for Spanish players.'},
-    {id:'ucl_ga_ita',title:'Italian Players — UCL Goals + Assists',     type:'UCL Goals+Assists',statKey:'ucl_goals+ucl_assists',filters:{nat:'Italy'},    desc:'Combined UCL goals and assists for Italian players.'},
-    {id:'ucl_ga_arg',title:'Argentine Players — UCL Goals + Assists',   type:'UCL Goals+Assists',statKey:'ucl_goals+ucl_assists',filters:{nat:'Argentina'},desc:'Combined UCL goals and assists for Argentine players.'},
-    {id:'ucl_ga_fra',title:'French Players — UCL Goals + Assists',      type:'UCL Goals+Assists',statKey:'ucl_goals+ucl_assists',filters:{nat:'France'},   desc:'Combined UCL goals and assists for French players.'},
-    {id:'ucl_ga_ned',title:'Dutch Players — UCL Goals + Assists',       type:'UCL Goals+Assists',statKey:'ucl_goals+ucl_assists',filters:{nat:'Netherlands'},desc:'Combined UCL goals and assists for Dutch players.'},
-    // ── By nation: International Goals ──────────────────────────
-    {id:'intl_g_ger',title:'German Players — International Goals',      type:'Intl Goals',       statKey:'intl_goals',           filters:{nat:'Germany'},  desc:'Career international goals for German players.'},
-    {id:'intl_g_ita',title:'Italian Players — International Goals',     type:'Intl Goals',       statKey:'intl_goals',           filters:{nat:'Italy'},    desc:'Career international goals for Italian players.'},
-    {id:'intl_g_spa',title:'Spanish Players — International Goals',     type:'Intl Goals',       statKey:'intl_goals',           filters:{nat:'Spain'},    desc:'Career international goals for Spanish players.'},
-    {id:'intl_g_por',title:'Portuguese Players — International Goals',  type:'Intl Goals',       statKey:'intl_goals',           filters:{nat:'Portugal'}, desc:'Career international goals for Portuguese players.'},
-    {id:'intl_g_ned',title:'Dutch Players — International Goals',       type:'Intl Goals',       statKey:'intl_goals',           filters:{nat:'Netherlands'},desc:'Career international goals for Dutch players.'},
-    // ── By nation: International Goals+Assists ──────────────────
-    {id:'intl_ga_ge',title:'German Players — Intl Goals + Assists',     type:'Intl Goals+Assists',statKey:'intl_goals+intl_assists',filters:{nat:'Germany'},desc:'Combined international goals and assists for Germany.'},
-    {id:'intl_ga_sp',title:'Spanish Players — Intl Goals + Assists',    type:'Intl Goals+Assists',statKey:'intl_goals+intl_assists',filters:{nat:'Spain'}, desc:'Combined international goals and assists for Spain.'},
-    {id:'intl_ga_po',title:'Portuguese Players — Intl Goals + Assists', type:'Intl Goals+Assists',statKey:'intl_goals+intl_assists',filters:{nat:'Portugal'},desc:'Combined international goals and assists for Portugal.'},
-    {id:'intl_ga_sa',title:'South American — Intl Goals + Assists',     type:'Intl Goals+Assists',statKey:'intl_goals+intl_assists',filters:{nats:['Brazil','Argentina','Uruguay','Colombia','Chile','Peru']},desc:'Combined international goals and assists for South Americans.'},
-    // ── By position: appearance-based ───────────────────────────
-    {id:'ucl_apps_fw',title:'Forwards — Career UCL Appearances',        type:'UCL Apps',         statKey:'ucl_apps',             filters:{pos:'FW'},       desc:'Total UCL appearances for recognised forwards.'},
-    {id:'intl_ap_mid',title:'Midfielders — Career International Caps',  type:'Intl Apps',        statKey:'intl_apps',            filters:{pos:'MID'},      desc:'Career international appearances for midfielders. Stats over 180 bust!'},
-    {id:'pl_apps_def',title:'Defenders — Career PL Appearances',        type:'PL Apps',          statKey:'pl_apps',              filters:{pos:'DEF'},      desc:'Total PL appearances for defenders. Stats over 180 bust!'},
-    {id:'pl_apps_gk', title:'Goalkeepers — Career PL Appearances',      type:'PL Apps',          statKey:'pl_apps',              filters:{pos:'GK'},       desc:'Total PL appearances for goalkeepers. Stats over 180 bust!'},
-    // ── Defenders: goals+assists (surprise scorers) ─────────────
-    {id:'def_pl_ga',  title:'Defenders — PL Goals + Assists',           type:'PL Goals+Assists', statKey:'pl_goals+pl_assists',  filters:{pos:'DEF'},      desc:'Combined PL goals and assists for defenders — surprise scorers!'},
-    // ── Broad combined: high range ───────────────────────────────
-    {id:'ucl_ga_mid', title:'Midfielders — UCL Goals + Assists',        type:'UCL Goals+Assists',statKey:'ucl_goals+ucl_assists', filters:{pos:'MID'},     desc:'Combined UCL goals and assists for midfielders.'},
-    {id:'intl_ga_fw', title:'Forwards — International Goals + Assists', type:'Intl Goals+Assists',statKey:'intl_goals+intl_assists',filters:{pos:'FW'},    desc:'Combined international goals and assists for forwards.'},
+    // Extra PL G+A by nation (some borderline — validator will filter)
+    {id:'pl_ga_por',  title:'Portuguese Players — PL Goals + Assists',  type:'PL Goals+Assists', statKey:'pl_goals+pl_assists',           filters:{nat:'Portugal'},  desc:'Combined PL goals and assists for Portuguese players.'},
+    {id:'pl_ga_wal',  title:'Welsh Players — PL Goals + Assists',       type:'PL Goals+Assists', statKey:'pl_goals+pl_assists',           filters:{nat:'Wales'},     desc:'Combined PL goals and assists for Welsh players.'},
+    {id:'pl_ga_sco',  title:'Scottish Players — PL Goals + Assists',    type:'PL Goals+Assists', statKey:'pl_goals+pl_assists',           filters:{nat:'Scotland'},  desc:'Combined PL goals and assists for Scottish players.'},
   ];
 
-  // Add only defs that don't already exist
   const existingIds = new Set(CATEGORY_DEFS.map(d => d.id));
   newDefs.forEach(d => { if (!existingIds.has(d.id)) CATEGORY_DEFS.push(d); });
 
-  // Rebuild CATEGORIES array by appending newly valid ones
-  // (CATEGORIES is const so we splice into it)
-  const MIN_POOL2 = 14, MIN_MEDIAN2 = 30, MAX_MEDIAN2 = 155;
+  const MIN_POOL2 = 16, MIN_MEDIAN2 = 42, MAX_MEDIAN2 = 160;
   newDefs.forEach(def => {
-    if (existingIds.has(def.id)) return; // already existed — skip
+    if (existingIds.has(def.id)) return;
     const players = buildCategoryPlayers(def);
     if (players.length < MIN_POOL2) return;
     const vals = players.map(p => Math.min(180, p.stat));
@@ -1902,6 +2166,7 @@ document.getElementById('sbOverlay').addEventListener('click', function(e) {
     CATEGORIES.push({...def, players});
   });
 })();
+
 
 // ═══════════════════════════════════════════════════════════════════
 // ENHANCED STATS — extra fields layered on top of existing schema
@@ -2076,8 +2341,8 @@ const LS_ACH = 'football501_achievements';
 
 const ACH_DEFS = [
   // Core gameplay
-  {id:'speed_demon',    icon:'⚡',  name:'Speed Demon',       desc:'Check out in just 1 throw.',                    type:'bool'},
-  {id:'surgeon',        icon:'🥼',  name:'Surgeon',           desc:'Check out in exactly 2 throws.',                type:'bool'},
+  {id:'speed_demon',    icon:'⚡',  name:'Quick Exit',        desc:'Check out in exactly 3 throws.',                type:'bool'},
+  {id:'surgeon',        icon:'🥼',  name:'Surgeon',           desc:'Check out in exactly 4 throws.',                type:'bool'},
   {id:'hat_trick_legs', icon:'🎩',  name:'Hat Trick',         desc:'Win 3 legs in a row.',                          type:'progress', max:3},
   {id:'perfect_match',  icon:'🏆',  name:'Perfect Match',     desc:'Win a Best of 3 without dropping a leg (3-0).',  type:'bool'},
   {id:'comeback',       icon:'📈',  name:'Great Comeback',    desc:'Win a leg from 150+ points behind.',             type:'bool'},
@@ -2206,11 +2471,11 @@ function checkAchievementsAfterLeg(winner) {
   const throws  = G.p[winner].throws;
   const legBusts = G._legBusts || 0;
 
-  // Speed Demon — checkout in 1 throw
-  if (throws === 1) unlockAchievement('speed_demon');
+  // Quick Exit — checkout in 3 throws
+  if (throws === 3) unlockAchievement('speed_demon');
 
-  // Surgeon — checkout in 2 throws
-  if (throws === 2) unlockAchievement('surgeon');
+  // Surgeon — checkout in 4 throws
+  if (throws === 4) unlockAchievement('surgeon');
 
   // Clean Leg — no busts
   if (legBusts === 0) {
@@ -2549,9 +2814,15 @@ window.startGame = function() {
 // ═══════════════════════════════════════════════════════════════════
 // PATCH: skipCategory to re-render insights on category change
 // ═══════════════════════════════════════════════════════════════════
-const _baseSkipCategory = skipCategory;
+const _baseSkipCategory = doSkipReset;
 window.skipCategory = function() {
-  _baseSkipCategory.call(this);
+  // If practice mode with throws — show loss modal (handled in skipCategory base)
+  // If no throws or 2P — just reset
+  if (G.mode === 1 && G.history.length > 0) {
+    showSkipLoss();
+  } else {
+    doSkipReset();
+  }
   renderInsights();
   const undoBtn = document.getElementById('undoBtn');
   if (undoBtn) undoBtn.style.display = 'none';
